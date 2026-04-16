@@ -1,16 +1,48 @@
 <!-- Barra de Navegación para Móviles -->
-<header class="mobile-header">
-    <a href="/" class="brand-mobile">
-        <% if (typeof empresa !== 'undefined' && empresa.logo) { %>
-            <img src="/uploads/<%= empresa.logo %>" alt="Logo" class="rounded-circle" style="width: 32px; height: 32px; object-fit: contain; background: white;">
-        <% } else { %>
-            <i class="bi bi-bank2"></i>
-        <% } %>
-        <span><%= (typeof empresa !== 'undefined' && empresa.nombre_empresa) ? empresa.nombre_empresa : 'Préstamos Pro' %></span>
-    </a>
-    <button class="sidebar-toggler" id="mobileMenuBtn">
-        <i class="bi bi-list"></i>
-    </button>
+<header class="main-header shadow-sm">
+    <div class="d-flex align-items-center gap-3">
+        <button class="sidebar-toggler" id="mobileMenuBtn">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <span class="header-date d-none d-lg-block">
+            <i class="bi bi-calendar3 me-2"></i>
+            <% const opciones={ weekday: 'long' , year: 'numeric' , month: 'long' , day: 'numeric' }; let fechaHoy=new
+                Date().toLocaleDateString('es-ES', opciones); // Capitalizar primera letra
+                fechaHoy=fechaHoy.charAt(0).toUpperCase() + fechaHoy.slice(1); %>
+                <%= fechaHoy %>
+        </span>
+    </div>
+
+    <!-- Buscador Global -->
+    <div class="header-search">
+        <i class="bi bi-search"></i>
+        <input type="text" id="globalSearch" placeholder="Escriba para ir a un módulo (ej: Prestamos, Clientes)..."
+            autocomplete="off">
+        <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <div class="header-user-info">
+        <div class="header-user-details d-none d-md-block">
+            <span class="header-user-name">
+                <%= (typeof usuario !=='undefined' && usuario && usuario.nombre_completo) ? usuario.nombre_completo
+                    : 'Usuario' %>
+            </span>
+            <span class="header-user-role">
+                <%= (typeof usuario !=='undefined' && usuario && usuario.rol==='admin' ) ? 'Administrador' : 'Empleado'
+                    %>
+            </span>
+        </div>
+
+        <div class="header-user-avatar d-none d-sm-flex">
+            <%= (typeof usuario !=='undefined' && usuario && usuario.nombre_completo) ?
+                usuario.nombre_completo.charAt(0).toUpperCase() : 'U' %>
+        </div>
+
+        <a href="/auth/logout" class="header-logout-btn shadow-sm" title="Cerrar Sesión">
+            <i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline ms-1">Salir</span>
+        </a>
+    </div>
 </header>
 
 <!-- Overlay para oscurecer el fondo cuando el menú está abierto -->

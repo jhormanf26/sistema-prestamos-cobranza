@@ -87,27 +87,38 @@
                 });
             }
 
-            // 3. RESPONSIVE SIDEBAR LOGIC
+            // 3. RESPONSIVE SIDEBAR LOGIC (Escritorio y Móvil)
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const sidebar = document.querySelector('.sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const closeSidebarBtn = document.getElementById('closeSidebarBtn');
 
-            if (mobileMenuBtn && sidebar && sidebarOverlay) {
+            if (mobileMenuBtn && sidebar) {
                 const toggleSidebar = () => {
-                    sidebar.classList.toggle('sidebar-open');
-                    sidebarOverlay.classList.toggle('active');
-                    document.body.style.overflow = sidebar.classList.contains('sidebar-open') ? 'hidden' : '';
+                    const isMobile = window.innerWidth < 768;
+                    
+                    if (isMobile) {
+                        // Comportamiento Móvil: Overlay y deslizar
+                        sidebar.classList.toggle('sidebar-open');
+                        if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
+                        document.body.style.overflow = sidebar.classList.contains('sidebar-open') ? 'hidden' : '';
+                    } else {
+                        // Comportamiento Escritorio: Colapsar y expandir contenido
+                        document.body.classList.toggle('sidebar-collapsed');
+                    }
                 };
 
                 mobileMenuBtn.addEventListener('click', toggleSidebar);
-                sidebarOverlay.addEventListener('click', toggleSidebar);
+                
+                if (sidebarOverlay) {
+                    sidebarOverlay.addEventListener('click', toggleSidebar);
+                }
                 
                 if (closeSidebarBtn) {
                     closeSidebarBtn.addEventListener('click', toggleSidebar);
                 }
 
-                // Cerrar al hacer clic en un link (móvil)
+                // Cerrar al hacer clic en un link (Solo móvil para no molestar en escritorio)
                 const navLinks = sidebar.querySelectorAll('.nav-link');
                 navLinks.forEach(link => {
                     link.addEventListener('click', () => {
@@ -116,6 +127,56 @@
                         }
                     });
                 });
+
+                // --- LÓGICA DE BUSCADOR GLOBAL (NAVEGACIÓN POR MENÚS) ---
+                const globalSearch = document.getElementById('globalSearch');
+                const searchResults = document.getElementById('searchResults');
+
+                if (globalSearch && searchResults) {
+                    // Mapeamos los menús existentes en el sidebar
+                    const menuItems = Array.from(sidebar.querySelectorAll('.nav-link')).map(item => ({
+                        nombre: item.innerText.trim(),
+                        url: item.getAttribute('href'),
+                        icon: item.querySelector('i').className
+                    }));
+
+                    globalSearch.addEventListener('input', function(e) {
+                        const term = e.target.value.toLowerCase().trim();
+                        
+                        if (term.length < 1) {
+                            searchResults.classList.remove('active');
+                            return;
+                        }
+
+                        const matches = menuItems.filter(m => m.nombre.toLowerCase().includes(term));
+
+                        if (matches.length > 0) {
+                            searchResults.innerHTML = matches.map(m => `
+                                <a href="${m.url}" class="search-item">
+                                    <i class="${m.icon}"></i>
+                                    <span>${m.nombre}</span>
+                                    <span class="badge">Módulo</span>
+                                </a>
+                            `).join('');
+                            searchResults.classList.add('active');
+                        } else {
+                            searchResults.innerHTML = '<div class="p-3 text-center text-muted small">No se encontraron módulos...</div>';
+                            searchResults.classList.add('active');
+                        }
+                    });
+
+                    // Cerrar al hacer clic fuera
+                    document.addEventListener('click', function(e) {
+                        if (!globalSearch.contains(e.target) && !searchResults.contains(e.target)) {
+                            searchResults.classList.remove('active');
+                        }
+                    });
+
+                    // Navegación con teclado (Opcional pero pro)
+                    globalSearch.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') searchResults.classList.remove('active');
+                    });
+                }
             }
         });
 

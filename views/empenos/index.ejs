@@ -1,101 +1,149 @@
 <!DOCTYPE html>
 <html lang="es">
 <%- include('../partials/head') %>
-<body>
-    <div class="container-fluid">
-        <div class="row flex-nowrap">
-            <%- include('../partials/sidebar') %>
 
-            <div class="col py-0 py-md-3 main-content-wrapper">
-                <%- include('../partials/mobile-header') %>
-                <div class="container">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>💎 Empeños y Garantías</h2>
-                        <a href="/empenos/crear" class="btn btn-warning text-dark fw-bold shadow-sm">
-                            <i class="bi bi-box-seam"></i> Nuevo Ingreso
-                        </a>
-                    </div>
+    <body>
+        <div class="container-fluid">
+            <div class="row flex-nowrap">
+                <%- include('../partials/sidebar') %>
 
-                    <% if(mensajeExito && mensajeExito.length > 0) { %>
-                        <div class="d-none" id="flashMessageSuccess"><%= mensajeExito %></div>
-                    <% } %>
-                    <% if(typeof mensajeError !== 'undefined' && mensajeError.length > 0) { %>
-                        <div class="alert alert-danger"><%= mensajeError %></div>
-                    <% } %>
-
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                        <% if (empenos.length > 0) { %>
-                            <% empenos.forEach(e => { %>
-                                <div class="col">
-                                    <div class="card card-box h-100 border-0 shadow-sm">
-                                        <div style="height: 200px; overflow: hidden;" class="bg-light d-flex align-items-center justify-content-center position-relative">
-                                            <% if(e.imagen) { %>
-                                                <img src="/uploads/<%= e.imagen %>" class="w-100 h-100" style="object-fit: cover;" alt="Artículo">
-                                            <% } else { %>
-                                                <i class="bi bi-camera fs-1 text-secondary"></i>
-                                            <% } %>
-                                            
-                                            <div class="position-absolute top-0 end-0 m-2">
-                                                <% if(e.estado === 'en_custodia') { %>
-                                                    <span class="badge bg-primary shadow">En Custodia</span>
-                                                <% } else { %>
-                                                    <span class="badge bg-success shadow">Devuelto</span>
-                                                <% } %>
-                                            </div>
-                                        </div>
-
-                                        <div class="card-body">
-                                            <h5 class="card-title fw-bold text-truncate"><%= e.nombre_articulo %></h5>
-                                            <p class="card-text small text-muted mb-2"><%= e.descripcion %></p>
-                                            
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="small text-muted"><i class="bi bi-person"></i> <%= e.nombre %> <%= e.apellido %></span>
-                                            </div>
-
-                                            <div class="bg-light p-2 rounded d-flex justify-content-between align-items-center mb-3">
-                                                <div class="text-start">
-                                                    <small class="d-block text-muted" style="font-size: 0.75rem;">PRÉSTAMO</small>
-                                                    <strong class="text-dark fs-5"><%= empresa.moneda %> <%= formatCurrency(e.monto_prestado, 2) %></strong>
-                                                </div>
-                                                <div class="text-end">
-                                                    <% if(e.fecha_limite) { %>
-                                                        <small class="d-block text-muted" style="font-size: 0.75rem;">VENCE</small>
-                                                        <small class="text-danger fw-bold"><%= new Date(e.fecha_limite).toLocaleDateString() %></small>
-                                                    <% } %>
-                                                </div>
-                                            </div>
-
-                                            <div class="btn-group w-100 mb-2" role="group">
-                                                <a href="/reportes-empenos/contrato/<%= e.id %>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir Contrato">
-                                                    <i class="bi bi-file-earmark-text"></i> Contrato
-                                                </a>
-                                                <a href="/reportes-empenos/ticket/<%= e.id %>" target="_blank" class="btn btn-sm btn-outline-dark" title="Imprimir Ticket">
-                                                    <i class="bi bi-receipt"></i> Ticket
-                                                </a>
-                                            </div>
-
-                                            <% if(e.estado === 'en_custodia') { %>
-                                                <a href="/empenos/liberar/<%= e.id %>" class="btn btn-success w-100 fw-bold" onclick="return confirm('¿Confirmar devolución del artículo?');">
-                                                    <i class="bi bi-cash-coin"></i> Cobrar y Devolver
-                                                </a>
-                                            <% } else { %>
-                                                <button class="btn btn-secondary w-100" disabled>
-                                                    <i class="bi bi-check-circle"></i> Entregado
-                                                </button>
-                                            <% } %>
-                                        </div>
-                                    </div>
+                    <div class="col py-0 py-md-3 main-content-wrapper">
+                        <%- include('../partials/mobile-header') %>
+                            <div class="container-fluid px-4 py-4">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h2>💎 Empeños y Garantías</h2>
+                                    <a href="/empenos/crear" class="btn btn-warning text-dark fw-bold shadow-sm">
+                                        <i class="bi bi-box-seam"></i> Nuevo Ingreso
+                                    </a>
                                 </div>
-                            <% }) %>
-                        <% } else { %>
-                            <div class="col-12 text-center py-5">
-                                <i class="bi bi-box fs-1 text-muted"></i>
-                                <p class="text-muted">No hay artículos registrados.</p>
+
+                                <% if(mensajeExito && mensajeExito.length> 0) { %>
+                                    <div class="d-none" id="flashMessageSuccess">
+                                        <%= mensajeExito %>
+                                    </div>
+                                    <% } %>
+                                        <% if(typeof mensajeError !=='undefined' && mensajeError.length> 0) { %>
+                                            <div class="alert alert-danger">
+                                                <%= mensajeError %>
+                                            </div>
+                                            <% } %>
+
+                                                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                                    <% if (empenos.length> 0) { %>
+                                                        <% empenos.forEach(e=> { %>
+                                                            <div class="col">
+                                                                <div class="card card-box h-100 border-0 shadow-sm">
+                                                                    <div style="height: 200px; overflow: hidden;"
+                                                                        class="bg-light d-flex align-items-center justify-content-center position-relative">
+                                                                        <% if(e.imagen) { %>
+                                                                            <img src="/uploads/<%= e.imagen %>"
+                                                                                class="w-100 h-100"
+                                                                                style="object-fit: cover;"
+                                                                                alt="Artículo">
+                                                                            <% } else { %>
+                                                                                <i
+                                                                                    class="bi bi-camera fs-1 text-secondary"></i>
+                                                                                <% } %>
+
+                                                                                    <div
+                                                                                        class="position-absolute top-0 end-0 m-2">
+                                                                                        <% if(e.estado==='en_custodia' )
+                                                                                            { %>
+                                                                                            <span
+                                                                                                class="badge bg-primary shadow">En
+                                                                                                Custodia</span>
+                                                                                            <% } else { %>
+                                                                                                <span
+                                                                                                    class="badge bg-success shadow">Devuelto</span>
+                                                                                                <% } %>
+                                                                                    </div>
+                                                                    </div>
+
+                                                                    <div class="card-body">
+                                                                        <h5 class="card-title fw-bold text-truncate">
+                                                                            <%= e.nombre_articulo %>
+                                                                        </h5>
+                                                                        <p class="card-text small text-muted mb-2">
+                                                                            <%= e.descripcion %>
+                                                                        </p>
+
+                                                                        <div
+                                                                            class="d-flex justify-content-between align-items-center mb-2">
+                                                                            <span class="small text-muted"><i
+                                                                                    class="bi bi-person"></i>
+                                                                                <%= e.nombre %>
+                                                                                    <%= e.apellido %>
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div
+                                                                            class="bg-light p-2 rounded d-flex justify-content-between align-items-center mb-3">
+                                                                            <div class="text-start">
+                                                                                <small class="d-block text-muted"
+                                                                                    style="font-size: 0.75rem;">PRÉSTAMO</small>
+                                                                                <strong class="text-dark fs-5">
+                                                                                    <%= empresa.moneda %>
+                                                                                        <%= formatCurrency(e.monto_prestado,
+                                                                                            2) %>
+                                                                                </strong>
+                                                                            </div>
+                                                                            <div class="text-end">
+                                                                                <% if(e.fecha_limite) { %>
+                                                                                    <small class="d-block text-muted"
+                                                                                        style="font-size: 0.75rem;">VENCE</small>
+                                                                                    <small class="text-danger fw-bold">
+                                                                                        <%= new
+                                                                                            Date(e.fecha_limite).toLocaleDateString()
+                                                                                            %>
+                                                                                    </small>
+                                                                                    <% } %>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="btn-group w-100 mb-2" role="group">
+                                                                            <a href="/reportes-empenos/contrato/<%= e.id %>"
+                                                                                target="_blank"
+                                                                                class="btn btn-sm btn-outline-secondary"
+                                                                                title="Imprimir Contrato">
+                                                                                <i class="bi bi-file-earmark-text"></i>
+                                                                                Contrato
+                                                                            </a>
+                                                                            <a href="/reportes-empenos/ticket/<%= e.id %>"
+                                                                                target="_blank"
+                                                                                class="btn btn-sm btn-outline-dark"
+                                                                                title="Imprimir Ticket">
+                                                                                <i class="bi bi-receipt"></i> Ticket
+                                                                            </a>
+                                                                        </div>
+
+                                                                        <% if(e.estado==='en_custodia' ) { %>
+                                                                            <a href="/empenos/liberar/<%= e.id %>"
+                                                                                class="btn btn-success w-100 fw-bold"
+                                                                                onclick="return confirm('¿Confirmar devolución del artículo?');">
+                                                                                <i class="bi bi-cash-coin"></i> Cobrar y
+                                                                                Devolver
+                                                                            </a>
+                                                                            <% } else { %>
+                                                                                <button class="btn btn-secondary w-100"
+                                                                                    disabled>
+                                                                                    <i class="bi bi-check-circle"></i>
+                                                                                    Entregado
+                                                                                </button>
+                                                                                <% } %>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <% }) %>
+                                                                <% } else { %>
+                                                                    <div class="col-12 text-center py-5">
+                                                                        <i class="bi bi-box fs-1 text-muted"></i>
+                                                                        <p class="text-muted">No hay artículos
+                                                                            registrados.</p>
+                                                                    </div>
+                                                                    <% } %>
+                                                </div>
                             </div>
-                        <% } %>
                     </div>
-                </div>
             </div>
         </div>
-    </div>
-<%- include('../partials/footer') %>
+        <%- include('../partials/footer') %>
