@@ -102,7 +102,10 @@
         </div>
     </div>
 
-    <script>
+<%- include('../partials/footer') %>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
         const inputMonto = document.getElementById('inputMonto');
         const inputInteres = document.getElementById('inputInteres');
         const formPrestamo = document.getElementById('formPrestamo');
@@ -115,7 +118,9 @@
         const moneda = "<%= empresa.moneda %>"; 
 
         // Aplicamos la máscara de miles al input de monto
-        window.applyCurrencyMask('.currency-input');
+        if (window.applyCurrencyMask) {
+            window.applyCurrencyMask('.currency-input');
+        }
 
         function calcular() {
             // Obtenemos el valor limpio (solo números)
@@ -126,20 +131,31 @@
             const interesGanado = m * (i / 100);
             const total = m + interesGanado;
 
-            simMonto.innerText = `${moneda} ${window.formatCurrency(m, 2)}`;
-            simInteres.innerText = `${moneda} ${window.formatCurrency(interesGanado, 2)}`;
-            simTotal.innerText = `${moneda} ${window.formatCurrency(total, 2)}`;
+            if (window.formatCurrency) {
+                simMonto.innerText = `${moneda} ${window.formatCurrency(m, 2)}`;
+                simInteres.innerText = `${moneda} ${window.formatCurrency(interesGanado, 2)}`;
+                simTotal.innerText = `${moneda} ${window.formatCurrency(total, 2)}`;
+            } else {
+                simMonto.innerText = `${moneda} ${m.toFixed(2)}`;
+                simInteres.innerText = `${moneda} ${interesGanado.toFixed(2)}`;
+                simTotal.innerText = `${moneda} ${total.toFixed(2)}`;
+            }
         }
 
-        // Escuchamos el evento personalizado 'moneyInput' disparado por applyCurrencyMask
+        // Escuchamos tanto el evento personalizado como el estándar
         inputMonto.addEventListener('moneyInput', calcular);
+        inputMonto.addEventListener('input', calcular); 
+        
         inputInteres.addEventListener('input', calcular);
 
         // LIMPIAR PUNTOS ANTES DE ENVIAR AL SERVIDOR
-        formPrestamo.addEventListener('submit', function() {
-            const montoField = document.getElementById('inputMonto');
-            montoField.value = montoField.value.replace(/\D/g, ''); // Deja solo números
-        });
-    </script>
+        if (formPrestamo) {
+            formPrestamo.addEventListener('submit', function() {
+                inputMonto.value = inputMonto.value.replace(/\D/g, ''); // Deja solo números
+            });
+        }
 
-<%- include('../partials/footer') %>
+        // Ejecutar cálculo inicial
+        calcular();
+    });
+</script>
