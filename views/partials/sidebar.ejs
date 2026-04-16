@@ -1,134 +1,153 @@
 <div class="col-auto col-md-3 col-xl-2 px-0 sidebar" id="sidebarMenu">
-    <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100 position-relative">
-        
+    <div
+        class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100 position-relative">
+
         <!-- Botón de Cerrar (Solo Móvil) -->
         <button class="btn btn-link text-white d-md-none position-absolute top-0 end-0 mt-2 me-2" id="closeSidebarBtn">
             <i class="bi bi-x-lg"></i>
         </button>
 
-        <a href="/" class="d-flex flex-column align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none brand w-100 mt-4 mt-md-0">
-            <% if (typeof empresa !== 'undefined' && empresa.logo) { %>
-                <img src="/uploads/<%= empresa.logo %>" alt="Logo" class="rounded-circle mb-2 bg-white p-1 shadow-sm" style="width: 55px; height: 55px; object-fit: contain;">
-            <% } else { %>
-                <div class="bg-primary rounded-circle p-2 mb-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 55px; height: 55px;">
-                    <i class="bi bi-bank2 fs-4 text-white"></i>
-                </div>
-            <% } %>
-            <span class="d-inline small text-center text-truncate w-100 fw-bold">
-                <%= (typeof empresa !== 'undefined' && empresa.nombre_empresa) ? empresa.nombre_empresa : 'Sistema Préstamos' %>
-            </span>
+        <a href="/"
+            class="d-flex flex-column align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none brand w-100 mt-4 mt-md-0">
+            <% if (typeof empresa !=='undefined' && empresa.logo) { %>
+                <img src="/uploads/<%= empresa.logo %>" alt="Logo" class="rounded-circle mb-2 bg-white p-1 shadow-sm"
+                    style="width: 55px; height: 55px; object-fit: contain;">
+                <% } else { %>
+                    <div class="bg-primary rounded-circle p-2 mb-2 d-flex align-items-center justify-content-center shadow-sm"
+                        style="width: 55px; height: 55px;">
+                        <i class="bi bi-bank2 fs-4 text-white"></i>
+                    </div>
+                    <% } %>
+                        <span class="d-inline small text-center text-truncate w-100 fw-bold">
+                            <%= (typeof empresa !=='undefined' && empresa.nombre_empresa) ? empresa.nombre_empresa
+                                : 'Sistema Préstamos' %>
+                        </span>
         </a>
 
-        <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100 mt-3" id="menu">
-            
+        <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100 mt-3"
+            id="menu">
+
             <li class="nav-item w-100">
                 <a href="/" class="nav-link align-middle px-0">
                     <i class="bi bi-grid-1x2-fill"></i> <span class="ms-1 d-inline">Panel Principal</span>
                 </a>
             </li>
-            
-            <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block" style="font-size: 0.7rem;">Operaciones</li>
 
-            <% if (typeof alertasVencidos !== 'undefined' && alertasVencidos > 0) { %>
+            <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                style="font-size: 0.7rem;">Operaciones</li>
+
+            <% if (typeof alertasVencidos !=='undefined' && alertasVencidos> 0) { %>
                 <li class="nav-item w-100 mb-1">
-                    <a href="/prestamos/vencidos" class="nav-link px-0 align-middle text-white bg-danger bg-opacity-75 shadow-sm rounded">
-                        <i class="bi bi-bell-fill ms-2 animate__animated animate__swing animate__infinite"></i> 
+                    <a href="/prestamos/vencidos"
+                        class="nav-link px-0 align-middle text-white bg-danger bg-opacity-75 shadow-sm rounded">
+                        <i class="bi bi-bell-fill ms-2 animate__animated animate__swing animate__infinite"></i>
                         <span class="ms-1 d-inline fw-bold">Cobranza</span>
-                        <span class="badge bg-white text-danger ms-2 rounded-pill"><%= alertasVencidos %></span>
+                        <span class="badge bg-white text-danger ms-2 rounded-pill">
+                            <%= alertasVencidos %>
+                        </span>
                     </a>
                 </li>
-            <% } %>
+                <% } %>
 
-            <li class="nav-item w-100">
-                <a href="/clientes" class="nav-link px-0 align-middle">
-                    <i class="bi bi-people-fill"></i> <span class="ms-1 d-inline">Clientes</span>
-                </a>
-            </li>
-            <li class="nav-item w-100">
-                <a href="/prestamos" class="nav-link px-0 align-middle">
-                    <i class="bi bi-cash-stack"></i> <span class="ms-1 d-inline">Préstamos</span>
-                </a>
-            </li>
-            <li class="nav-item w-100">
-                <a href="/simulador" class="nav-link px-0 align-middle">
-                    <i class="bi bi-calculator"></i> <span class="ms-1 d-inline">Calculadora</span>
-                </a>
-            </li>
+                    <li class="nav-item w-100">
+                        <a href="/clientes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-people-fill"></i> <span class="ms-1 d-inline">Clientes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="/prestamos" class="nav-link px-0 align-middle">
+                            <i class="bi bi-cash-stack"></i> <span class="ms-1 d-inline">Préstamos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="/simulador" class="nav-link px-0 align-middle">
+                            <i class="bi bi-calculator"></i> <span class="ms-1 d-inline">Calculadora</span>
+                        </a>
+                    </li>
 
-            <li class="nav-item w-100">
-                <a href="/pagos" class="nav-link px-0 align-middle disabled" style="opacity: 0.5;">
-                    <i class="bi bi-receipt"></i> <span class="ms-1 d-inline">Pagos (Ver en Préstamos)</span>
-                </a>
-            </li>
-            <li class="nav-item w-100">
-                <a href="/gastos" class="nav-link px-0 align-middle">
-                    <i class="bi bi-graph-down-arrow"></i> <span class="ms-1 d-inline">Gastos</span>
-                </a>
-            </li>
-            <li class="nav-item w-100">
-                <a href="/reportes/panel" class="nav-link px-0 align-middle">
-                    <i class="bi bi-bar-chart-line-fill"></i> <span class="ms-1 d-inline">Reportes Excel</span>
-                </a>
-            </li>
 
-            <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block" style="font-size: 0.7rem;">Servicios</li>
+                    <li class="nav-item w-100">
+                        <a href="/gastos" class="nav-link px-0 align-middle">
+                            <i class="bi bi-graph-down-arrow"></i> <span class="ms-1 d-inline">Gastos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="/reportes/panel" class="nav-link px-0 align-middle">
+                            <i class="bi bi-bar-chart-line-fill"></i> <span class="ms-1 d-inline">Reportes Excel</span>
+                        </a>
+                    </li>
 
-            <li class="nav-item w-100">
-                <a href="/empenos" class="nav-link px-0 align-middle">
-                    <i class="bi bi-gem"></i> <span class="ms-1 d-inline">Empeños</span>
-                </a>
-            </li>
-            <li class="nav-item w-100">
-                <a href="/ahorros" class="nav-link px-0 align-middle">
-                    <i class="bi bi-piggy-bank-fill"></i> <span class="ms-1 d-inline">Ahorros</span>
-                </a>
-            </li>
+                    <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                        style="font-size: 0.7rem;">Servicios</li>
 
-            <% if (usuario && usuario.rol === 'admin') { %>
-                <li class="nav-header text-uppercase text-warning small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block" style="font-size: 0.7rem;">Administración</li>
-                <li class="nav-item w-100">
-                    <a href="/caja" class="nav-link px-0 align-middle text-warning">
-                        <i class="bi bi-calculator-fill"></i> <span class="ms-1 d-inline">Corte de Caja</span>
-                    </a>
-                </li>
-                <li class="nav-item w-100">
-                    <a href="/bitacora" class="nav-link px-0 align-middle text-warning">
-                        <i class="bi bi-eye-fill"></i> <span class="ms-1 d-inline">Auditoría</span>
-                    </a>
-                </li>
-                <li class="nav-item w-100">
-                    <a href="/usuarios" class="nav-link px-0 align-middle text-warning">
-                        <i class="bi bi-shield-lock-fill"></i> <span class="ms-1 d-inline">Usuarios</span>
-                    </a>
-                </li>
-                <li class="nav-item w-100">
-                    <a href="/config" class="nav-link px-0 align-middle text-warning">
-                        <i class="bi bi-gear-fill"></i> <span class="ms-1 d-inline">Configuración</span>
-                    </a>
-                </li>
-                <li class="nav-item w-100">
-                    <a href="/mi-licencia" class="nav-link px-0 align-middle text-warning rounded mt-1" style="background-color: rgba(255,193,7,0.15); border-left: 3px solid #ffc107;">
-                        <i class="bi bi-shield-check"></i> <span class="ms-1 d-inline fw-bold">Mi Licencia</span>
-                    </a>
-                </li>
-            <% } %>
+                    <li class="nav-item w-100">
+                        <a href="/empenos" class="nav-link px-0 align-middle">
+                            <i class="bi bi-gem"></i> <span class="ms-1 d-inline">Empeños</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="/ahorros" class="nav-link px-0 align-middle">
+                            <i class="bi bi-piggy-bank-fill"></i> <span class="ms-1 d-inline">Ahorros</span>
+                        </a>
+                    </li>
+
+                    <% if (usuario && usuario.rol==='admin' ) { %>
+                        <li class="nav-header text-uppercase text-warning small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                            style="font-size: 0.7rem;">Administración</li>
+                        <li class="nav-item w-100">
+                            <a href="/caja" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-calculator-fill"></i> <span class="ms-1 d-inline">Corte de Caja</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/bitacora" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-eye-fill"></i> <span class="ms-1 d-inline">Auditoría</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/usuarios" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-shield-lock-fill"></i> <span class="ms-1 d-inline">Usuarios</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/config" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-gear-fill"></i> <span class="ms-1 d-inline">Configuración</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/mi-licencia" class="nav-link px-0 align-middle text-warning rounded mt-1"
+                                style="background-color: rgba(255,193,7,0.15); border-left: 3px solid #ffc107;">
+                                <i class="bi bi-shield-check"></i> <span class="ms-1 d-inline fw-bold">Mi
+                                    Licencia</span>
+                            </a>
+                        </li>
+                        <% } %>
 
         </ul>
-        
+
         <div class="w-100 border-top border-secondary pt-3 pb-4">
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle p-2 rounded hover-effect" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255,255,255,0.05);">
-                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold me-2" style="width: 32px; height: 32px;">
+                <a href="#"
+                    class="d-flex align-items-center text-white text-decoration-none dropdown-toggle p-2 rounded hover-effect"
+                    id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false"
+                    style="background: rgba(255,255,255,0.05);">
+                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold me-2"
+                        style="width: 32px; height: 32px;">
                         <%= usuario ? usuario.nombre.charAt(0).toUpperCase() : 'U' %>
                     </div>
                     <span class="d-inline mx-1 small">
-                        <strong><%= usuario ? usuario.nombre.split(' ')[0] : 'Usuario' %></strong>
+                        <strong>
+                            <%= usuario ? usuario.nombre.split(' ')[0] : ' Usuario' %>
+                        </strong>
                     </span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
                     <li><a class="dropdown-item" href="/perfil">Mi Perfil</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="bi bi-box-arrow-right"></i>
+                            Cerrar Sesión</a></li>
                 </ul>
             </div>
         </div>
