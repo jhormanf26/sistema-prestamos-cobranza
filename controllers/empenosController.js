@@ -63,7 +63,7 @@ const empenosController = {
             // Foto
             const imagenNombre = req.file ? req.file.filename : null;
             // Usuario
-            const usuarioNombre = (req.session && req.session.usuario) ? req.session.usuario.nombre : 'Sistema';
+            const usuarioActual = (req.session && req.session.usuario) ? req.session.usuario : { id: 1, nombre: 'Sistema' };
 
             if (!cliente_id || !nombre_articulo || !monto_prestado) {
                 req.flash('mensajeError', 'Faltan datos obligatorios.');
@@ -90,14 +90,14 @@ const empenosController = {
             await CajaModel.registrar(
                 `Desembolso Empeño: ${datosEmpeno.nombre_articulo}`, 
                 datosEmpeno.monto_prestado, 
-                'egreso', 
-                usuarioNombre
+                'egreso',
+                usuarioActual.id,
             );
 
             // C. Bitácora
             if (BitacoraModel) {
                 try {
-                    await BitacoraModel.registrar(usuarioNombre, 'NUEVO_EMPENO', `Item: ${datosEmpeno.nombre_articulo}`);
+                    await BitacoraModel.registrar(usuarioActual.nombre, 'NUEVO_EMPENO', `Item: ${datosEmpeno.nombre_articulo}`);
                 } catch (e) {}
             }
 
@@ -114,7 +114,7 @@ const empenosController = {
     // 4. Devolver
     devolver: async (req, res) => {
         const { id } = req.params;
-        const usuarioNombre = (req.session && req.session.usuario) ? req.session.usuario.nombre : 'Sistema';
+        const usuarioActual = (req.session && req.session.usuario) ? req.session.usuario : { id: 1, nombre: 'Sistema' };
 
         try {
             const empeno = await EmpenoModel.obtenerPorId(id);
@@ -135,14 +135,15 @@ const empenosController = {
             await CajaModel.registrar(
                 `Recuperación Empeño: ${empeno.nombre_articulo}`, 
                 empeno.monto_prestado, 
-                'ingreso', 
-                usuarioNombre
+                'ingreso',
+                usuarioActual.id,
+                empeno.id
             );
 
             // C. Bitácora
             if (BitacoraModel) {
                 try {
-                    await BitacoraModel.registrar(usuarioNombre, 'DEVOLUCION', `ID: ${id}`);
+                    await BitacoraModel.registrar(usuarioActual.nombre, 'DEVOLUCION', `ID: ${id}`);
                 } catch (e) {}
             }
 

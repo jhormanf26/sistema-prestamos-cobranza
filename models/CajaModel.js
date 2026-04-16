@@ -66,28 +66,26 @@ class CajaModel {
             if (typeof datosOConcepto === 'object' && datosOConcepto !== null) {
                 const { tipo, categoria, monto, descripcion, usuario_id, referencia_id } = datosOConcepto;
                 
-                // NOTA: Asegúrate de tener estas columnas en tu tabla 'caja'.
-                // Si usas la tabla antigua, mapeamos 'descripcion' a 'concepto' y 'usuario_id' a 'usuario'.
+                // UNIFICADO: Usamos 'concepto' que es lo que la vista muestra.
                 const query = `
-                    INSERT INTO caja (tipo, categoria, monto, descripcion, usuario_id, referencia_id, fecha)
+                    INSERT INTO caja (tipo, categoria, monto, concepto, usuario_id, referencia_id, fecha)
                     VALUES (?, ?, ?, ?, ?, ?, NOW())
                 `;
                 
-                // Si la tabla es antigua y da error de columna desconocida, avísame para darte el ALTER TABLE.
                 const [result] = await db.query(query, [
                     tipo, 
                     categoria || 'General', 
                     monto, 
-                    descripcion, 
+                    descripcion, // El texto recibido se guarda ahora en 'concepto'
                     usuario_id, 
                     referencia_id || null
                 ]);
                 return result.insertId;
 
             } else {
-                // CASO B: Llamada antigua (Tu código original de Empeños)
+                // CASO B: Llamada antigua (Empeños, etc.)
                 // (concepto, monto, tipo, usuario)
-                const query = 'INSERT INTO caja (descripcion, monto, tipo, usuario_id, fecha) VALUES (?, ?, ?, ?, NOW())';
+                const query = 'INSERT INTO caja (concepto, monto, tipo, usuario_id, fecha) VALUES (?, ?, ?, ?, NOW())';
                 const [result] = await db.query(query, [datosOConcepto, monto, tipo, usuario]);
                 return result.insertId;
             }

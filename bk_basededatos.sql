@@ -48,7 +48,6 @@ CREATE TABLE IF NOT EXISTS `caja` (
   `fecha` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `usuario` varchar(100) DEFAULT 'Sistema',
   `categoria` varchar(50) DEFAULT 'Varios',
-  `descripcion` text,
   `usuario_id` int DEFAULT NULL,
   `referencia_id` int DEFAULT NULL COMMENT 'ID Préstamo o Empeño',
   PRIMARY KEY (`id`)
@@ -56,10 +55,10 @@ CREATE TABLE IF NOT EXISTS `caja` (
 
 -- Volcando datos para la tabla sistema_prestamos.caja: ~3 rows (aproximadamente)
 DELETE FROM `caja`;
-INSERT INTO `caja` (`id`, `concepto`, `monto`, `tipo`, `fecha`, `usuario`, `categoria`, `descripcion`, `usuario_id`, `referencia_id`) VALUES
-	(1, 'Desembolso Empeño: NOTEBOOK', 300.00, 'egreso', '2026-01-24 06:00:37', 'Administrador', 'Varios', 'Desembolso Empeño: NOTEBOOK', NULL, NULL),
-	(2, 'Recuperación Empeño: NOTEBOOK', 300.00, 'ingreso', '2026-01-24 06:01:26', 'Administrador', 'Varios', 'Recuperación Empeño: NOTEBOOK', NULL, NULL),
-	(3, 'Desembolso Empeño: LAPTOP', 800.00, 'egreso', '2026-01-29 03:54:49', 'Administrador', 'Varios', 'Desembolso Empeño: LAPTOP', NULL, NULL);
+INSERT INTO `caja` (`id`, `concepto`, `monto`, `tipo`, `fecha`, `usuario`, `categoria`, `usuario_id`, `referencia_id`) VALUES
+	(1, 'Desembolso Empeño: NOTEBOOK', 300.00, 'egreso', '2026-01-24 06:00:37', 'Administrador', 'Varios', NULL, NULL),
+	(2, 'Recuperación Empeño: NOTEBOOK', 300.00, 'ingreso', '2026-01-24 06:01:26', 'Administrador', 'Varios', NULL, NULL),
+	(3, 'Desembolso Empeño: LAPTOP', 800.00, 'egreso', '2026-01-29 03:54:49', 'Administrador', 'Varios',  NULL, NULL);
 
 -- Volcando estructura para tabla sistema_prestamos.caja_sesiones
 CREATE TABLE IF NOT EXISTS `caja_sesiones` (
