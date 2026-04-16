@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+
+            <div class="col py-3">
+                <div class="container" style="max-width: 800px;">
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>📅 Cronograma de Pagos</h2>
+                        <a href="/prestamos" class="btn btn-outline-secondary">Volver</a>
+                    </div>
+
+                    <div class="card card-box p-4 border-0 shadow">
+                        
+                        <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
+                            <div>
+                                <h5 class="fw-bold text-primary"><%= prestamo.nombre %> <%= prestamo.apellido %></h5>
+                                <p class="text-muted mb-0">Préstamo #<%= prestamo.id %> | <%= prestamo.frecuencia.toUpperCase() %></p>
+                            </div>
+                            <div class="text-end">
+                                <h3 class="fw-bold"><%= empresa.moneda %> <%= formatCurrency(prestamo.monto_total, 2) %></h3>
+                                <small class="text-muted">Total a Pagar</small>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped text-center align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th># Cuota</th>
+                                        <th>Fecha de Vencimiento</th>
+                                        <th>Monto a Pagar</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% cronograma.forEach(cuota => { 
+                                        const hoy = new Date();
+                                        const fechaCuota = new Date(cuota.fecha);
+                                        
+                                        // Detectar si está vencida: Fecha pasada Y no está pagada (estado Pendiente/Programado o vacío)
+                                        // Si cuota.estado viene vacío, asumimos que es 'Pendiente'
+                                        const estaPagada = (cuota.estado === 'Pagado');
+                                        const vencida = (fechaCuota < hoy) && !estaPagada;
+                                    %>
+                                        <tr>
+                                            <td class="fw-bold"><%= cuota.numero %></td>
+                                            
+                                            <td class="<%= vencida ? 'text-danger fw-bold' : '' %>">
+                                                <%= cuota.fecha.toLocaleDateString() %>
+                                                <% if(vencida) { %>
+                                                    <i class="bi bi-exclamation-circle-fill ms-1 small" title="Cuota Vencida"></i>
+                                                <% } %>
+                                            </td>
+                                            
+                                            <td><%= empresa.moneda %> <%= formatCurrency(cuota.monto, 2) %></td>
+                                            
+                                            <td>
+                                                <% if(cuota.estado === 'Pagado') { %>
+                                                    <span class="badge bg-success bg-opacity-75 text-white shadow-sm">
+                                                        <i class="bi bi-check-circle-fill me-1"></i> Pagado
+                                                    </span>
+                                                <% } else if (cuota.clase === 'warning') { %>
+                                                    <span class="badge bg-warning text-dark border">
+                                                        <%= cuota.estado %>
+                                                    </span>
+                                                <% } else { %>
+                                                    <span class="badge bg-light text-dark border">
+                                                        <%= cuota.estado || 'Programado' %>
+                                                    </span>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <a href="/reportes/cronograma_pdf/<%= prestamo.id %>" target="_blank" class="btn btn-danger btn-lg">
+                                <i class="bi bi-file-pdf-fill"></i> Descargar PDF Oficial
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('../partials/footer') %>

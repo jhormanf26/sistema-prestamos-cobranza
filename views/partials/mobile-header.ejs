@@ -1,0 +1,17 @@
+<!-- Barra de Navegación para Móviles -->
+<header class="mobile-header">
+    <a href="/" class="brand-mobile">
+        <% if (typeof empresa !== 'undefined' && empresa.logo) { %>
+            <img src="/uploads/<%= empresa.logo %>" alt="Logo" class="rounded-circle" style="width: 32px; height: 32px; object-fit: contain; background: white;">
+        <% } else { %>
+            <i class="bi bi-bank2"></i>
+        <% } %>
+        <span><%= (typeof empresa !== 'undefined' && empresa.nombre_empresa) ? empresa.nombre_empresa : 'Préstamos Pro' %></span>
+    </a>
+    <button class="sidebar-toggler" id="mobileMenuBtn">
+        <i class="bi bi-list"></i>
+    </button>
+</header>
+
+<!-- Overlay para oscurecer el fondo cuando el menú está abierto -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            <div class="col py-3 bg-light">
+                <div class="container">
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="fw-bold mb-0">📊 Corte de Caja</h2>
+                            <span class="badge bg-success">Turno Abierto: <%= new Date(sesion.fecha_apertura).toLocaleString() %></span>
+                        </div>
+                        
+                        <form action="/caja/cerrar" method="POST" onsubmit="return confirm('¿Seguro que desea cerrar el turno?');">
+                            <input type="hidden" name="id_sesion" value="<%= sesion.id %>">
+                            <input type="hidden" name="monto_final" value="<%= resumen.saldo %>">
+                            <button type="submit" class="btn btn-danger btn-lg shadow">
+                                <i class="bi bi-lock-fill me-2"></i> CERRAR CAJA
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm border-start border-4 border-secondary p-3">
+                                 <h6 class="text-muted text-uppercase small">Monto Inicial</h6>
+                                 <h3 class="fw-bold text-secondary text-truncate"><%= empresa.moneda %> <%= formatCurrency(resumen.inicial, 2) %></h3>
+                             </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm border-start border-4 border-success p-3">
+                                 <h6 class="text-muted text-uppercase small">Ingresos (Ventas/Pagos)</h6>
+                                 <h3 class="fw-bold text-success text-truncate">+ <%= empresa.moneda %> <%= formatCurrency(resumen.ingresos, 2) %></h3>
+                             </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm border-start border-4 border-danger p-3">
+                                 <h6 class="text-muted text-uppercase small">Egresos (Préstamos/Gastos)</h6>
+                                 <h3 class="fw-bold text-danger text-truncate">- <%= empresa.moneda %> <%= formatCurrency(resumen.egresos, 2) %></h3>
+                             </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white border-0 shadow p-3">
+                                 <h6 class="text-white-50 text-uppercase small">Saldo en Caja (Efectivo)</h6>
+                                 <h3 class="fw-bold text-truncate"><%= empresa.moneda %> <%= formatCurrency(resumen.saldo, 2) %></h3>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0">📜 Movimientos del Turno</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Concepto</th>
+                                        <th>Usuario</th>
+                                        <th class="text-end">Monto</th>
+                                        <th class="text-center">Tipo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if(movimientos.length > 0) { %>
+                                        <% movimientos.forEach(m => { %>
+                                            <tr>
+                                                <td><%= new Date(m.fecha).toLocaleTimeString() %></td>
+                                                <td><%= m.concepto %></td>
+                                                <td><small class="text-muted"><%= m.usuario %></small></td>
+                                                 <td class="text-end fw-bold <%= m.tipo === 'ingreso' ? 'text-success' : 'text-danger' %>">
+                                                     <%= m.tipo === 'ingreso' ? '+' : '-' %> <%= empresa.moneda %> <%= formatCurrency(m.monto, 2) %>
+                                                 </td>
+                                                <td class="text-center">
+                                                    <% if(m.tipo === 'ingreso') { %>
+                                                        <span class="badge bg-success bg-opacity-10 text-success">INGRESO</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger">EGRESO</span>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">No hay movimientos registrados en este turno.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('../partials/footer') %>

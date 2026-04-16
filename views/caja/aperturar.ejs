@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            <div class="col py-3">
+                <div class="container mt-5" style="max-width: 500px;">
+                    <div class="card shadow border-0">
+                        <div class="card-body text-center p-5">
+                            <i class="bi bi-wallet2 text-warning display-1 mb-3"></i>
+                            <h2 class="mb-4 fw-bold">Apertura de Caja</h2>
+                            <p class="text-muted mb-4">Inicie un nuevo turno indicando el dinero base en efectivo.</p>
+                            
+                             <form action="/caja/abrir" method="POST" id="formApertura">
+                                 <div class="form-floating mb-4">
+                                     <input type="text" class="form-control fw-bold text-center fs-4 currency-input" id="montoInput" name="monto_inicial" placeholder="0" required>
+                                     <label for="monto">Monto Inicial en Caja</label>
+                                 </div>
+                                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">
+                                    <i class="bi bi-unlock-fill me-2"></i> ABRIR CAJA
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('../partials/footer') %>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        window.applyCurrencyMask('.currency-input');
+        
+        const form = document.getElementById('formApertura');
+        if (form) {
+            form.addEventListener('submit', function() {
+                const input = document.getElementById('montoInput');
+                input.value = input.value.replace(/\D/g, '');
+            });
+        }
+    });
+</script>

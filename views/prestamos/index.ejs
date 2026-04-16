@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-4 py-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                        <h2>💰 Gestión de Préstamos</h2>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="/reportes/excel/prestamos" class="btn btn-success">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel
+                            </a>
+                            <a href="/prestamos/crear" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Nuevo Préstamo
+                            </a>
+                        </div>
+                    </div>
+
+                    <% if(mensajeExito && mensajeExito.length > 0) { %>
+                        <div class="d-none" id="flashMessageSuccess"><%= mensajeExito %></div>
+                    <% } %>
+                    <% if(mensajeError && mensajeError.length > 0) { %>
+                        <div class="d-none" id="flashMessageError"><%= mensajeError %></div>
+                    <% } %>
+
+                    <div class="card card-box p-3 mb-4 bg-light">
+                        <form action="/prestamos" method="GET" class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                <label class="col-form-label fw-bold"><i class="bi bi-search"></i> Buscar:</label>
+                            </div>
+                            <div class="col-auto flex-grow-1">
+                                <input type="text" name="q" class="form-control" placeholder="Nombre de Cliente o ID Préstamo..." value="<%= busqueda %>">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-dark">Filtrar</button>
+                                <% if(busqueda) { %>
+                                    <a href="/prestamos" class="btn btn-outline-secondary">Limpiar</a>
+                                <% } %>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card card-box p-3">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Monto Prestado</th>
+                                        <th>Total a Pagar</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (prestamos.length > 0) { %>
+                                        <% prestamos.forEach(p => { %>
+                                            <tr>
+                                                <td><span class="badge bg-secondary">#<%= p.id %></span></td>
+                                                <td>
+                                                    <div class="fw-bold"><%= p.nombre %> <%= p.apellido %></div>
+                                                    <small class="text-muted">DNI: <%= p.dni %></small>
+                                                </td>
+                                                <td class="text-primary fw-bold">
+                                                    <%= empresa.moneda %> <%= formatCurrency(p.monto_prestado, 2) %>
+                                                </td>
+                                                <td class="text-success fw-bold">
+                                                    <%= empresa.moneda %> <%= formatCurrency(p.monto_total, 2) %>
+                                                </td>
+                                                <td>
+                                                    <% if(p.estado == 'pendiente') { %>
+                                                        <span class="badge bg-primary">Por Cobrar</span>
+                                                    <% } else if(p.estado == 'pagado') { %>
+                                                        <span class="badge bg-success">Pagado</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-danger">Vencido</span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank" class="btn btn-sm btn-dark" title="Imprimir Comprobante de Entrega">
+                                                            <i class="bi bi-receipt"></i>
+                                                        </a>
+
+                                                        <% if(p.estado != 'pagado') { %>
+                                                            <a href="/pagos/registrar/<%= p.id %>" class="btn btn-sm btn-outline-success" title="Registrar Pago">
+                                                                <i class="bi bi-cash-coin"></i>
+                                                            </a>
+                                                        <% } else { %>
+                                                            <button class="btn btn-sm btn-secondary" disabled title="Pagado"><i class="bi bi-check2-all"></i></button>
+                                                        <% } %>
+                                                        
+                                                        <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                            <i class="bi bi-calendar-week"></i>
+                                                        </a>
+                                                        
+                                                        <a href="/reportes/contrato/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-danger" title="Descargar Contrato">
+                                                            <i class="bi bi-file-earmark-pdf"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr><td colspan="6" class="text-center py-5 text-muted">No se encontraron préstamos registrados.</td></tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <% if (totalPages > 1) { %>
+                            <nav class="mt-4 d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Página <%= currentPage %> de <%= totalPages %></small>
+                                <ul class="pagination mb-0">
+                                    <li class="page-item <%= currentPage == 1 ? 'disabled' : '' %>">
+                                        <a class="page-link" href="/prestamos?page=<%= currentPage - 1 %>&q=<%= busqueda %>">Anterior</a>
+                                    </li>
+                                    <li class="page-item <%= currentPage == totalPages ? 'disabled' : '' %>">
+                                        <a class="page-link" href="/prestamos?page=<%= currentPage + 1 %>&q=<%= busqueda %>">Siguiente</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('../partials/footer') %>

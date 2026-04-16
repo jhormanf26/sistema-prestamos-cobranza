@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+
+            <div class="col py-3">
+                <div class="container" style="max-width: 700px;">
+                    <h2 class="mb-4">👤 Nuevo Cliente</h2>
+
+                    <% if(mensajeError && mensajeError.length > 0) { %>
+                        <div class="alert alert-danger"><%= mensajeError %></div>
+                    <% } %>
+
+                    <div class="card card-box p-4 shadow-sm">
+                        <form action="/clientes/guardar" method="POST" enctype="multipart/form-data">
+                            
+                            <div class="row mb-4 align-items-center">
+                                <div class="col-md-3 text-center">
+                                    <div class="bg-light border rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
+                                        <i class="bi bi-camera fs-2 text-muted"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label fw-bold">Foto de Perfil</label>
+                                    <input type="file" name="foto" class="form-control" accept="image/*">
+                                    <div class="form-text small">Formatos: JPG, PNG. Se recomienda imagen cuadrada.</div>
+                                </div>
+                            </div>
+
+                            <hr class="text-muted">
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">DNI / Identificación <span class="text-danger">*</span></label>
+                                    <input type="text" name="dni" class="form-control" required placeholder="Ingrese DNI">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Correo Electrónico</label>
+                                    <input type="email" name="email" class="form-control" placeholder="cliente@email.com">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" name="nombre" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Apellido <span class="text-danger">*</span></label>
+                                    <input type="text" name="apellido" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" name="telefono" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Dirección</label>
+                                    <input type="text" name="direccion" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                <a href="/clientes" class="btn btn-outline-secondary">Cancelar</a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-save"></i> Guardar Cliente
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('../partials/footer') %>

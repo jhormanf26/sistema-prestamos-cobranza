@@ -1,0 +1,168 @@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Formateador Global para Moneda (Estilo Colombia)
+        window.formatCurrency = (valor, decimales = 0) => {
+            if (valor === null || valor === undefined || isNaN(valor)) return '0';
+            return new Intl.NumberFormat('es-CO', {
+                minimumFractionDigits: decimales,
+                maximumFractionDigits: decimales
+            }).format(valor);
+        };
+
+        // Máscara de Moneda para Inputs (Puntos de miles en tiempo real)
+        window.applyCurrencyMask = (selector) => {
+            const inputs = document.querySelectorAll(selector);
+            inputs.forEach(input => {
+                input.type = 'text'; // Cambiamos a texto para permitir puntos
+                
+                input.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value === "") {
+                        e.target.value = "";
+                        return;
+                    }
+                    // Formatear con separador de miles (Punto en Colombia)
+                    e.target.value = new Intl.NumberFormat('es-CO').format(parseInt(value));
+                    
+                    // Disparar evento personalizado para que otros scripts (como simuladores) se enteren del cambio
+                    e.target.dispatchEvent(new CustomEvent('moneyInput', { detail: { rawValue: value } }));
+                });
+
+                // Formatear valor inicial si existe
+                if (input.value) {
+                    let initialValue = input.value.replace(/\D/g, '');
+                    if (initialValue) input.value = new Intl.NumberFormat('es-CO').format(parseInt(initialValue));
+                }
+            });
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Activar Menú Lateral
+            const currentLocation = location.pathname;
+            const menuItems = document.querySelectorAll('.sidebar .nav-link');
+            
+            menuItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (currentLocation === href || (currentLocation.startsWith(href) && href !== '/')) {
+                    item.classList.add('active');
+                }
+            });
+
+            // 2. Detectar Mensajes Flash
+            const mensajeExito = `<%- typeof mensajeExito !== 'undefined' ? mensajeExito : '' %>`;
+            const mensajeError = `<%- typeof mensajeError !== 'undefined' ? mensajeError : '' %>`;
+
+            if (mensajeExito) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Excelente!',
+                    text: mensajeExito,
+                    timer: 4000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
+            }
+
+            if (mensajeError) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Atención!',
+                    text: mensajeError,
+                    confirmButtonColor: '#d33'
+                });
+            }
+
+            // 3. RESPONSIVE SIDEBAR LOGIC
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+            if (mobileMenuBtn && sidebar && sidebarOverlay) {
+                const toggleSidebar = () => {
+                    sidebar.classList.toggle('sidebar-open');
+                    sidebarOverlay.classList.toggle('active');
+                    document.body.style.overflow = sidebar.classList.contains('sidebar-open') ? 'hidden' : '';
+                };
+
+                mobileMenuBtn.addEventListener('click', toggleSidebar);
+                sidebarOverlay.addEventListener('click', toggleSidebar);
+                
+                if (closeSidebarBtn) {
+                    closeSidebarBtn.addEventListener('click', toggleSidebar);
+                }
+
+                // Cerrar al hacer clic en un link (móvil)
+                const navLinks = sidebar.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth < 768) {
+                            toggleSidebar();
+                        }
+                    });
+                });
+            }
+        });
+
+        // 3. Función INTELIGENTE para Confirmar Cambio de Estado
+        // Ahora recibe "entidad" ('usuario' o 'cliente') para personalizar el mensaje
+        function confirmarCambioEstado(event, url, accion, entidad = 'usuario') {
+            event.preventDefault(); 
+
+            let titulo, texto, icono, colorBoton, textoBoton;
+
+            if (entidad === 'cliente') {
+                // --- MENSAJES PARA CLIENTES ---
+                if (accion === 'bloquear') {
+                    titulo = '¿Inhabilitar Cliente?';
+                    texto = "El cliente pasará a estado Inactivo (No borra su historial).";
+                    icono = 'warning';
+                    colorBoton = '#d33';
+                    textoBoton = 'Sí, inhabilitar';
+                } else {
+                    titulo = '¿Habilitar Cliente?';
+                    texto = "El cliente estará activo nuevamente.";
+                    icono = 'question';
+                    colorBoton = '#28a745';
+                    textoBoton = 'Sí, habilitar';
+                }
+            } else {
+                // --- MENSAJES PARA USUARIOS (LOGIN) ---
+                if (accion === 'bloquear') {
+                    titulo = '¿Bloquear Acceso?';
+                    texto = "El usuario ya no podrá iniciar sesión en el sistema.";
+                    icono = 'warning';
+                    colorBoton = '#d33';
+                    textoBoton = 'Sí, bloquear';
+                } else {
+                    titulo = '¿Reactivar Usuario?';
+                    texto = "El usuario volverá a tener acceso al sistema.";
+                    icono = 'question';
+                    colorBoton = '#28a745';
+                    textoBoton = 'Sí, activar';
+                }
+            }
+
+            Swal.fire({
+                title: titulo,
+                text: texto,
+                icon: icono,
+                showCancelButton: true,
+                confirmButtonColor: colorBoton,
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: textoBoton,
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

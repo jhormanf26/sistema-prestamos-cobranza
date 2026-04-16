@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Sistema de Préstamos Pro</title>
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e293b;
+            --accent-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .login-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Lado de la Imagen */
+        .login-image {
+            flex: 1.2;
+            background: url('/img/login-bg.png') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            display: none; /* Oculto en móviles */
+        }
+
+        .login-image::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.4) 0%, rgba(30, 41, 59, 0.8) 100%);
+        }
+
+        .login-image-content {
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            z-index: 2;
+            color: white;
+            max-width: 80%;
+        }
+
+        .login-image-content h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .login-image-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Lado del Formulario */
+        .login-form-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background-color: #f1f5f9; /* Azul grisáceo muy suave y profesional */
+            box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        }
+
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .brand-logo i {
+            font-size: 30px;
+            color: white;
+        }
+
+        .login-header h2 {
+            font-weight: 800;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+
+        .login-header p {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 18px;
+            border: 2px solid #e2e8f0;
+            background-color: #ffffff;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            background-color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (min-width: 992px) {
+            .login-image {
+                display: block;
+            }
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 15px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        
+        <!-- Parte Visual (Izquierda) -->
+        <div class="login-image">
+            <div class="login-image-content">
+                <h1>Simplifica tu Gestión de Préstamos</h1>
+                <p>La herramienta profesional para el control total de capital, interés y cobranzas eficientes.</p>
+            </div>
+        </div>
+
+        <!-- Parte Formulario (Derecha) -->
+        <div class="login-form-side">
+            <div class="login-card">
+                
+                <div class="brand-logo">
+                    <i class="bi bi-bank"></i>
+                </div>
+
+                <div class="login-header">
+                    <h2>Bienvenido</h2>
+                    <p>Ingresa tus credenciales para acceder al panel de control.</p>
+                </div>
+
+                <% if(mensajeError && mensajeError.length > 0) { %>
+                    <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div><%= mensajeError %></div>
+                    </div>
+                <% } %>
+
+                <form action="/auth/login" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Correo Electrónico</label>
+                        <div class="input-group">
+                            <input type="email" id="email" name="email" class="form-control" placeholder="nombre@sistema.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label" for="password">Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-login shadow">
+                            Iniciar Sesión <i class="bi bi-arrow-right-short ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-5">
+                    <small class="text-muted">Desarrollado por <strong>Sistema Profesional &copy; 2025</strong></small>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

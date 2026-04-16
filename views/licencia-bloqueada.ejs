@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SISTEMA BLOQUEADO - Sistema Préstamos</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #2c3e50; color: #ecf0f1; margin: 0; }
+        .lock-container { background: #34495e; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); padding: 40px; width: 400px; text-align: center; }
+        .lock-container h1 { color: #e74c3c; margin-bottom: 5px; font-size: 26px; }
+        .lock-container p { font-size: 14px; margin-bottom: 25px; color: #bdc3c7; }
+        .lock-icon { font-size: 60px; margin-bottom: 10px; display: block; }
+        textarea.token-input { width: 90%; height: 100px; padding: 15px; border-radius: 5px; border: 1px solid #7f8c8d; background: #2c3e50; color: #ecf0f1; resize: none; margin-bottom: 20px; font-family: monospace; }
+        button.btn-unlock { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        button.btn-unlock:hover { background-color: #2ecc71; }
+        .error-msg { background: #c0392b; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="lock-container">
+        <span class="lock-icon">🔒</span>
+        <h1>SISTEMA BLOQUEADO</h1>
+        <p>Su Licencia de Uso ha caducado o no es válida. Contacte al proveedor del sistema para adquirir una nueva licencia.</p>
+        
+        <% if(error_licencia) { %>
+            <div class="error-msg"><%= error_licencia %></div>
+        <% } %>
+
+        <form action="/licencia-web/validar-token" method="POST">
+            <textarea name="token_licencia" class="token-input" placeholder="Pegue la CLAVE-TOKEN de la nueva Licencia aquí" required></textarea>
+            <button type="submit" class="btn-unlock">Desbloquear Sistema</button>
+        </form>
+    </div>
+
+</body>
+</html>
