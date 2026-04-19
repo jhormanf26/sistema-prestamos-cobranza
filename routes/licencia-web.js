@@ -8,21 +8,17 @@ const JSON_PATH = path.join(__dirname, '../config/licencia.json');
 const JWT_SECRET = 'Kj$8LmpP@qZ1xV#9RtW&3Nf*cYuTbE^2oSvA!';
 
 router.get('/bloqueado', (req, res) => {
-    // Si ya tiene licencia vigente, redirigimos al login/home
-    try {
-        let fileData = fs.readFileSync(JSON_PATH, 'utf-8');
-        let config = JSON.parse(fileData);
-        if (config.token) {
-            jwt.verify(config.token, JWT_SECRET, (err, decoded) => {
-                if (!err) {
-                    return res.redirect('/'); // Licencia activa, se salta el bloqueo
-                }
-            });
-        }
-    } catch(e) {}
+    let mensaje = req.flash('error_licencia');
+    res.render('licencia-bloqueada', { 
+        error_licencia: mensaje.length > 0 ? mensaje[0] : 'SU LICENCIA REQUIERE ATENCIÓN' 
+    });
+});
 
-    let msj = req.flash('error_licencia');
-    res.render('licencia-bloqueada', { error_licencia: msj.length > 0 ? msj[0] : null });
+const { forzarRevalidacion } = require('../middleware/licencias');
+
+router.get('/revalidar-actual', (req, res) => {
+    forzarRevalidacion();
+    res.redirect('/');
 });
 
 router.post('/validar-token', (req, res) => {

@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+.idea
+.planning
+bk_basededatos.sql
+public/uploads/*
+!public/uploads/.gitkeep

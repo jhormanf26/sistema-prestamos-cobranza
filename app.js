@@ -43,7 +43,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // Inyección del Validador de Licencia Offline
-const verificarLicencia = require('./middleware/licencias');
+const { verificarLicencia } = require('./middleware/licencias');
 app.use(verificarLicencia); 
 app.use('/licencia-web', require('./routes/licencia-web'));
 

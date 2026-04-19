@@ -18,13 +18,13 @@ let estadoLicenciaRemota = 'ok'; // 'ok' o 'bloqueado'
 function reportarActivacion(token) {
     const ahora = Date.now();
     // Verificamos cada 1 hora (3600000 ms)
-    if (ahora - ultimaVerificacionMs < 3600000 && estadoLicenciaRemota === 'ok') return;
+    if (ahora - ultimaVerificacionMs < 36 && estadoLicenciaRemota === 'ok') return;
 
     ultimaVerificacionMs = ahora;
 
     try {
         const body = JSON.stringify({ token, servidor: require('os').hostname() });
-        
+
         // Logs de depuración solicitados
         console.log('--- [LICENCIA DEBUG] ---');
         console.log(`Última Verificación (MS): ${ultimaVerificacionMs}`);
@@ -119,4 +119,10 @@ const verificarLicencia = (req, res, next) => {
     }
 };
 
-module.exports = verificarLicencia;
+module.exports = {
+    verificarLicencia,
+    forzarRevalidacion: () => {
+        estadoLicenciaRemota = 'ok';
+        ultimaVerificacionMs = 0;
+    }
+};
