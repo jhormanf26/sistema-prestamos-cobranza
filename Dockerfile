@@ -1,10 +1,7 @@
-FROM node:18-slim
+FROM node:20-slim
 
 # Crear directorio de trabajo
 WORKDIR /app
-
-# Instalar dependencias globales (opcional)
-RUN npm install -g npm@latest
 
 # Copiar archivos de dependencias
 COPY package*.json ./
@@ -19,4 +16,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando para iniciar la aplicación
-CMD [ "node", "app.js" ]
+CMD [ "npm", "start" ]

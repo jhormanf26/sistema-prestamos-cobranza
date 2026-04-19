@@ -11,14 +11,16 @@ const JSON_PATH = path.join(__dirname, '../config/licencia.json');
 // URL del Panel de Licencias para registrar activaciones
 const PANEL_URL = process.env.PANEL_LICENCIAS_URL || 'http://localhost:4000';
 
-// Evitar reportar en cada request — verificar cada hora
+// Configuración de frecuencia de verificación (Default: 1 hora)
+const INTERVALO = parseInt(process.env.LICENCIA_INTERVALO_MS) || 3600000;
 let ultimaVerificacionMs = 0;
 let estadoLicenciaRemota = 'ok'; // 'ok' o 'bloqueado'
 
 function reportarActivacion(token) {
     const ahora = Date.now();
-    // Verificamos cada 1 hora (3600000 ms)
-    if (ahora - ultimaVerificacionMs < 36 && estadoLicenciaRemota === 'ok') return;
+    
+    // Verificamos según el intervalo configurado (y solo si el estado actual es OK)
+    if (ahora - ultimaVerificacionMs < INTERVALO && estadoLicenciaRemota === 'ok') return;
 
     ultimaVerificacionMs = ahora;
 
