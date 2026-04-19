@@ -47,12 +47,11 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <% cronograma.forEach(cuota=> {
+                                            <% cronograma.forEach(cuota => {
                                                 const hoy = new Date();
                                                 const fechaCuota = new Date(cuota.fecha);
 
-                                                // Detectar si está vencida: Fecha pasada Y no está pagada (estado
-                                                Pendiente/Programado o vacío)
+                                                // Detectar si está vencida: Fecha pasada Y no está pagada (estado Pendiente/Programado o vacío)
                                                 // Si cuota.estado viene vacío, asumimos que es 'Pendiente'
                                                 const estaPagada = (cuota.estado === 'Pagado');
                                                 const vencida = (fechaCuota < hoy) && !estaPagada; %>

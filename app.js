@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config(); // Cargar variables de entorno al inicio
 const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');

@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const emailService = {
-    
+
     enviarCorreo: async (destinatario, asunto, contenidoHTML) => {
         if (!destinatario) return;
         try {
@@ -72,7 +72,7 @@ const emailService = {
     plantillaAhorro: (cliente, tipo, monto, nuevoSaldo, moneda) => {
         const color = tipo === 'deposito' ? '#198754' : '#dc3545';
         const titulo = tipo === 'deposito' ? 'Depósito Confirmado' : 'Retiro Realizado';
-        
+
         return `
             <div style="font-family: Arial; border: 1px solid #ddd; max-width: 500px; margin: 0 auto;">
                 <div style="background-color: ${color}; color: white; padding: 15px; text-align: center;">

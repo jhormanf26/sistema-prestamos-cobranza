@@ -18,7 +18,7 @@ router.get('/excel/prestamos', reportesController.exportarExcelPrestamos);
 router.get('/contrato/:id', reportesController.generarContrato);
 
 // PDF: Cronograma
-router.get('/cronograma/:id', reportesController.generarCronogramaPDF);
+router.get('/cronograma-pdf/:id', reportesController.generarCronogramaPDF);
 
 // PDF: Ticket de Pago (Cuota)
 router.get('/ticket/:id', reportesController.generarTicket);

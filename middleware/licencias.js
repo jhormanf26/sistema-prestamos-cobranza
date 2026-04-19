@@ -11,15 +11,28 @@ const JSON_PATH = path.join(__dirname, '../config/licencia.json');
 // URL del Panel de Licencias para registrar activaciones
 const PANEL_URL = process.env.PANEL_LICENCIAS_URL || 'http://localhost:4000';
 
-// Evitar reportar en cada request — solo una vez por arranque
-let activacionReportada = false;
+// Evitar reportar en cada request — verificar cada hora
+let ultimaVerificacionMs = 0;
+let estadoLicenciaRemota = 'ok'; // 'ok' o 'bloqueado'
 
 function reportarActivacion(token) {
-    if (activacionReportada) return;
-    activacionReportada = true;
+    const ahora = Date.now();
+    // Verificamos cada 1 hora (3600000 ms)
+    if (ahora - ultimaVerificacionMs < 3600000 && estadoLicenciaRemota === 'ok') return;
+
+    ultimaVerificacionMs = ahora;
 
     try {
         const body = JSON.stringify({ token, servidor: require('os').hostname() });
+        
+        // Logs de depuración solicitados
+        console.log('--- [LICENCIA DEBUG] ---');
+        console.log(`Última Verificación (MS): ${ultimaVerificacionMs}`);
+        console.log(`Estado Licencia Remota: ${estadoLicenciaRemota}`);
+        console.log(`Body enviado: ${body}`);
+        console.log(`URL Destino: ${PANEL_URL}/api/activacion`);
+        console.log('-------------------------');
+
         const urlObj = new URL(`${PANEL_URL}/api/activacion`);
         const lib = urlObj.protocol === 'https:' ? https : http;
 
@@ -29,16 +42,26 @@ function reportarActivacion(token) {
             path: urlObj.pathname,
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-            timeout: 3000
+            timeout: 5000,
+            rejectUnauthorized: false // Permite conexiones aunque haya temas de certificados/proxy
         };
 
         const req = lib.request(options, (res) => {
-            console.log(`[Licencia] Activación reportada al panel (${res.statusCode})`);
+            console.log(`[Licencia] Verificación con panel: ${res.statusCode}`);
+
+            // Si el panel explícitamente dice que no está autorizada (pausa, cancelación, etc)
+            if (res.statusCode === 403 || res.statusCode === 401 || res.statusCode === 423) {
+                console.warn('[Licencia] ATENCIÓN: El panel ha reportado licencia NO VÁLIDA.');
+                estadoLicenciaRemota = 'bloqueado';
+            } else if (res.statusCode === 200) {
+                estadoLicenciaRemota = 'ok';
+            }
         });
 
         req.on('error', (e) => {
-            // Silenciamos el error — el sistema funciona sin conexión al panel
-            console.log('[Licencia] Panel offline, activación no reportada (modo offline OK).');
+            // Imprimimos el error técnico para saber por qué falla (DNS, SSL, Red, etc)
+            console.error(`[Licencia] Detalles del error: ${e.message} (Código: ${e.code})`);
+            console.log('[Licencia] Panel offline, validación remota pospuesta (modo offline OK).');
         });
 
         req.on('timeout', () => {
@@ -47,7 +70,7 @@ function reportarActivacion(token) {
 
         req.write(body);
         req.end();
-    } catch(e) {
+    } catch (e) {
         // No interrumpir el sistema si falla el reporte
     }
 }
@@ -57,6 +80,12 @@ const verificarLicencia = (req, res, next) => {
     const url = req.originalUrl;
     if (url.startsWith('/licencia-web') || url.startsWith('/public') || url.startsWith('/css') || url.startsWith('/js') || url.startsWith('/uploads')) {
         return next();
+    }
+
+    // Verificar si el panel marcó la licencia como bloqueada en la última comprobación
+    if (estadoLicenciaRemota === 'bloqueado') {
+        req.flash('error_licencia', 'SU LICENCIA HA SIDO SUSPENDIDA O PAUSADA');
+        return res.redirect('/licencia-web/bloqueado');
     }
 
     try {
@@ -78,7 +107,7 @@ const verificarLicencia = (req, res, next) => {
                 return res.redirect('/licencia-web/bloqueado');
             }
 
-            // Licencia Válida — reportar activación al panel (async, no bloquea)
+            // Licencia Válida localmente — proceder a verificar/reportar al panel (async)
             reportarActivacion(config.token);
 
             res.locals.datos_licencia = decoded;

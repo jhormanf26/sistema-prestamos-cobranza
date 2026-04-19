@@ -117,38 +117,113 @@ const reportesController = {
         const { id } = req.params;
         try {
             const prestamo = await PrestamoModel.obtenerPorId(id);
+            if (!prestamo) return res.redirect('/prestamos');
+
             let config = await ConfigModel.obtener();
             const moneda = (config && config.moneda) ? config.moneda : '$';
             
-            if (!prestamo) return res.redirect('/prestamos');
+            // 1. Traemos los pagos reales para el cruce
+            const pagos = await PagoModel.obtenerHistorial(id);
+            let totalPagado = pagos.reduce((acc, p) => acc + parseFloat(p.monto_pagado), 0);
 
-            const cronograma = finance.calcularCronograma(
+            // 2. Calculamos el cronograma
+            let cronograma = finance.calcularCronograma(
                 parseFloat(prestamo.monto_total), 
                 prestamo.cuotas, 
                 prestamo.frecuencia, 
                 prestamo.fecha_inicio
             );
 
+            // 3. Cruzar datos
+            cronograma = cronograma.map(cuota => {
+                const montoCuota = parseFloat(cuota.monto);
+                if (totalPagado >= (montoCuota - 0.1)) {
+                    cuota.estado = 'PAGADO';
+                    totalPagado -= montoCuota;
+                } else if (totalPagado > 0) {
+                    cuota.estado = 'PARCIAL';
+                    totalPagado = 0;
+                } else {
+                    cuota.estado = 'PENDIENTE';
+                }
+                return cuota;
+            });
+
             const doc = new PDFDocument({ margin: 50 });
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `inline; filename=Cronograma_${id}.pdf`);
             doc.pipe(res);
 
-            if (config.logo) try { doc.image(`public/uploads/${config.logo}`, 50, 40, { width: 50 }); } catch(e){}
-            doc.fontSize(18).font('Helvetica-Bold').text('CRONOGRAMA DE PAGOS', { align: 'center' });
-            doc.moveDown();
-            doc.fontSize(10).font('Helvetica');
+            // Estética
+            if (config.logo) {
+                try { doc.image(`public/uploads/${config.logo}`, 50, 40, { width: 60 }); } catch(e){}
+            }
+
+            doc.fontSize(20).font('Helvetica-Bold').fillColor('#2c3e50').text('CRONOGRAMA DE PAGOS', { align: 'right' });
+            doc.fontSize(10).font('Helvetica').fillColor('#7f8c8d').text(`Generado: ${new Date().toLocaleString()}`, { align: 'right' });
+            doc.moveDown(2);
+
+            // Info del Cliente
+            doc.fillColor('#000').font('Helvetica-Bold').fontSize(12).text('ESTADO DEL PRÉSTAMO');
+            doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#e0e0e0').stroke();
+            doc.moveDown(0.5);
+
+            doc.font('Helvetica').fontSize(10);
             doc.text(`Cliente: ${prestamo.nombre} ${prestamo.apellido}`);
-            
-            let y = doc.y + 20;
-            doc.text('Cuota | Fecha | Monto', 50, y);
-            y += 20;
-            cronograma.forEach(c => {
-                doc.text(`${c.numero} | ${c.fecha.toLocaleDateString()} | ${moneda} ${formatCurrency(c.monto, 2)}`, 50, y);
-                y += 15;
+            doc.text(`DNI: ${prestamo.dni}`);
+            doc.text(`Monto Total: ${moneda} ${formatCurrency(prestamo.monto_total, 2)}`);
+            doc.text(`Frecuencia: ${prestamo.frecuencia.toUpperCase()}`);
+            doc.moveDown(1.5);
+
+            // Cabecera Tabla
+            const tableTop = doc.y;
+            doc.font('Helvetica-Bold').fillColor('#ffffff');
+            doc.rect(50, tableTop, 500, 20).fill('#34495e');
+            doc.text('Cuota', 60, tableTop + 5);
+            doc.text('Fecha Venc.', 120, tableTop + 5);
+            doc.text('Monto', 280, tableTop + 5);
+            doc.text('Estado', 400, tableTop + 5);
+
+            let y = tableTop + 25;
+            doc.fillColor('#000').font('Helvetica');
+
+            cronograma.forEach((c, index) => {
+                // Filas alternas
+                if (index % 2 === 0) {
+                    doc.rect(50, y - 5, 500, 20).fill('#f9f9f9');
+                }
+                
+                doc.fillColor('#000').text(c.numero.toString(), 70, y);
+                doc.text(c.fecha.toLocaleDateString(), 120, y);
+                doc.text(`${moneda} ${formatCurrency(c.monto, 2)}`, 280, y);
+                
+                // Color por estado
+                if (c.estado === 'PAGADO') doc.fillColor('#27ae60');
+                else if (c.estado === 'PARCIAL') doc.fillColor('#e67e22');
+                else doc.fillColor('#7f8c8d');
+                
+                doc.font('Helvetica-Bold').text(c.estado, 400, y);
+                
+                doc.fillColor('#000').font('Helvetica'); // Reset
+                y += 20;
+
+                if (y > 700) {
+                    doc.addPage();
+                    y = 50;
+                    doc.rect(50, y, 500, 20).fill('#34495e');
+                    doc.fillColor('#fff').text('Cuota', 60, y + 5);
+                    doc.text('Fecha Venc.', 120, y + 5);
+                    doc.text('Monto', 280, y + 5);
+                    doc.text('Estado', 400, y + 5);
+                    y += 25;
+                }
             });
+
             doc.end();
-        } catch (error) { res.redirect('/prestamos'); }
+        } catch (error) { 
+            console.error("Error Cronograma PDF:", error);
+            res.redirect('/prestamos'); 
+        }
     },
 
     // 4. ESTADO DE CUENTA INTEGRAL
