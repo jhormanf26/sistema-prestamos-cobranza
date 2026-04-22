@@ -11,92 +11,20 @@
                         <%- include('partials/mobile-header') %>
 
                             <div class="container-fluid px-4 py-4">
-                                <h2 class="mb-4 d-none d-md-block">Panel de Control</h2>
+                                <h2 class="mb-4 d-none d-md-block fw-bold text-dark">Panel de Control Ejecutivo</h2>
 
                                 <!-- Fila 1: KPI Principales -->
                                 <div class="row g-4 mb-4">
-                                    <div class="col-12 col-sm-6 col-xl">
-                                        <div class="card card-box stat-card stat-card-primary h-100 border-0">
-                                            <div>
-                                                <h5>Clientes</h5>
-                                                <h3><%= totales.clientes %></h3>
-                                                <small>Registrados</small>
-                                            </div>
-                                            <i class="bi bi-people"></i>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-sm-6 col-xl">
-                                        <div class="card card-box stat-card stat-card-success h-100 border-0">
-                                            <div>
-                                                <h5>Capital Pendiente</h5>
-                                                <h3><%= empresa.moneda %> <%= parseFloat(totales.dineroPrestado).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3>
-                                                <small>Dinero en calle</small>
-                                            </div>
-                                            <i class="bi bi-cash-stack"></i>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-sm-6 col-xl">
-                                        <div class="card card-box stat-card stat-card-purple h-100 border-0">
-                                            <div>
-                                                <h5>Fondos / Ahorros</h5>
-                                                <h3><%= empresa.moneda %> <%= parseFloat(totales.totalAhorros).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3>
-                                                <small>Capital Captado</small>
-                                            </div>
-                                            <i class="bi bi-piggy-bank"></i>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-sm-6 col-xl">
-                                        <div class="card card-box stat-card stat-card-info h-100 border-0">
-                                            <div>
-                                                <h5>Total Cobrado</h5>
-                                                <h3><%= empresa.moneda %> <%= parseFloat(totales.dineroCobrado).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3>
-                                                <small>Histórico</small>
-                                            </div>
-                                            <i class="bi bi-wallet2"></i>
-                                        </div>
-                                    </div>
+                                    <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-primary h-100 border-0"><div><h5>Clientes</h5><h3><%= totales.clientes %></h3><small>Registrados</small></div><i class="bi bi-people"></i></div></div>
+                                    <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-success h-100 border-0"><div><h5>Capital Pendiente</h5><h3><%= empresa.moneda %> <%= parseFloat(totales.dineroPrestado).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3><small>Dinero en calle</small></div><i class="bi bi-cash-stack"></i></div></div>
+                                    <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-purple h-100 border-0"><div><h5>Fondos / Ahorros</h5><h3><%= empresa.moneda %> <%= parseFloat(totales.totalAhorros).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3><small>Capital Captado</small></div><i class="bi bi-piggy-bank"></i></div></div>
+                                    <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-info h-100 border-0"><div><h5>Total Cobrado</h5><h3><%= empresa.moneda %> <%= parseFloat(totales.dineroCobrado).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3><small>Histórico</small></div><i class="bi bi-wallet2"></i></div></div>
                                 </div>
 
-                                <!-- Fila 2: Indicadores de Mora y Riesgo -->
+                                <!-- Fila 2: Indicadores Rápidos -->
                                 <div class="row g-4 mb-5">
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="card card-box border-start border-danger border-4 shadow-sm">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <h6 class="text-muted text-uppercase small">Clientes en Mora</h6>
-                                                        <h4 class="fw-bold text-danger mb-0"><%= totales.clientesMora %></h4>
-                                                    </div>
-                                                    <div class="bg-danger-subtle p-3 rounded-circle">
-                                                        <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 text-danger small"><i class="bi bi-info-circle"></i> Fecha vencida</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="card card-box border-start border-warning border-4 shadow-sm">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <h6 class="text-muted text-uppercase small">Monto en Riesgo</h6>
-                                                        <h4 class="fw-bold text-warning mb-0">
-                                                            <%= empresa.moneda %> <%= parseFloat(totales.montoEnRiesgo).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
-                                                        </h4>
-                                                    </div>
-                                                    <div class="bg-warning-subtle p-3 rounded-circle">
-                                                        <i class="bi bi-shield-lock-fill text-warning fs-4"></i>
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 text-warning small"><i class="bi bi-graph-down"></i> Capital por recuperar</div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <div class="col-md-6 col-lg-3"><div class="card card-box border-start border-danger border-4 shadow-sm"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted text-uppercase small">Clientes en Mora</h6><h4 class="fw-bold text-danger mb-0"><%= totales.clientesMora %></h4></div><div class="bg-danger-subtle p-3 rounded-circle"><i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i></div></div></div></div></div>
+                                    <div class="col-md-6 col-lg-3"><div class="card card-box border-start border-warning border-4 shadow-sm"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><div><h6 class="text-muted text-uppercase small">Monto en Riesgo</h6><h4 class="fw-bold text-warning mb-0"><%= empresa.moneda %> <%= parseFloat(totales.montoEnRiesgo).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h4></div><div class="bg-warning-subtle p-3 rounded-circle"><i class="bi bi-shield-lock-fill text-warning fs-4"></i></div></div></div></div></div>
                                 </div>
 
                                 <!-- Fila 3: Gráficos -->
@@ -105,53 +33,80 @@
                                     <div class="col-lg-7"><div class="card card-box shadow-sm border-0 h-100"><div class="card-header bg-white fw-bold">Balance: Prestado vs Recuperado</div><div class="card-body"><div style="height: 300px;"><canvas id="chartBalance"></canvas></div></div></div></div>
                                 </div>
 
-                                <!-- Fila 4: Tablas de Gestión Operativa -->
+                                <!-- Fila 4: Gestión Operativa (Mora y Vencimientos) -->
                                 <div class="row g-4 mb-5">
                                     <div class="col-lg-6">
                                         <div class="card card-box shadow-sm border-0 h-100">
-                                            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
-                                                <span>🚨 Clientes en Mora Detallado</span>
-                                                <span class="badge bg-danger"><%= detalleMora.length %> Registros</span>
-                                            </div>
-                                            <div class="card-body p-0">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover align-middle mb-0 text-nowrap">
-                                                        <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Venció el</th><th>Saldo</th><th class="text-end pe-3">Acción</th></tr></thead>
-                                                        <tbody>
-                                                            <% if(detalleMora.length > 0) { detalleMora.forEach(m => { %>
-                                                                <tr>
-                                                                    <td class="ps-3"><span class="fw-bold d-block"><%= m.nombre %> <%= m.apellido %></span><small class="text-muted"><%= m.telefono %></small></td>
-                                                                    <td><span class="badge bg-danger-subtle text-danger"><%= new Date(m.fecha_fin).toLocaleDateString() %></span></td>
-                                                                    <td class="fw-bold text-dark"><%= empresa.moneda %> <%= parseFloat(m.monto_total).toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
-                                                                    <td class="text-end pe-3"><a href="/pagos/registrar/<%= m.id %>" class="btn btn-sm btn-success">Cobrar</a></td>
-                                                                </tr>
-                                                            <% }) } else { %><tr><td colspan="4" class="text-center py-4 text-muted">No hay clientes en mora</td></tr><% } %>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
+                                            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center"><span>🚨 Clientes en Mora</span><span class="badge bg-danger"><%= detalleMora.length %></span></div>
+                                            <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Saldo</th><th class="text-end pe-3">Acción</th></tr></thead>
+                                                <tbody>
+                                                    <% if(detalleMora.length > 0) { detalleMora.forEach(m => { %>
+                                                        <tr><td class="ps-3"><span class="fw-bold d-block"><%= m.nombre %> <%= m.apellido %></span><small class="text-muted"><%= m.telefono %></small></td><td class="fw-bold"><%= empresa.moneda %> <%= parseFloat(m.monto_total).toLocaleString('en-US', {minimumFractionDigits: 2}) %></td><td class="text-end pe-3"><a href="/pagos/registrar/<%= m.id %>" class="btn btn-sm btn-success">Cobrar</a></td></tr>
+                                                    <% }) } else { %><tr><td colspan="3" class="text-center py-4 text-muted">Todo al día</td></tr><% } %>
+                                                </tbody></table></div></div>
                                         </div>
                                     </div>
-
                                     <div class="col-lg-6">
                                         <div class="card card-box shadow-sm border-0 h-100">
-                                            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
-                                                <span>📅 Próximos Vencimientos (7 días)</span>
-                                                <span class="badge bg-warning text-dark"><%= proximosVencimientos.length %> Registros</span>
+                                            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center"><span>📅 Próximos Vencimientos</span><span class="badge bg-warning text-dark"><%= proximosVencimientos.length %></span></div>
+                                            <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Vence</th><th class="text-end pe-3">Acción</th></tr></thead>
+                                                <tbody>
+                                                    <% if(proximosVencimientos.length > 0) { proximosVencimientos.forEach(v => { %>
+                                                        <tr><td class="ps-3"><span class="fw-bold d-block"><%= v.nombre %> <%= v.apellido %></span><small class="text-muted"><%= v.frecuencia %></small></td><td><span class="badge bg-info-subtle text-info"><%= new Date(v.fecha_fin).toLocaleDateString() %></span></td><td class="text-end pe-3"><a href="/prestamos/cronograma/<%= v.id %>" class="btn btn-sm btn-outline-primary">Ver</a></td></tr>
+                                                    <% }) } else { %><tr><td colspan="3" class="text-center py-4 text-muted">Sin vencimientos cercanos</td></tr><% } %>
+                                                </tbody></table></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fila 5: OPORTUNIDADES DE RE-INVERSIÓN (Estratégico) -->
+                                <div class="row g-4 mb-5">
+                                    <div class="col-12">
+                                        <div class="card card-box shadow-sm border-0 border-start border-success border-4">
+                                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                                <div><i class="bi bi-lightning-charge-fill text-success me-2"></i><span class="fw-bold fs-5">Oportunidades de Renovación (Préstamos por terminar)</span></div>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 rounded-pill">Estratégico</span>
                                             </div>
                                             <div class="card-body p-0">
                                                 <div class="table-responsive">
-                                                    <table class="table table-hover align-middle mb-0 text-nowrap">
-                                                        <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Vence el</th><th>Cuotas</th><th class="text-end pe-3">Acción</th></tr></thead>
+                                                    <table class="table table-hover align-middle mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th class="ps-4">Cliente / Contacto</th>
+                                                                <th class="text-center">Progreso de Pago</th>
+                                                                <th class="text-center">Capital por Liberar</th>
+                                                                <th class="text-end pe-4">Sugerencia</th>
+                                                            </tr>
+                                                        </thead>
                                                         <tbody>
-                                                            <% if(proximosVencimientos.length > 0) { proximosVencimientos.forEach(v => { %>
+                                                            <% if(oportunidadesRenovacion && oportunidadesRenovacion.length > 0) { oportunidadesRenovacion.forEach(o => { %>
                                                                 <tr>
-                                                                    <td class="ps-3"><span class="fw-bold d-block"><%= v.nombre %> <%= v.apellido %></span><small class="text-muted"><%= v.frecuencia %></small></td>
-                                                                    <td><span class="badge bg-info-subtle text-info"><%= new Date(v.fecha_fin).toLocaleDateString() %></span></td>
-                                                                    <td class="fw-bold"><%= v.cuotas %> Cuotas</td>
-                                                                    <td class="text-end pe-3"><a href="/prestamos/ver/<%= v.id %>" class="btn btn-sm btn-outline-primary">Ver</a></td>
+                                                                    <td class="ps-4 py-3">
+                                                                        <span class="fw-bold d-block"><%= o.nombre %> <%= o.apellido %></span>
+                                                                        <small class="text-muted"><i class="bi bi-whatsapp"></i> <%= o.telefono %></small>
+                                                                    </td>
+                                                                    <td style="width: 300px;">
+                                                                        <div class="d-flex align-items-center justify-content-center">
+                                                                            <div class="progress flex-grow-1 mx-3" style="height: 10px; border-radius: 5px;">
+                                                                                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: <%= o.progreso %>%;"></div>
+                                                                            </div>
+                                                                            <span class="fw-bold text-success"><%= o.progreso %>%</span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="text-center fw-bold text-dark">
+                                                                        <%= empresa.moneda %> <%= parseFloat(o.monto_total - o.total_pagado).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
+                                                                    </td>
+                                                                    <td class="text-end pe-4">
+                                                                        <a href="https://wa.me/<%= o.telefono %>?text=Hola%20<%= o.nombre %>,%20vimos%20que%20ya%20estás%20por%20terminar%20tu%20préstamo.%20¿Deseas%20renovarlo?" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                                                            <i class="bi bi-chat-dots"></i> Ofrecer Renovación
+                                                                        </a>
+                                                                    </td>
                                                                 </tr>
-                                                            <% }) } else { %><tr><td colspan="4" class="text-center py-4 text-muted">No hay vencimientos próximos</td></tr><% } %>
+                                                            <% }) } else { %>
+                                                                <tr><td colspan="4" class="text-center py-5 text-muted">En este momento no hay préstamos cercanos al 80% de pago.</td></tr>
+                                                            <% } %>
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -160,48 +115,27 @@
                                     </div>
                                 </div>
 
-                                <!-- Fila 5: Historial de Clientes Finalizados -->
+                                <!-- Fila 6: Historial de Clientes Finalizados -->
                                 <div class="row mb-5">
                                     <div class="col-12">
                                         <div class="card card-box shadow-sm border-0">
                                             <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center py-3">
-                                                <div class="d-flex align-items-center"><i class="bi bi-journal-check fs-4 me-2 text-success"></i><span class="fs-5">Historial Crediticio: Préstamos Finalizados</span></div>
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3">Top 10 Clientes</span>
+                                                <div class="d-flex align-items-center"><i class="bi bi-journal-check fs-4 me-2 text-primary"></i><span class="fs-5 text-primary">Historial de Clientes: Comportamiento Histórico</span></div>
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3">Top Clientes</span>
                                             </div>
-                                            <div class="card-body p-0">
-                                                <div class="table-responsive">
-                                                    <table class="table table-hover align-middle mb-0 text-nowrap">
-                                                        <thead class="table-dark">
+                                            <div class="card-body p-0"><div class="table-responsive">
+                                                <table class="table table-hover align-middle mb-0">
+                                                    <thead class="table-dark"><tr><th class="ps-4">Cliente</th><th class="text-center">Pagados</th><th class="text-center bg-primary-subtle text-primary">Capital Mín/Máx</th><th class="text-center bg-warning-subtle text-dark">Tasa Mín/Máx (%)</th></tr></thead>
+                                                    <tbody>
+                                                        <% if(historialFinalizados && historialFinalizados.length > 0) { historialFinalizados.forEach(h => { %>
                                                             <tr>
-                                                                <th class="ps-4">Cliente</th>
-                                                                <th class="text-center">Préstamos <br> Pagados</th>
-                                                                <th class="text-center bg-primary-subtle text-primary border-start border-end">Capital Mín.</th>
-                                                                <th class="text-center bg-primary-subtle text-primary">Capital Máx.</th>
-                                                                <th class="text-center bg-warning-subtle text-dark border-start border-end">Tasa Mín. (%)</th>
-                                                                <th class="text-center bg-warning-subtle text-dark">Tasa Máx. (%)</th>
+                                                                <td class="ps-4 py-3"><span class="fw-bold d-block"><%= h.nombre %> <%= h.apellido %></span><small class="text-muted"><%= h.telefono %></small></td>
+                                                                <td class="text-center"><span class="badge rounded-pill bg-dark"><%= h.total_prestamos %></span></td>
+                                                                <td class="text-center"><%= empresa.moneda %> <%= parseFloat(h.capital_min).toLocaleString() %> - <%= empresa.moneda %> <%= parseFloat(h.capital_max).toLocaleString() %></td>
+                                                                <td class="text-center bg-light text-warning-emphasis fw-bold"><%= parseFloat(h.interes_min_pct).toFixed(1) %>% - <%= parseFloat(h.interes_max_pct).toFixed(1) %>%</td>
                                                             </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <% if(historialFinalizados && historialFinalizados.length > 0) { historialFinalizados.forEach(h => { %>
-                                                                <tr>
-                                                                    <td class="ps-4 py-3">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <div class="avatar-circle-sm bg-light text-primary fw-bold me-3 text-center" style="width: 35px; height: 35px; line-height: 35px; border-radius: 50%;"><%= h.nombre.charAt(0) %></div>
-                                                                            <div><span class="fw-bold d-block"><%= h.nombre %> <%= h.apellido %></span><small class="text-muted"><%= h.telefono %></small></div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td class="text-center"><span class="badge rounded-pill bg-dark px-3 fs-6"><%= h.total_prestamos %></span></td>
-                                                                    <td class="text-center border-start"><%= empresa.moneda %> <%= parseFloat(h.capital_min).toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
-                                                                    <td class="text-center border-end fw-bold text-primary"><%= empresa.moneda %> <%= parseFloat(h.capital_max).toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
-                                                                    <!-- Tasas en % -->
-                                                                    <td class="text-center bg-light"><%= parseFloat(h.interes_min_pct).toFixed(1) %>%</td>
-                                                                    <td class="text-center bg-light fw-bold text-warning-emphasis"><%= parseFloat(h.interes_max_pct).toFixed(1) %>%</td>
-                                                                </tr>
-                                                            <% }) } else { %><tr><td colspan="6" class="text-center py-5 text-muted">Aún no hay clientes con préstamos finalizados.</td></tr><% } %>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
+                                                        <% }) } else { %><tr><td colspan="4" class="text-center py-4 text-muted">Sin registros históricos</td></tr><% } %>
+                                                    </tbody></table></div></div>
                                         </div>
                                     </div>
                                 </div>

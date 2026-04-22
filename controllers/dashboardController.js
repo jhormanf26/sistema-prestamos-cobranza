@@ -4,12 +4,13 @@ const dashboardController = {
     
     mostrarDashboard: async (req, res) => {
         try {
-            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados] = await Promise.all([
+            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion] = await Promise.all([
                 DashboardModel.obtenerTotales(),
                 DashboardModel.obtenerDatosGraficos(),
                 DashboardModel.obtenerDetalleMora(),
                 DashboardModel.obtenerProximosVencimientos(),
-                DashboardModel.obtenerHistorialFinalizados()
+                DashboardModel.obtenerHistorialFinalizados(),
+                DashboardModel.obtenerOportunidadesRenovacion() // La nueva consulta estratégica
             ]);
 
             // Procesar Estados para el gráfico
@@ -25,7 +26,8 @@ const dashboardController = {
                 totales,
                 detalleMora,
                 proximosVencimientos,
-                historialFinalizados, // Cargamos los datos para la nueva tabla
+                historialFinalizados,
+                oportunidadesRenovacion, // Pasamos los datos a la vista
                 graficos: {
                     estados: [estados.pendiente, estados.pagado, estados.vencido],
                     balance: [totales.totalPrestadoHistorico, totales.dineroCobrado]
