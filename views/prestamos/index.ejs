@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
 <%- include('../partials/head') %>
+<style>
+    /* Solo para los encabezados ordenables */
+    th.sortable-header { 
+        padding: 0 !important; 
+        transition: background-color 0.2s;
+    }
+    th.sortable-header a { 
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between;
+        padding: 0.75rem; 
+        text-decoration: none; 
+        color: #444; 
+        width: 100%;
+        height: 100%;
+    }
+    th.sortable-header a:hover { background-color: #f8f9fa; color: #0d6efd; }
+    th.sortable-header i { font-size: 0.7rem; margin-left: 5px; color: #ccc; }
+    th.sortable-header.active i { color: #0d6efd; opacity: 1; }
+    th.sortable-header.active { border-bottom: 2px solid #0d6efd; background-color: #f0f7ff; }
+</style>
 <body>
     <div class="container-fluid">
         <div class="row flex-nowrap">
@@ -37,6 +58,8 @@
                             </div>
                             <div class="col-auto flex-grow-1">
                                 <input type="text" name="q" class="form-control" placeholder="Nombre de Cliente o ID Préstamo..." value="<%= busqueda %>">
+                                <input type="hidden" name="sort" value="<%= sort %>">
+                                <input type="hidden" name="order" value="<%= order %>">
                             </div>
                             <div class="col-auto">
                                 <button type="submit" class="btn btn-dark">Filtrar</button>
@@ -52,11 +75,28 @@
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Cliente</th>
-                                        <th>Total a Pagar</th>
+                                        <!-- SOLO MODIFICAMOS EL ENCABEZADO -->
+                                        <th class="sortable-header <%= sort === 'id' ? 'active' : '' %>">
+                                            <a href="/prestamos?q=<%= busqueda %>&sort=id&order=<%= sort === 'id' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                ID <i class="bi <%= sort === 'id' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                            </a>
+                                        </th>
+                                        <th class="sortable-header <%= sort === 'nombre' ? 'active' : '' %>">
+                                            <a href="/prestamos?q=<%= busqueda %>&sort=nombre&order=<%= sort === 'nombre' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                Cliente <i class="bi <%= sort === 'nombre' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                            </a>
+                                        </th>
+                                        <th class="sortable-header <%= sort === 'monto_total' ? 'active' : '' %>">
+                                            <a href="/prestamos?q=<%= busqueda %>&sort=monto_total&order=<%= sort === 'monto_total' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                Total a Pagar <i class="bi <%= sort === 'monto_total' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                            </a>
+                                        </th>
                                         <th>Observaciones</th>
-                                        <th>Estado</th>
+                                        <th class="sortable-header <%= sort === 'estado' ? 'active' : '' %>">
+                                            <a href="/prestamos?q=<%= busqueda %>&sort=estado&order=<%= sort === 'estado' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                Estado <i class="bi <%= sort === 'estado' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                            </a>
+                                        </th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -121,10 +161,10 @@
                                 <small class="text-muted">Página <%= currentPage %> de <%= totalPages %></small>
                                 <ul class="pagination mb-0">
                                     <li class="page-item <%= currentPage == 1 ? 'disabled' : '' %>">
-                                        <a class="page-link" href="/prestamos?page=<%= currentPage - 1 %>&q=<%= busqueda %>">Anterior</a>
+                                        <a class="page-link" href="/prestamos?page=<%= currentPage - 1 %>&q=<%= busqueda %>&sort=<%= sort %>&order=<%= order %>">Anterior</a>
                                     </li>
                                     <li class="page-item <%= currentPage == totalPages ? 'disabled' : '' %>">
-                                        <a class="page-link" href="/prestamos?page=<%= currentPage + 1 %>&q=<%= busqueda %>">Siguiente</a>
+                                        <a class="page-link" href="/prestamos?page=<%= currentPage + 1 %>&q=<%= busqueda %>&sort=<%= sort %>&order=<%= order %>">Siguiente</a>
                                     </li>
                                 </ul>
                             </nav>
