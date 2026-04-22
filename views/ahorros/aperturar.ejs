@@ -20,7 +20,7 @@
                                 <select name="cliente_id" class="form-select" required>
                                     <option value="">-- Buscar Cliente --</option>
                                     <% clientes.forEach(c => { %>
-                                        <option value="<%= c.id %>"><%= c.nombre %> <%= c.apellido %> (DNI: <%= c.dni %>)</option>
+                                        <option value="<%= c.id %>"><%= c.nombre %> <%= c.apellido %> (CC: <%= c.dni %>)</option>
                                     <% }) %>
                                 </select>
                                 <div class="form-text">Se creará una cuenta con saldo inicial $0.00</div>

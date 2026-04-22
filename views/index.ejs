@@ -1,129 +1,165 @@
 <!DOCTYPE html>
 <html lang="es">
 <%- include('partials/head') %>
+<style>
+    /* Estilos ÚNICOS para las Pestañas del Dashboard (sin afectar al menú lateral) */
+    .nav-dash {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    .nav-dash .nav-item {
+        margin-right: 12px;
+    }
+    .nav-dash .btn-dash {
+        color: #555;
+        font-weight: 600;
+        padding: 0.7rem 1.4rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+        background: #fdfdfd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+    }
+    .nav-dash .btn-dash i { margin-right: 8px; font-size: 1.1rem; }
+    .nav-dash .btn-dash.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+    }
+    .nav-dash .btn-dash:hover:not(.active) {
+        background-color: #f8f9fa;
+        border-color: #ccc;
+    }
+    .tab-content-dash { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 <body>
     <div class="container-fluid">
         <div class="row flex-nowrap">
+            <!-- El Sidebar ahora volverá a su color original -->
             <%- include('partials/sidebar') %>
-            
+
             <div class="col py-0 py-md-3 main-content-wrapper">
                 <%- include('partials/mobile-header') %>
-                
-                <div class="container-fluid px-4 py-4">
-                    <h2 class="mb-4 d-none d-md-block">Panel de Control</h2>
-                    
-                    <div class="row g-4 mb-5">
-                        
-                        <!-- Clientes -->
-                        <div class="col-12 col-sm-6 col-xl">
-                            <div class="card card-box stat-card stat-card-primary h-100 border-0">
-                                <div>
-                                    <h5>Clientes</h5>
-                                    <h3><%= (typeof totales !== 'undefined' && totales.clientes) ? totales.clientes : 0 %></h3>
-                                    <small>Registrados en el sistema</small>
-                                </div>
-                                <i class="bi bi-people"></i>
-                            </div>
-                        </div>
 
-                        <!-- Capital Pendiente -->
-                        <div class="col-12 col-sm-6 col-xl">
-                            <div class="card card-box stat-card stat-card-success h-100 border-0">
-                                <div>
-                                    <h5>Capital Pendiente</h5>
-                                    <h3>
-                                        <%= (typeof empresa !== 'undefined' && empresa.moneda) ? empresa.moneda : '$' %> 
-                                        <%= parseFloat((typeof totales !== 'undefined' && totales.dineroPrestado) ? totales.dineroPrestado : 0).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
-                                    </h3>
-                                    <small>Dinero en calle</small>
-                                </div>
-                                <i class="bi bi-cash-stack"></i>
-                            </div>
-                        </div>
-
-                        <!-- Fondos / Ahorros -->
-                        <div class="col-12 col-sm-6 col-xl">
-                            <div class="card card-box stat-card stat-card-purple h-100 border-0">
-                                <div>
-                                    <h5>Fondos / Ahorros</h5>
-                                    <h3>
-                                        <%= (typeof empresa !== 'undefined' && empresa.moneda) ? empresa.moneda : '$' %> 
-                                        <%= parseFloat((typeof totales !== 'undefined' && totales.totalAhorros) ? totales.totalAhorros : 0).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
-                                    </h3>
-                                    <small>Capital Captado</small>
-                                </div>
-                                <i class="bi bi-piggy-bank"></i>
-                            </div>
-                        </div>
-
-                        <!-- Empeños -->
-                        <div class="col-12 col-sm-6 col-xl">
-                            <div class="card card-box stat-card stat-card-warning h-100 border-0">
-                                <div>
-                                    <h5>Empeños</h5>
-                                    <h3><%= (typeof totales !== 'undefined' && totales.articulosEmpeno) ? totales.articulosEmpeno : 0 %></h3>
-                                    <small>Artículos en almacén</small>
-                                </div>
-                                <i class="bi bi-gem"></i>
-                            </div>
-                        </div>
-
-                        <!-- Total Cobrado -->
-                        <div class="col-12 col-sm-6 col-xl">
-                            <div class="card card-box stat-card stat-card-info h-100 border-0">
-                                <div>
-                                    <h5>Total Cobrado</h5>
-                                    <h3>
-                                        <%= (typeof empresa !== 'undefined' && empresa.moneda) ? empresa.moneda : '$' %> 
-                                        <%= parseFloat((typeof totales !== 'undefined' && totales.dineroCobrado) ? totales.dineroCobrado : 0).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
-                                    </h3>
-                                    <small>Histórico de ingresos</small>
-                                </div>
-                                <i class="bi bi-wallet2"></i>
-                            </div>
-                        </div>
+                <div class="container-fluid px-4 py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="fw-bold text-dark my-0 text-uppercase fs-4">Tablero de Control</h2>
+                        <span class="badge bg-white text-dark border p-2 fw-normal shadow-sm">Hoy: <%= new Date().toLocaleDateString() %></span>
                     </div>
 
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="card card-box shadow-sm border-0 h-100">
-                                <div class="card-header bg-white fw-bold">Estado de la Cartera</div>
-                                <div class="card-body">
-                                    <div style="height: 300px;">
-                                        <canvas id="chartEstados"></canvas>
+                    <!-- KPI Cards (Mantenemos el diseño premium) -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-primary h-100 border-0"><div><h5>Clientes</h5><h3><%= totales.clientes %></h3><small>Registrados</small></div><i class="bi bi-people"></i></div></div>
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-success h-100 border-0"><div><h5>Capital Activo</h5><h3><%= empresa.moneda %> <%= parseFloat(totales.dineroPrestado).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3><small>Dinero en calle</small></div><i class="bi bi-cash-stack"></i></div></div>
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-purple h-100 border-0"><div><h5>Total Ahorros</h5><h3><%= empresa.moneda %> <%= parseFloat(totales.totalAhorros).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3><small>Capital Captado</small></div><i class="bi bi-piggy-bank"></i></div></div>
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-info h-100 border-0"><div><h5>Total Recaudado</h5><h3><%= empresa.moneda %> <%= parseFloat(totales.dineroCobrado).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3><small>Histórico</small></div><i class="bi bi-wallet2"></i></div></div>
+                    </div>
+
+                    <!-- NAVEGACIÓN LOCAL (Con clases únicas para no interferir) -->
+                    <ul class="nav-dash mb-4" id="pills-tab" role="tablist">
+                        <li class="nav-item"><button class="btn-dash active" data-bs-toggle="pill" data-bs-target="#tab-analisis" type="button"><i class="bi bi-graph-up"></i> Análisis</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-accion" type="button"><i class="bi bi-lightning-charge"></i> Acción Diaria</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-crecimiento" type="button"><i class="bi bi-rocket-takeoff"></i> Crecimiento</button></li>
+                    </ul>
+
+                    <div class="tab-content tab-content-dash" id="pills-tabContent">
+                        
+                        <!-- TAB 1: ANALISIS -->
+                        <div class="tab-pane fade show active" id="tab-analisis" role="tabpanel">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6 col-lg-3"><div class="card card-box border-start border-danger border-4 shadow-sm"><div class="card-body"><h6 class="text-muted text-uppercase small">Mora Activa</h6><h4 class="fw-bold text-danger mb-0"><%= totales.clientesMora %> Clientes</h4></div></div></div>
+                                <div class="col-md-6 col-lg-4"><div class="card card-box border-start border-warning border-4 shadow-sm"><div class="card-body"><h6 class="text-muted text-uppercase small">Monto en Riesgo</h6><h4 class="fw-bold text-warning mb-0"><%= empresa.moneda %> <%= parseFloat(totales.montoEnRiesgo).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h4></div></div></div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-lg-5"><div class="card card-box shadow-sm border-0"><div class="card-header bg-white fw-bold border-0">Estado de Cartera</div><div class="card-body"><div style="height: 280px;"><canvas id="chartEstados"></canvas></div></div></div></div>
+                                <div class="col-lg-7"><div class="card card-box shadow-sm border-0"><div class="card-header bg-white fw-bold border-0">Capital vs Recuperado</div><div class="card-body"><div style="height: 280px;"><canvas id="chartBalance"></canvas></div></div></div></div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: ACCION DIARIA -->
+                        <div class="tab-pane fade" id="tab-accion" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center"><span>🚨 Deudores en Mora</span><span class="badge bg-danger"><%= detalleMora.length %></span></div>
+                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Monto</th><th class="text-end pe-3">Cobrar</th></tr></thead>
+                                            <tbody>
+                                                <% if(detalleMora.length > 0) { detalleMora.forEach(m => { %>
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block"><%= m.nombre %> <%= m.apellido %></span><small class="text-muted"><%= m.telefono %></small></td><td><%= empresa.moneda %> <%= parseFloat(m.monto_total).toLocaleString() %></td><td class="text-end pe-3"><a href="/pagos/registrar/<%= m.id %>" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                <% }) } else { %><tr><td colspan="3" class="text-center py-5 text-muted">Todo al día</td></tr><% } %>
+                                            </tbody></table></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center"><span>📅 Vencimientos (7 días)</span><span class="badge bg-warning text-dark"><%= proximosVencimientos.length %></span></div>
+                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Fecha</th><th class="text-end pe-3">Ver</th></tr></thead>
+                                            <tbody>
+                                                <% if(proximosVencimientos.length > 0) { proximosVencimientos.forEach(v => { %>
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block"><%= v.nombre %> <%= v.apellido %></span><small class="text-muted"><%= v.frecuencia %></small></td><td><%= new Date(v.fecha_fin).toLocaleDateString() %></td><td class="text-end pe-3"><a href="/prestamos/cronograma/<%= v.id %>" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td></tr>
+                                                <% }) } else { %><tr><td colspan="3" class="text-center py-5 text-muted">Sin movimientos cercanos</td></tr><% } %>
+                                            </tbody></table></div></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="card card-box shadow-sm border-0 h-100">
-                                <div class="card-header bg-white fw-bold">Balance: Prestado vs Recuperado</div>
-                                <div class="card-body">
-                                    <div style="height: 300px;">
-                                        <canvas id="chartBalance"></canvas>
+
+                        <!-- TAB 3: CRECIMIENTO -->
+                        <div class="tab-pane fade" id="tab-crecimiento" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-12 mb-4">
+                                    <div class="card card-box shadow-sm border-0 border-start border-success border-4">
+                                        <div class="card-header bg-white fw-bold d-flex justify-content-between"><span>🔥 Oportunidades de Renovación</span><span class="badge bg-success-subtle text-success">Fidelización</span></div>
+                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light"><tr><th class="ps-4">Cliente</th><th class="text-center">Progreso</th><th class="text-center">Falta Pagar</th><th class="text-end pe-4">Acción</th></tr></thead>
+                                            <tbody>
+                                                <% if(oportunidadesRenovacion && oportunidadesRenovacion.length > 0) { oportunidadesRenovacion.forEach(o => { %>
+                                                    <tr>
+                                                        <td class="ps-4"><b><%= o.nombre %> <%= o.apellido %></b><br><small><%= o.telefono %></small></td>
+                                                        <td style="width:25%">
+                                                            <div class="progress" style="height:8px;"><div class="progress-bar bg-success" style="width:<%= o.progreso %>%"></div></div>
+                                                            <small class="fw-bold text-success"><%= o.progreso %>% Pagado</small>
+                                                        </td>
+                                                        <td class="text-center fw-bold text-danger">
+                                                            <%= empresa.moneda %> <%= parseFloat(o.monto_total - o.total_pagado).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
+                                                        </td>
+                                                        <td class="text-end pe-4"><a href="https://wa.me/<%= o.telefono %>?text=Hola%20<%= o.nombre %>,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3"><i class="bi bi-whatsapp"></i> Ofrecer</a></td>
+                                                    </tr>
+                                                <% }) } else { %><tr><td colspan="4" class="text-center py-5 text-muted">No hay renovaciones cercanas</td></tr><% } %>
+                                            </tbody></table></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="card card-box shadow-sm border-0">
+                                        <div class="card-header bg-white fw-bold text-primary">👑 Mejores Clientes (Historial VIP)</div>
+                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0 text-nowrap">
+                                            <thead class="table-dark"><tr><th class="ps-4">Cliente</th><th class="text-center">Pagados</th><th class="text-center">Capital Mín / Máx</th><th class="text-center">Tasa Mín / Máx (%)</th><th class="text-end pe-4">Acción</th></tr></thead>
+                                            <tbody>
+                                                <% if(historialFinalizados && historialFinalizados.length > 0) { historialFinalizados.forEach(h => { %>
+                                                    <tr>
+                                                        <td class="ps-4 py-3"><b><%= h.nombre %> <%= h.apellido %></b><br><small><%= h.telefono %></small></td>
+                                                        <td class="text-center"><span class="badge bg-dark rounded-pill"><%= h.total_prestamos %></span></td>
+                                                        <td class="text-center"><%= empresa.moneda %> <%= parseFloat(h.capital_min).toLocaleString() %> - <%= empresa.moneda %> <%= parseFloat(h.capital_max).toLocaleString() %></td>
+                                                        <td class="text-center bg-light text-warning-emphasis fw-bold"><%= parseFloat(h.interes_min_pct).toFixed(1) %>% - <%= parseFloat(h.interes_max_pct).toFixed(1) %>%</td>
+                                                        <td class="text-end pe-4"><a href="https://wa.me/<%= h.telefono %>?text=Hola%20<%= h.nombre %>,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-star-fill"></i> Ofrecer VIP</a></td>
+                                                    </tr>
+                                                <% }) } else { %><tr><td colspan="5" class="text-center py-4 text-muted">Sin registros históricos</td></tr><% } %>
+                                            </tbody></table></div></div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-12"><h4 class="text-secondary">Accesos Rápidos</h4><hr></div>
-                        <div class="col-md-4 mb-3">
-                            <a href="/prestamos/crear" class="btn btn-outline-primary w-100 p-4 text-start hover-shadow bg-white">
-                                <div class="d-flex align-items-center"><i class="bi bi-plus-circle fs-1 me-3"></i><div><span class="fw-bold fs-5 d-block">Nuevo Préstamo</span><small class="text-muted">Registrar salida de dinero</small></div></div>
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <a href="/empenos/crear" class="btn btn-outline-warning text-dark w-100 p-4 text-start hover-shadow bg-white">
-                                <div class="d-flex align-items-center"><i class="bi bi-box-seam fs-1 me-3"></i><div><span class="fw-bold fs-5 d-block">Nuevo Empeño</span><small class="text-muted">Registrar entrada de garantía</small></div></div>
-                            </a>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <a href="/clientes/crear" class="btn btn-outline-success w-100 p-4 text-start hover-shadow bg-white">
-                                <div class="d-flex align-items-center"><i class="bi bi-person-plus fs-1 me-3"></i><div><span class="fw-bold fs-5 d-block">Nuevo Cliente</span><small class="text-muted">Registrar nueva persona</small></div></div>
-                            </a>
                         </div>
                     </div>
 
@@ -133,57 +169,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <script>
-        // Datos seguros
-        <% 
-            const safeEstados = (typeof graficos !== 'undefined' && graficos.estados) ? graficos.estados : [0,0,0];
-            const safeBalance = (typeof graficos !== 'undefined' && graficos.balance) ? graficos.balance : [0,0];
-        %>
-        
-        const datosEstados = [<%= safeEstados %>]; 
-        const datosBalance = [<%= safeBalance %>]; 
-        
-        // Moneda dinámica para los gráficos
-        const monedaConfig = "<%= (typeof empresa !== 'undefined' && empresa.moneda) ? empresa.moneda : '$' %>";
-
-        const ctx1 = document.getElementById('chartEstados').getContext('2d');
-        new Chart(ctx1, {
-            type: 'doughnut',
-            data: {
-                labels: ['Pendiente', 'Pagado', 'Vencido'],
-                datasets: [{
-                    data: datosEstados,
-                    backgroundColor: ['#ffc107', '#198754', '#dc3545'],
-                    borderWidth: 1
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
-
-        const ctx2 = document.getElementById('chartBalance').getContext('2d');
-        new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: ['Total Prestado (Histórico)', 'Total Recuperado'],
-                datasets: [{
-                    label: `Monto en ${monedaConfig}`, // <--- Moneda en la etiqueta del gráfico
-                    data: datosBalance,
-                    backgroundColor: ['#0d6efd', '#0dcaf0'],
-                    borderWidth: 1
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: false } }
-            }
-        });
+        const datosEstados = <%- JSON.stringify(graficos.estados) %>;
+        const datosBalance = <%- JSON.stringify(graficos.balance) %>;
+        const moneda = "<%= empresa.moneda %>";
+        new Chart(document.getElementById('chartEstados'), { type: 'doughnut', data: { labels: ['Pendiente', 'Pagado', 'Vencido'], datasets: [{ data: datosEstados, backgroundColor: ['#ffc107', '#198754', '#dc3545'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+        new Chart(document.getElementById('chartBalance'), { type: 'bar', data: { labels: ['Prestado', 'Recuperado'], datasets: [{ label: `Monto en ${moneda}`, data: datosBalance, backgroundColor: ['#0d6efd', '#0dcaf0'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
     </script>
-
 <%- include('partials/footer') %>

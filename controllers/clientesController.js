@@ -56,14 +56,14 @@ const clientesController = {
         const foto = req.file ? req.file.filename : null;
 
         if (!dni || !nombre || !apellido) {
-            req.flash('mensajeError', 'DNI, Nombre y Apellido son obligatorios');
+            req.flash('mensajeError', 'CC, Nombre y Apellido son obligatorios');
             return res.redirect('/clientes/crear');
         }
 
         try {
             const existe = await ClienteModel.buscarPorDNI(dni);
             if (existe) {
-                req.flash('mensajeError', 'El cliente con ese DNI ya existe');
+                req.flash('mensajeError', 'El cliente con ese CC ya existe');
                 return res.redirect('/clientes/crear');
             }
 

@@ -4,23 +4,30 @@ const dashboardController = {
     
     mostrarDashboard: async (req, res) => {
         try {
-            // 1. Obtener totales
-            const totales = await DashboardModel.obtenerTotales();
+            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion] = await Promise.all([
+                DashboardModel.obtenerTotales(),
+                DashboardModel.obtenerDatosGraficos(),
+                DashboardModel.obtenerDetalleMora(),
+                DashboardModel.obtenerProximosVencimientos(),
+                DashboardModel.obtenerHistorialFinalizados(),
+                DashboardModel.obtenerOportunidadesRenovacion() // La nueva consulta estratégica
+            ]);
 
-            // 2. Obtener datos para gráficos
-            const datosGrafico = await DashboardModel.obtenerDatosGraficos();
-
-            // Procesar datos para Chart.js
+            // Procesar Estados para el gráfico
             let estados = { pendiente: 0, pagado: 0, vencido: 0 };
-            
-            datosGrafico.forEach(d => {
-                estados[d.estado] = d.cantidad;
+            resGraficos.distribucionPrestamos.forEach(d => {
+                const est = d.estado.toLowerCase();
+                if (estados.hasOwnProperty(est)) estados[est] = d.cantidad;
             });
 
             res.render('index', { 
                 title: 'Panel de Control',
                 pagina: 'dashboard',
-                totales: totales,
+                totales,
+                detalleMora,
+                proximosVencimientos,
+                historialFinalizados,
+                oportunidadesRenovacion, // Pasamos los datos a la vista
                 graficos: {
                     estados: [estados.pendiente, estados.pagado, estados.vencido],
                     balance: [totales.totalPrestadoHistorico, totales.dineroCobrado]
@@ -28,20 +35,8 @@ const dashboardController = {
             });
 
         } catch (error) {
-            console.error(error);
-            // Fallback en caso de error
-            res.render('index', { 
-                title: 'Panel de Control',
-                pagina: 'dashboard',
-                totales: { 
-                    clientes: 0, 
-                    dineroPrestado: 0, 
-                    articulosEmpeno: 0, 
-                    dineroCobrado: 0,
-                    totalAhorros: 0 // <--- Agregamos esto para evitar errores
-                },
-                graficos: { estados: [0,0,0], balance: [0,0] }
-            });
+            console.error("Error Dashboard:", error);
+            res.redirect('/');
         }
     }
 };

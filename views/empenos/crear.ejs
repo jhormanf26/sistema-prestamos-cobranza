@@ -23,7 +23,7 @@
                                     <select name="cliente_id" class="form-select" required>
                                         <option value="">-- Seleccionar Cliente --</option>
                                         <% clientes.forEach(c => { %>
-                                            <option value="<%= c.id %>"><%= c.nombre %> <%= c.apellido %> (DNI: <%= c.dni %>)</option>
+                                            <option value="<%= c.id %>"><%= c.nombre %> <%= c.apellido %> (CC: <%= c.dni %>)</option>
                                         <% }) %>
                                     </select>
                                 </div>

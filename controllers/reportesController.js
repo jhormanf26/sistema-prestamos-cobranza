@@ -94,7 +94,7 @@ const reportesController = {
             doc.rect(50, doc.y, 500, 70).fillAndStroke('#f8f9fa', '#dee2e6');
             const startY = doc.y;
             doc.fill('#000').fontSize(12).font('Helvetica-Bold').text(`CLIENTE: ${cliente.nombre} ${cliente.apellido}`, 60, startY + 15);
-            doc.fontSize(10).font('Helvetica').text(`DNI: ${cliente.dni}`, 60, startY + 35);
+            doc.fontSize(10).font('Helvetica').text(`CC: ${cliente.dni}`, 60, startY + 35);
 
             doc.y = startY + 90;
             doc.font('Helvetica-Bold').fontSize(14).text('RESUMEN FINANCIERO', 50, doc.y);

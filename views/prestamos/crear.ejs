@@ -89,7 +89,7 @@
 
                                                 <div class="col-md-4">
                                                     <div class="card bg-dark text-white p-4 h-100 shadow-sm">
-                                                        <h5 class="mb-4 border-bottom pb-2">Simulación</h5>
+                                                        <h5 class="mb-4 border-bottom pb-2 text-white">Simulación</h5>
 
                                                         <div class="mb-4">
                                                             <small class="text-white-50">Monto Solicitado</small>
@@ -110,6 +110,13 @@
                                                             <h2 class="fw-bold text-success" id="simTotal">
                                                                 <%= empresa.moneda %> 0.00
                                                             </h2>
+                                                        </div>
+
+                                                        <div class="mb-4">
+                                                            <small class="text-white-50">Valor por Cuota</small>
+                                                            <h3 class="fw-bold text-info" id="simCuota">
+                                                                <%= empresa.moneda %> 0.00
+                                                            </h3>
                                                         </div>
 
                                                         <div class="d-grid mt-auto">
@@ -142,6 +149,8 @@
                     const simMonto = document.getElementById('simMonto');
                     const simInteres = document.getElementById('simInteres');
                     const simTotal = document.getElementById('simTotal');
+                    const simCuota = document.getElementById('simCuota');
+                    const inputCuotas = document.getElementById('inputCuotas');
 
                     // Obtenemos el símbolo de moneda desde el servidor
                     const moneda = "<%= empresa.moneda %>";
@@ -151,23 +160,46 @@
                         window.applyCurrencyMask('.currency-input');
                     }
 
+                    // --- CAPTURA DE DATOS DESDE EL SIMULADOR ---
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const pMonto = urlParams.get('monto');
+                    const pInteres = urlParams.get('interes');
+                    const pCuotas = urlParams.get('cuotas');
+                    const pFrecuencia = urlParams.get('frecuencia');
+
+                    if (pMonto) inputMonto.value = pMonto;
+                    if (pInteres) inputInteres.value = pInteres;
+                    if (pCuotas) inputCuotas.value = pCuotas;
+                    if (pFrecuencia) document.querySelector('select[name="frecuencia"]').value = pFrecuencia;
+
+                    // Si el monto fue seteado, disparamos el formateo
+                    if (pMonto && window.applyCurrencyMask) {
+                        const event = new Event('input', { bubbles: true });
+                        inputMonto.dispatchEvent(event);
+                    }
+                    // ------------------------------------------
+
                     function calcular() {
                         // Obtenemos el valor limpio (solo números)
                         const rawValue = inputMonto.value.replace(/\D/g, '');
                         const m = parseFloat(rawValue) || 0;
                         const i = parseFloat(inputInteres.value) || 0;
+                        const c = parseInt(inputCuotas.value) || 1;
 
                         const interesGanado = m * (i / 100);
                         const total = m + interesGanado;
+                        const cuota = total / (c > 0 ? c : 1);
 
                         if (window.formatCurrency) {
                             simMonto.innerText = `${moneda} ${window.formatCurrency(m, 2)}`;
                             simInteres.innerText = `${moneda} ${window.formatCurrency(interesGanado, 2)}`;
                             simTotal.innerText = `${moneda} ${window.formatCurrency(total, 2)}`;
+                            simCuota.innerText = `${moneda} ${window.formatCurrency(cuota, 2)}`;
                         } else {
                             simMonto.innerText = `${moneda} ${m.toFixed(2)}`;
                             simInteres.innerText = `${moneda} ${interesGanado.toFixed(2)}`;
                             simTotal.innerText = `${moneda} ${total.toFixed(2)}`;
+                            simCuota.innerText = `${moneda} ${cuota.toFixed(2)}`;
                         }
                     }
 
@@ -176,6 +208,7 @@
                     inputMonto.addEventListener('input', calcular);
 
                     inputInteres.addEventListener('input', calcular);
+                    inputCuotas.addEventListener('input', calcular);
 
                     // LIMPIAR PUNTOS ANTES DE ENVIAR AL SERVIDOR
                     if (formPrestamo) {
