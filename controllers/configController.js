@@ -6,9 +6,9 @@ const configController = {
     mostrar: async (req, res) => {
         try {
             const config = await ConfigModel.obtener();
-            res.render('config/index', { 
+            res.render('config/index', {
                 title: 'Configuración de Empresa',
-                config: config 
+                config: config
             });
         } catch (error) {
             console.error(error);
@@ -20,7 +20,7 @@ const configController = {
     actualizar: async (req, res) => {
         try {
             const { nombre_empresa, ruc, direccion, telefono, email_contacto, moneda } = req.body;
-            
+
             // Si hay archivo, usamos su nombre, si no, null
             const logo = req.file ? req.file.filename : null;
 

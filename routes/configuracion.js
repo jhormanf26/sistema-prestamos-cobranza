@@ -40,7 +40,7 @@ router.get('/', async (req, res) => {
 // "logo" debe coincidir con el name="logo" de tu input en el HTML
 router.post('/actualizar', upload.single('logo'), async (req, res) => {
     try {
-        const { nombre_empresa, ruc, direccion, telefono, moneda, interes_global } = req.body;
+        const { nombre_empresa, ruc, direccion, telefono, moneda, interes_global , email_contacto} = req.body;
         
         // Si subió foto, capturamos el nombre. Si no, es null.
         const logoNombre = req.file ? req.file.filename : null;
@@ -52,7 +52,8 @@ router.post('/actualizar', upload.single('logo'), async (req, res) => {
             telefono,
             moneda: moneda || 'S/',
             interes_global: parseFloat(interes_global) || 0,
-            logo: logoNombre 
+            logo: logoNombre,
+            email_contacto
         };
 
         // Guardar en BD

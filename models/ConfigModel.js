@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 class ConfigModel {
-    
+
     // Obtener datos
     static async obtener() {
         try {
@@ -22,7 +22,7 @@ class ConfigModel {
             if (actual) {
                 // UPDATE: Si no hay logo nuevo, quitamos esa propiedad para no borrar el actual
                 if (!datos.logo) {
-                    delete datos.logo; 
+                    delete datos.logo;
                 }
                 const query = "UPDATE configuracion SET ? WHERE id = ?";
                 await db.query(query, [datos, actual.id]);
