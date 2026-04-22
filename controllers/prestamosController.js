@@ -73,7 +73,7 @@ const prestamosController = {
     // 3. Guardar (TU CÓDIGO ORIGINAL CON EMAIL Y BITÁCORA)
     guardar: async (req, res) => {
         try {
-            const { cliente_id, monto, interes, cuotas, frecuencia, fecha_inicio } = req.body;
+            const { cliente_id, monto, interes, cuotas, frecuencia, fecha_inicio, observaciones } = req.body;
             const usuarioActual = (req.session && req.session.usuario) ? req.session.usuario.nombre : 'Administrador';
 
             if (!cliente_id || !monto || !cuotas || !fecha_inicio) {
@@ -102,7 +102,8 @@ const prestamosController = {
                 cuotas: numCuotas,
                 frecuencia,
                 fecha_inicio,
-                fecha_fin: fechaFinStr
+                fecha_fin: fechaFinStr,
+                observaciones: observaciones || ''
             });
 
             // TU AUDITORÍA

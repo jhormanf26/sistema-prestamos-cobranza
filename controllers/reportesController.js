@@ -18,7 +18,7 @@ const reportesController = {
         try {
             const prestamo = await PrestamoModel.obtenerPorId(id);
             let config = await ConfigModel.obtener();
-            
+
             if (!config) config = { nombre_empresa: 'EMPRESA', moneda: '$', ruc: '000000000' };
             const moneda = config.moneda;
 
@@ -30,62 +30,64 @@ const reportesController = {
             doc.pipe(res);
 
             if (config.logo) {
-                try { doc.image(`public/uploads/${config.logo}`, 50, 45, { width: 60 }); } catch(e){}
+                try { doc.image(`public/uploads/${config.logo}`, 50, 45, { width: 60 }); } catch (e) { }
             }
 
             doc.fontSize(16).font('Helvetica-Bold').text('CONTRATO DE PRÉSTAMO DE DINERO', { align: 'center' });
             doc.fontSize(10).font('Helvetica').text(`NRO OPERACIÓN: ${prestamo.id}`, { align: 'center' });
-            doc.moveDown(2);
+
+            // Asegurar que el texto empiece debajo del logo (que está en y: 45 con ancho 60)
+            doc.y = 110;
 
             doc.fontSize(11).font('Helvetica');
             doc.text(`En la ciudad, a los ${new Date(prestamo.fecha_inicio).toLocaleDateString()}, se celebra el presente contrato entre:`);
-            doc.moveDown(1);
+            doc.moveDown(0.8);
 
             doc.font('Helvetica-Bold').text('EL ACREEDOR:', { underline: true });
             doc.font('Helvetica').text(`Empresa: ${config.nombre_empresa}`);
-            doc.text(`RUC: ${config.ruc}`);
+            doc.text(`Documento: ${config.ruc}`);
             doc.text(`Dirección: ${config.direccion || 'Oficina Principal'}`);
-            doc.moveDown(1);
+            doc.moveDown(0.8);
 
             doc.font('Helvetica-Bold').text('EL DEUDOR (CLIENTE):', { underline: true });
             doc.font('Helvetica').text(`Nombre: ${prestamo.nombre} ${prestamo.apellido}`);
-            doc.text(`Documento de Identidad (DNI): ${prestamo.dni}`);
+            doc.text(`Documento(CC): ${prestamo.dni}`);
             doc.text(`Teléfono: ${prestamo.telefono || 'No registrado'}`);
-            doc.moveDown(2);
+            doc.moveDown(1.5);
 
             doc.font('Helvetica-Bold').text('CLÁUSULAS DEL CONTRATO:', { align: 'center' });
-            doc.moveDown(1);
+            doc.moveDown(0.8);
 
             doc.font('Helvetica-Bold').text('PRIMERO (DEL MONTO):', { continued: true });
             doc.font('Helvetica').text(` EL ACREEDOR entrega a EL DEUDOR la suma de ${moneda} ${formatCurrency(prestamo.monto_prestado, 2)} en calidad de préstamo.`);
-            doc.moveDown(0.5);
+            doc.moveDown(0.4);
 
             doc.font('Helvetica-Bold').text('SEGUNDO (DE LA DEVOLUCIÓN):', { continued: true });
             doc.font('Helvetica').text(` EL DEUDOR se compromete a devolver la suma total de ${moneda} ${formatCurrency(prestamo.monto_total, 2)}, la cual incluye capital e intereses.`);
-            doc.moveDown(0.5);
+            doc.moveDown(0.4);
 
             doc.font('Helvetica-Bold').text('TERCERO (FORMA DE PAGO):', { continued: true });
             doc.font('Helvetica').text(` El pago se realizará en ${prestamo.cuotas} cuotas con frecuencia ${prestamo.frecuencia.toUpperCase()}.`);
-            doc.moveDown(3);
 
-            doc.y = 650;
-            doc.text('__________________________', 50, doc.y);
-            doc.text('__________________________', 350, doc.y);
-            
+            // Recalcular posición de firmas para que no salten de página
+            const firmaY = 620;
+            doc.text('__________________________', 50, firmaY);
+            doc.text('__________________________', 350, firmaY);
+
             doc.font('Helvetica-Bold');
-            doc.text('FIRMA DE ACREEDOR', 50, doc.y + 15);
-            doc.text('FIRMA DE DEUDOR', 350, doc.y + 15);
-            
+            doc.text('FIRMA DE ACREEDOR', 50, firmaY + 15);
+            doc.text('FIRMA DE DEUDOR', 350, firmaY + 15);
+
             doc.font('Helvetica');
-            doc.text(config.nombre_empresa, 50, doc.y + 30);
-            doc.text(`${prestamo.nombre} ${prestamo.apellido}`, 350, doc.y + 30);
-            doc.text(`DNI: ${prestamo.dni}`, 350, doc.y + 45);
+            doc.text(config.nombre_empresa, 50, firmaY + 30);
+            doc.text(`${prestamo.nombre} ${prestamo.apellido}`, 350, firmaY + 30);
+            doc.text(`CC: ${prestamo.dni}`, 350, firmaY + 45);
 
             doc.end();
 
-        } catch (error) { 
-            console.error("Error PDF Contrato:", error); 
-            res.redirect('/prestamos'); 
+        } catch (error) {
+            console.error("Error PDF Contrato:", error);
+            res.redirect('/prestamos');
         }
     },
 
@@ -96,7 +98,7 @@ const reportesController = {
             const pago = await PagoModel.obtenerDetalle(id);
             let config = await ConfigModel.obtener();
             const moneda = (config && config.moneda) ? config.moneda : '$';
-            
+
             if (!pago) return res.redirect('/prestamos');
 
             const doc = new PDFDocument({ size: [226, 400], margin: 10 });
@@ -104,7 +106,7 @@ const reportesController = {
             res.setHeader('Content-Disposition', `inline; filename=Ticket_${id}.pdf`);
             doc.pipe(res);
 
-            if (config.logo) try { doc.image(`public/uploads/${config.logo}`, 90, 10, { width: 40 }); doc.moveDown(4); } catch(e){}
+            if (config.logo) try { doc.image(`public/uploads/${config.logo}`, 90, 10, { width: 40 }); doc.moveDown(4); } catch (e) { }
             doc.fontSize(10).font('Helvetica-Bold').text((config.nombre_empresa || 'SISTEMA').toUpperCase(), { align: 'center' });
             doc.text('--------------------------------', { align: 'center' });
             doc.fontSize(12).text(`TOTAL: ${moneda} ${formatCurrency(pago.monto_pagado, 2)}`, { align: 'center' });
@@ -121,16 +123,16 @@ const reportesController = {
 
             let config = await ConfigModel.obtener();
             const moneda = (config && config.moneda) ? config.moneda : '$';
-            
+
             // 1. Traemos los pagos reales para el cruce
             const pagos = await PagoModel.obtenerHistorial(id);
             let totalPagado = pagos.reduce((acc, p) => acc + parseFloat(p.monto_pagado), 0);
 
             // 2. Calculamos el cronograma
             let cronograma = finance.calcularCronograma(
-                parseFloat(prestamo.monto_total), 
-                prestamo.cuotas, 
-                prestamo.frecuencia, 
+                parseFloat(prestamo.monto_total),
+                prestamo.cuotas,
+                prestamo.frecuencia,
                 prestamo.fecha_inicio
             );
 
@@ -156,7 +158,7 @@ const reportesController = {
 
             // Estética
             if (config.logo) {
-                try { doc.image(`public/uploads/${config.logo}`, 50, 40, { width: 60 }); } catch(e){}
+                try { doc.image(`public/uploads/${config.logo}`, 50, 40, { width: 60 }); } catch (e) { }
             }
 
             doc.fontSize(20).font('Helvetica-Bold').fillColor('#2c3e50').text('CRONOGRAMA DE PAGOS', { align: 'right' });
@@ -170,15 +172,16 @@ const reportesController = {
 
             doc.font('Helvetica').fontSize(10);
             doc.text(`Cliente: ${prestamo.nombre} ${prestamo.apellido}`);
-            doc.text(`DNI: ${prestamo.dni}`);
+            doc.text(`CC: ${prestamo.dni}`);
             doc.text(`Monto Total: ${moneda} ${formatCurrency(prestamo.monto_total, 2)}`);
             doc.text(`Frecuencia: ${prestamo.frecuencia.toUpperCase()}`);
             doc.moveDown(1.5);
 
             // Cabecera Tabla
             const tableTop = doc.y;
-            doc.font('Helvetica-Bold').fillColor('#ffffff');
             doc.rect(50, tableTop, 500, 20).fill('#34495e');
+            doc.font('Helvetica-Bold').fillColor('#ffffff');
+
             doc.text('Cuota', 60, tableTop + 5);
             doc.text('Fecha Venc.', 120, tableTop + 5);
             doc.text('Monto', 280, tableTop + 5);
@@ -192,18 +195,18 @@ const reportesController = {
                 if (index % 2 === 0) {
                     doc.rect(50, y - 5, 500, 20).fill('#f9f9f9');
                 }
-                
+
                 doc.fillColor('#000').text(c.numero.toString(), 70, y);
                 doc.text(c.fecha.toLocaleDateString(), 120, y);
                 doc.text(`${moneda} ${formatCurrency(c.monto, 2)}`, 280, y);
-                
+
                 // Color por estado
                 if (c.estado === 'PAGADO') doc.fillColor('#27ae60');
                 else if (c.estado === 'PARCIAL') doc.fillColor('#e67e22');
                 else doc.fillColor('#7f8c8d');
-                
+
                 doc.font('Helvetica-Bold').text(c.estado, 400, y);
-                
+
                 doc.fillColor('#000').font('Helvetica'); // Reset
                 y += 20;
 
@@ -220,9 +223,9 @@ const reportesController = {
             });
 
             doc.end();
-        } catch (error) { 
+        } catch (error) {
             console.error("Error Cronograma PDF:", error);
-            res.redirect('/prestamos'); 
+            res.redirect('/prestamos');
         }
     },
 
@@ -235,7 +238,7 @@ const reportesController = {
             const ahorros = await AhorroModel.buscarPorCliente(id);
             const empenos = await EmpenoModel.obtenerPorCliente(id);
             let config = await ConfigModel.obtener();
-            
+
             const moneda = (config && config.moneda) ? config.moneda : '$';
             if (!config) config = { nombre_empresa: 'Sistema', ruc: '' };
 
@@ -246,18 +249,18 @@ const reportesController = {
             res.setHeader('Content-Disposition', `inline; filename=EstadoCuenta_${id}.pdf`);
             doc.pipe(res);
 
-            if (config.logo) try { doc.image(`public/uploads/${config.logo}`, 50, 45, { width: 60 }); } catch(e){}
+            if (config.logo) try { doc.image(`public/uploads/${config.logo}`, 50, 45, { width: 60 }); } catch (e) { }
             doc.fontSize(18).font('Helvetica-Bold').text('ESTADO DE CUENTA INTEGRAL', { align: 'center' });
             doc.fontSize(10).font('Helvetica').text(config.nombre_empresa, { align: 'center' });
             doc.text(`Fecha: ${new Date().toLocaleDateString()}`, { align: 'center' });
 
             doc.y = 160;
-            
+
             doc.rect(50, doc.y, 500, 70).fillAndStroke('#f8f9fa', '#dee2e6');
-            const startY = doc.y; 
+            const startY = doc.y;
             doc.fill('#000').fontSize(12).font('Helvetica-Bold').text(`CLIENTE: ${cliente.nombre} ${cliente.apellido}`, 60, startY + 15);
             doc.fontSize(10).font('Helvetica').text(`DNI: ${cliente.dni}`, 60, startY + 35);
-            
+
             doc.y = startY + 90;
             doc.font('Helvetica-Bold').fontSize(14).text('RESUMEN FINANCIERO', 50, doc.y);
             doc.moveDown(1);
@@ -275,7 +278,7 @@ const reportesController = {
 
             doc.font('Helvetica-Bold').fontSize(12).text('2. PRÉSTAMOS ACTIVOS', 50, y);
             y += 20;
-            
+
             doc.fontSize(10).text('ID', 50, y);
             doc.text('Fecha', 100, y);
             doc.text('Monto Total', 220, y);
@@ -286,10 +289,10 @@ const reportesController = {
             let totalDeuda = 0;
             let hayDeuda = false;
             doc.font('Helvetica');
-            
+
             if (prestamos.length > 0) {
                 prestamos.forEach(p => {
-                    if(p.estado !== 'pagado') {
+                    if (p.estado !== 'pagado') {
                         hayDeuda = true;
                         doc.text(`#${p.id}`, 50, y);
                         doc.text(new Date(p.fecha_inicio).toLocaleDateString(), 100, y);
@@ -300,7 +303,7 @@ const reportesController = {
                     }
                 });
             }
-            if(!hayDeuda) {
+            if (!hayDeuda) {
                 doc.text('Sin deudas pendientes.', 50, y);
                 y += 20;
             } else {
@@ -313,18 +316,18 @@ const reportesController = {
             if (y > 650) { doc.addPage(); y = 50; }
             doc.font('Helvetica-Bold').fontSize(12).text('3. ARTÍCULOS EN GARANTÍA', 50, y);
             y += 20;
-            
+
             if (empenos.length > 0) {
                 let hay = false;
                 doc.font('Helvetica').fontSize(10);
                 empenos.forEach(e => {
-                    if(e.estado === 'en_custodia') {
+                    if (e.estado === 'en_custodia') {
                         hay = true;
                         doc.text(`- ${e.nombre_articulo} (${moneda} ${formatCurrency(e.valor_tasacion, 2)})`, 50, y);
                         y += 15;
                     }
                 });
-                if(!hay) doc.text('No hay artículos en custodia.', 50, y);
+                if (!hay) doc.text('No hay artículos en custodia.', 50, y);
             } else {
                 doc.font('Helvetica').fontSize(10).text('No hay historial.', 50, y);
             }
@@ -371,31 +374,31 @@ const reportesController = {
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=Reporte_Prestamos_Completo.xlsx');
-            
+
             await workbook.xlsx.write(res);
             res.end();
 
-        } catch (error) { 
+        } catch (error) {
             console.error("Error Excel Simple:", error);
-            res.redirect('/prestamos'); 
+            res.redirect('/prestamos');
         }
     },
 
     // 6. MOSTRAR PANEL REPORTES
-    mostrarPanel: (req, res) => { 
-        res.render('reportes/panel', { title: 'Centro de Reportes' }); 
+    mostrarPanel: (req, res) => {
+        res.render('reportes/panel', { title: 'Centro de Reportes' });
     },
 
     // 7. DESCARGAR REPORTE EXCEL (AVANZADO)
     descargarReporteExcel: async (req, res) => {
         const { tipo_reporte, fecha_inicio, fecha_fin } = req.body;
-        
+
         console.log(`Generando Excel: ${tipo_reporte} de ${fecha_inicio} a ${fecha_fin}`);
 
         try {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Datos Exportados');
-            
+
             worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
             worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } };
 
@@ -460,7 +463,7 @@ const reportesController = {
             const fileName = `Reporte_${tipo_reporte}_${Date.now()}.xlsx`;
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-            
+
             await workbook.xlsx.write(res);
             res.end();
 
@@ -477,7 +480,7 @@ const reportesController = {
         try {
             const mov = await AhorroModel.obtenerMovimientoPorId(id);
             let config = await ConfigModel.obtener();
-            
+
             const moneda = (config && config.moneda) ? config.moneda : '$';
             if (!config) config = { nombre_empresa: 'Sistema Financiero', ruc: '000000' };
 
@@ -489,38 +492,38 @@ const reportesController = {
             doc.pipe(res);
 
             if (config.logo) {
-                try { doc.image(`public/uploads/${config.logo}`, 90, 10, { width: 40 }); doc.moveDown(4); } 
-                catch(e) { doc.moveDown(2); }
+                try { doc.image(`public/uploads/${config.logo}`, 90, 10, { width: 40 }); doc.moveDown(4); }
+                catch (e) { doc.moveDown(2); }
             } else { doc.moveDown(2); }
-            
+
             doc.fontSize(10).font('Helvetica-Bold').text(config.nombre_empresa.toUpperCase(), { align: 'center' });
             doc.fontSize(8).font('Helvetica').text(`RUC: ${config.ruc || '---'}`, { align: 'center' });
             doc.text('--------------------------------', { align: 'center' });
-            
+
             doc.moveDown(0.5);
             doc.font('Helvetica-Bold').text('COMPROBANTE AHORRO', { align: 'center' });
             doc.text(`OP: ${mov.mov_id}`, { align: 'center' });
             doc.font('Helvetica').text(new Date(mov.fecha_movimiento).toLocaleString(), { align: 'center' });
-            
+
             doc.moveDown(0.5);
             doc.text('--------------------------------', { align: 'center' });
             doc.font('Helvetica').text(`Cliente: ${mov.nombre} ${mov.apellido}`);
             doc.text(`DNI: ${mov.dni}`);
             doc.text(`Cuenta: #${mov.cuenta_id}`);
-            
+
             doc.moveDown(1);
             doc.font('Helvetica-Bold').fontSize(14).text(mov.tipo_movimiento.toUpperCase(), { align: 'center' });
             doc.fontSize(16).text(`${moneda} ${formatCurrency(mov.monto, 2)}`, { align: 'center' });
-            
+
             doc.fontSize(8).font('Helvetica');
-            if(mov.observacion) {
+            if (mov.observacion) {
                 doc.moveDown(0.5);
                 doc.text(`Obs: ${mov.observacion}`, { align: 'center' });
             }
 
             doc.moveDown(2);
             doc.text('Verifique su dinero antes de retirarse.', { align: 'center' });
-            
+
             doc.end();
 
         } catch (error) {
@@ -535,7 +538,7 @@ const reportesController = {
         try {
             const prestamo = await PrestamoModel.obtenerPorId(id);
             let config = await ConfigModel.obtener();
-            
+
             const moneda = (config && config.moneda) ? config.moneda : '$';
             if (!config) config = { nombre_empresa: 'Sistema Financiero', ruc: '000000', direccion: 'Oficina Principal' };
 
@@ -548,51 +551,51 @@ const reportesController = {
 
             // Cabecera
             if (config.logo) {
-                try { doc.image(`public/uploads/${config.logo}`, 90, 10, { width: 40 }); doc.moveDown(4); } 
-                catch(e) { doc.moveDown(2); }
+                try { doc.image(`public/uploads/${config.logo}`, 90, 10, { width: 40 }); doc.moveDown(4); }
+                catch (e) { doc.moveDown(2); }
             } else { doc.moveDown(2); }
-            
+
             doc.fontSize(10).font('Helvetica-Bold').text(config.nombre_empresa.toUpperCase(), { align: 'center' });
-            doc.fontSize(8).font('Helvetica').text(`RUC: ${config.ruc || '---'}`, { align: 'center' });
+            doc.fontSize(8).font('Helvetica').text(`CC: ${config.ruc || '---'}`, { align: 'center' });
             doc.text(config.direccion || '', { align: 'center' });
             doc.text('--------------------------------', { align: 'center' });
-            
+
             doc.moveDown(0.5);
             doc.fontSize(11).font('Helvetica-Bold').text('COMPROBANTE DE ENTREGA', { align: 'center' });
             doc.fontSize(9).text('DE PRÉSTAMO', { align: 'center' });
             doc.fontSize(8).font('Helvetica').text(`NRO OP: ${prestamo.id}`, { align: 'center' });
             doc.text(`Fecha: ${new Date(prestamo.fecha_inicio).toLocaleDateString()}`, { align: 'center' });
-            
+
             doc.moveDown(0.5);
             doc.text('--------------------------------', { align: 'center' });
-            
+
             // Datos del Cliente
             doc.font('Helvetica-Bold').text('CLIENTE (DEUDOR):', { align: 'left' });
             doc.font('Helvetica').text(`${prestamo.nombre} ${prestamo.apellido}`);
-            doc.text(`DNI: ${prestamo.dni}`);
-            
+            doc.text(`CC: ${prestamo.dni}`);
+
             doc.moveDown(1);
-            
+
             // Detalles del Dinero Entregado
             doc.font('Helvetica-Bold').text('DETALLE DEL DESEMBOLSO:', { align: 'left' });
             doc.fontSize(12).text(`MONTO ENTREGADO: ${moneda} ${formatCurrency(prestamo.monto_prestado, 2)}`, { align: 'center' });
-            
+
             doc.moveDown(0.5);
             doc.fontSize(8).font('Helvetica');
             doc.text(`Total a devolver: ${moneda} ${formatCurrency(prestamo.monto_total, 2)}`);
             doc.text(`Cuotas: ${prestamo.cuotas} (${prestamo.frecuencia})`);
-            
+
             doc.moveDown(3);
-            
+
             // Sección de Firma
             doc.text('________________________________', { align: 'center' });
             doc.text('RECIBÍ CONFORME (Firma Cliente)', { align: 'center' });
             doc.moveDown(0.5);
-            doc.text(`DNI: ${prestamo.dni}`, { align: 'center' });
+            doc.text(`CC: ${prestamo.dni}`, { align: 'center' });
 
             doc.moveDown(2);
             doc.fontSize(7).text('Este comprobante certifica la recepción del dinero en efectivo o transferencia.', { align: 'center', oblique: true });
-            
+
             doc.end();
 
         } catch (error) {

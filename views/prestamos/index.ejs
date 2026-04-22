@@ -54,8 +54,8 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Cliente</th>
-                                        <th>Monto Prestado</th>
                                         <th>Total a Pagar</th>
+                                        <th>Observaciones</th>
                                         <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -69,11 +69,11 @@
                                                     <div class="fw-bold"><%= p.nombre %> <%= p.apellido %></div>
                                                     <small class="text-muted">DNI: <%= p.dni %></small>
                                                 </td>
-                                                <td class="text-primary fw-bold">
-                                                    <%= empresa.moneda %> <%= formatCurrency(p.monto_prestado, 2) %>
-                                                </td>
                                                 <td class="text-success fw-bold">
                                                     <%= empresa.moneda %> <%= formatCurrency(p.monto_total, 2) %>
+                                                </td>
+                                                <td class="text-muted small">
+                                                    <%= p.observaciones && p.observaciones.trim() !== '' ? p.observaciones : '--' %>
                                                 </td>
                                                 <td>
                                                     <% if(p.estado == 'pendiente') { %>

@@ -28,7 +28,12 @@
                                 
                                 <p class="mb-2"><strong>Total Prestado:</strong> <%= empresa.moneda %> <%= formatCurrency(prestamo.monto_prestado, 2) %></p>
                                 
-                                <p class="mb-3"><strong>Cuotas:</strong> <%= prestamo.cuotas %> (<%= prestamo.frecuencia %>)</p>
+                                <p class="mb-2"><strong>Cuotas:</strong> <%= prestamo.cuotas %> (<%= prestamo.frecuencia %>)</p>
+                                
+                                <p class="mb-3">
+                                    <strong>Observaciones:</strong> 
+                                    <span class="text-muted"><%= prestamo.observaciones && prestamo.observaciones.trim() !== '' ? prestamo.observaciones : '--' %></span>
+                                </p>
 
                                 <div class="bg-white p-3 rounded border text-center shadow-sm mt-3">
                                     <small class="text-muted text-uppercase">Saldo Pendiente</small>
