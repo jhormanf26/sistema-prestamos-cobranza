@@ -104,14 +104,16 @@ const pagosController = {
                 const simboloMoneda = config ? config.moneda : '$';
                 const nuevoSaldo = saldoPendiente - parseFloat(monto_pagado);
                 
-                const htmlCorreo = emailService.plantillaPago(
+                const { asunto: asuntoBD, html: contenidoHTML } = await emailService.plantillaPago(
                     `${prestamo.nombre} ${prestamo.apellido}`,
                     monto_pagado,
                     new Date(),
                     nuevoSaldo,
                     simboloMoneda
                 );
-                emailService.enviarCorreo(prestamo.email, 'Pago Recibido', htmlCorreo);
+
+                const asunto = asuntoBD || 'Recibo de Pago Confirmado';
+                emailService.enviarCorreo(prestamo.email, asunto, contenidoHTML);
             }
 
             req.flash('mensajeExito', 'Pago registrado correctamente');

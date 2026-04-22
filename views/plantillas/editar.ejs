@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<style>
+    #editor { height: 650px; border-radius: 8px; font-size: 14px; }
+    #preview-container { border: 1px solid #ddd; border-radius: 8px; height: 650px; background: #eee; overflow: auto; padding: 10px; }
+    .main-content-wrapper { background: #f8f9fa; }
+</style>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-4 py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="h3 mb-1">Editando: <%= plantilla.nombre %></h2>
+                            <span class="text-muted small d-none d-md-inline">Variables: 
+                                <% plantilla.variables_disponibles.split(',').forEach(v => { %>
+                                    <code class="bg-white border p-1 rounded mx-1 text-primary">{{<%= v.trim() %>}}</code>
+                                <% }) %>
+                            </span>
+                        </div>
+                        <div>
+                            <a href="/plantillas" class="btn btn-light me-2">Regresar</a>
+                            <button type="button" onclick="guardarPlantilla()" class="btn btn-success px-4 shadow-sm">
+                                <i class="bi bi-save me-2"></i> Guardar Plantilla
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="formPlantilla" action="/plantillas/actualizar/<%= plantilla.id %>" method="POST">
+                        <div class="card border-0 shadow-sm p-4 mb-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Asunto del Correo Electrónico</label>
+                                <input type="text" name="asunto" class="form-control form-control-lg" value="<%= plantilla.asunto %>" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-6 mb-3">
+                                    <label class="form-label fw-bold d-flex justify-content-between">
+                                        <span>Editor de Código HTML</span>
+                                        <span class="badge bg-secondary">ACE</span>
+                                    </label>
+                                    <div id="editor"><%= plantilla.html_content %></div>
+                                    <textarea name="html_content" id="html_textarea" class="d-none"></textarea>
+                                </div>
+                                <div class="col-lg-6 mb-3">
+                                    <label class="form-label fw-bold">Vista Previa Dinámica</label>
+                                    <div id="preview-container">
+                                        <div style="background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); height: 100%;">
+                                            <iframe id="preview-iframe" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Ace Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/chrome");
+        editor.session.setMode("ace/mode/html");
+        editor.setOptions({ wrap: true, fontSize: "14px" });
+
+        var iframe = document.getElementById('preview-iframe');
+
+        function updatePreview() {
+            var code = editor.getValue();
+            var dummy = {
+                cliente: "JHorman Felipe",
+                monto: "5,000,000.00",
+                total: "6,000,000.00",
+                cuotas: "12",
+                moneda: "$",
+                fecha: new Date().toLocaleDateString(),
+                saldoPendiente: "5,000,000.00"
+            };
+            Object.keys(dummy).forEach(key => {
+                code = code.split('{{'+key+'}}').join(dummy[key]);
+            });
+            var doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(code);
+            doc.close();
+        }
+
+        editor.on("change", updatePreview);
+        window.onload = updatePreview;
+
+        function guardarPlantilla() {
+            document.getElementById('html_textarea').value = editor.getValue();
+            document.getElementById('formPlantilla').submit();
+        }
+    </script>
+    <%- include('../partials/footer') %>
+</body>
+</html>

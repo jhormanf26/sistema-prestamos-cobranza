@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 const { formatCurrency } = require('./formatters');
+const PlantillaModel = require('../models/PlantillaModel');
 
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -12,86 +13,98 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+/**
+ * Función auxiliar para renderizar plantillas dinámicas desde la BD
+ * o usar una local si no existe en la BD.
+ */
+async function renderizar(slug, datos, fallbackHtml) {
+    try {
+        const plantilla = await PlantillaModel.obtenerPorSlug(slug);
+        let html = (plantilla && plantilla.html_content) ? plantilla.html_content : fallbackHtml;
+        
+        // Reemplazar variables {{variable}}
+        Object.keys(datos).forEach(key => {
+            const regex = new RegExp(`{{${key}}}`, 'g');
+            html = html.replace(regex, datos[key]);
+        });
+        
+        return {
+            asunto: (plantilla && plantilla.asunto) ? plantilla.asunto : null,
+            html
+        };
+    } catch (e) {
+        return { asunto: null, html: fallbackHtml };
+    }
+}
+
 const emailService = {
 
-    enviarCorreo: async (destinatario, asunto, contenidoHTML) => {
+    enviarCorreo: async (destinatario, asunto, contenidoHTML, adjuntos = []) => {
         if (!destinatario) return;
         try {
             await transporter.sendMail({
                 from: `"Sistema Financiero" <${process.env.EMAIL_USER}>`,
                 to: destinatario,
                 subject: asunto,
-                html: contenidoHTML
+                html: contenidoHTML,
+                attachments: adjuntos
             });
-            console.log(`Correo enviado a ${destinatario}`);
+            console.log(`Correo enviado a ${destinatario} con ${adjuntos.length} adjuntos`);
         } catch (error) {
             console.error('Error enviando correo:', error.message);
         }
     },
 
-    // AHORA RECIBE 'moneda' COMO PARÁMETRO
-    plantillaPrestamo: (cliente, monto, cuotas, total, moneda) => {
-        return `
-            <div style="font-family: Arial; border: 1px solid #ddd; padding: 20px; max-width: 600px; margin: 0 auto;">
-                <div style="background-color: #0d6efd; color: white; padding: 15px; text-align: center;">
-                    <h2 style="margin:0;">¡Préstamo Aprobado!</h2>
-                </div>
-                <div style="padding: 20px;">
-                    <p>Hola <strong>${cliente}</strong>,</p>
-                    <p>Tu solicitud ha sido aprobada exitosamente.</p>
-                    <table style="width:100%; border-collapse: collapse;">
-                        <tr><td style="padding:8px;">Monto Recibido:</td><td style="font-weight:bold;">${moneda} ${formatCurrency(monto, 2)}</td></tr>
-                        <tr><td style="padding:8px;">Total a Pagar:</td><td style="font-weight:bold;">${moneda} ${formatCurrency(total, 2)}</td></tr>
-                        <tr><td style="padding:8px;">Cuotas:</td><td>${cuotas}</td></tr>
-                    </table>
-                </div>
+    // Convertidas a ASYNC para leer de la base de datos
+    plantillaPrestamo: async (cliente, monto, cuotas, total, moneda) => {
+        const fallback = `
+            <div style="background-color: #f4f7f9; padding: 20px; font-family: Arial;">
+                <table align="center" width="100%" style="max-width: 600px; background: #fff; border-radius: 15px;">
+                    <tr><td align="center" style="background: #1e3c72; padding: 30px; color: #fff;"><h1>¡Préstamo Aprobado!</h1></td></tr>
+                    <tr><td style="padding: 30px;">Hola ${cliente}, tu préstamo de ${moneda} ${formatCurrency(monto, 2)} ha sido aprobado.</td></tr>
+                </table>
             </div>
         `;
+        const res = await renderizar('prestamo_aprobado', {
+            cliente, 
+            monto: formatCurrency(monto, 2), 
+            cuotas, 
+            total: formatCurrency(total, 2), 
+            moneda
+        }, fallback);
+        return res; // Retorna {asunto, html}
     },
 
-    plantillaPago: (cliente, monto, fecha, saldoPendiente, moneda) => {
-        return `
-            <div style="font-family: Arial; border: 1px solid #ddd; padding: 20px; max-width: 600px; margin: 0 auto;">
-                <div style="background-color: #198754; color: white; padding: 15px; text-align: center;">
-                    <h2 style="margin:0;">Pago Recibido</h2>
-                </div>
-                <div style="padding: 20px; text-align: center;">
-                    <p>Hola <strong>${cliente}</strong>,</p>
-                    <p>Hemos registrado tu pago correctamente.</p>
-                    <div style="background-color: #f0fdf4; padding: 15px; margin: 20px 0; border-radius: 8px;">
-                        <span style="font-size: 14px; color: #166534;">Monto Pagado</span><br>
-                        <span style="font-size: 28px; font-weight: bold; color: #15803d;">${moneda} ${formatCurrency(monto, 2)}</span>
-                        <div style="font-size: 12px; color: #666; margin-top:5px;">${new Date(fecha).toLocaleString()}</div>
-                    </div>
-                    <p><strong>Saldo Restante:</strong> ${moneda} ${formatCurrency(saldoPendiente, 2)}</p>
-                </div>
+    plantillaPago: async (cliente, monto, fecha, saldoPendiente, moneda) => {
+        const fallback = `
+            <div style="background-color: #f0fdf4; padding: 20px; font-family: Arial;">
+                <table align="center" width="100%" style="max-width: 600px; background: #fff; border-radius: 15px;">
+                    <tr><td align="center" style="background: #15803d; padding: 30px; color: #fff;"><h1>Pago Recibido</h1></td></tr>
+                    <tr><td style="padding: 30px;">Hola ${cliente}, recibimos tu pago por ${moneda} ${formatCurrency(monto, 2)}.</td></tr>
+                </table>
             </div>
         `;
+        const res = await renderizar('pago_recibido', {
+            cliente, 
+            monto: formatCurrency(monto, 2), 
+            fecha: new Date(fecha).toLocaleDateString(), 
+            saldoPendiente: formatCurrency(saldoPendiente, 2), 
+            moneda
+        }, fallback);
+        return res;
     },
 
-    plantillaAhorro: (cliente, tipo, monto, nuevoSaldo, moneda) => {
-        const color = tipo === 'deposito' ? '#198754' : '#dc3545';
-        const titulo = tipo === 'deposito' ? 'Depósito Confirmado' : 'Retiro Realizado';
-
-        return `
-            <div style="font-family: Arial; border: 1px solid #ddd; max-width: 500px; margin: 0 auto;">
-                <div style="background-color: ${color}; color: white; padding: 15px; text-align: center;">
-                    <h2 style="margin:0;">${titulo}</h2>
-                </div>
-                <div style="padding: 20px;">
-                    <p>Hola <strong>${cliente}</strong>,</p>
-                    <p>Se ha registrado un movimiento en tu cuenta.</p>
-                    <div style="text-align: center; margin: 20px 0;">
-                        <span style="font-size: 24px; font-weight: bold; color: ${color};">
-                            ${tipo === 'deposito' ? '+' : '-'} ${moneda} ${formatCurrency(monto, 2)}
-                        </span>
-                    </div>
-                    <p style="text-align: center; color: #666;">
-                        <strong>Saldo Disponible:</strong> ${moneda} ${formatCurrency(nuevoSaldo, 2)}
-                    </p>
-                </div>
-            </div>
-        `;
+    plantillaAhorro: async (cliente, tipo, monto, nuevoSaldo, moneda) => {
+        const slug = tipo === 'deposito' ? 'ahorro_deposito' : 'ahorro_retiro';
+        const fallback = `<div>Movimiento de ahorro de ${moneda} ${formatCurrency(monto, 2)} procesado.</div>`;
+        const res = await renderizar(slug, {
+            cliente, 
+            tipo, 
+            monto: formatCurrency(monto, 2), 
+            nuevoSaldo: formatCurrency(nuevoSaldo, 2), 
+            moneda
+        }, fallback);
+        return res;
     }
 };
 

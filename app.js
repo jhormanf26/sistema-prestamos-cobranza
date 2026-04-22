@@ -29,7 +29,10 @@ app.use(flash());
 
 // Variables Globales
 const { formatCurrency } = require('./utils/formatters');
+const pkg = require('./package.json');
+
 app.use((req, res, next) => {
+    app.locals.version = pkg.version;
     app.locals.formatCurrency = formatCurrency;
     app.locals.mensajeExito = req.flash('mensajeExito');
     app.locals.mensajeError = req.flash('mensajeError');
@@ -81,6 +84,7 @@ cargarRuta('/bitacora', './routes/bitacora');
 cargarRuta('/caja', './routes/caja');
 cargarRuta('/perfil', './routes/perfil');
 cargarRuta('/mi-licencia', './routes/mi-licencia');
+cargarRuta('/plantillas', './routes/plantillas');
 
 // 5. Reportes
 cargarRuta('/reportes', './routes/reportes');
