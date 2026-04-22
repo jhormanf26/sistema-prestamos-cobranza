@@ -148,8 +148,16 @@
                                                                     </tbody>
                                                                 </table>
                                                             </div>
-                                                            <div class="alert alert-info mt-3 mb-0 small"><i
-                                                                    class="bi bi-info-circle"></i> Fechas referenciales.
+                                                            <div class="alert alert-info mt-3 mb-3 small">
+                                                                <i class="bi bi-info-circle"></i> Fechas referenciales.
+                                                            </div>
+
+                                                            <!-- BOTÓN HACER PRÉSTAMO (NUEVO) -->
+                                                            <div class="d-grid">
+                                                                <a href="/prestamos/crear?monto=<%= datos.monto %>&interes=<%= datos.interes %>&cuotas=<%= datos.cuotas %>&frecuencia=<%= datos.frecuencia %>" 
+                                                                   class="btn btn-dark btn-lg fw-bold shadow">
+                                                                    <i class="bi bi-person-plus-fill"></i> Hacer Préstamo con estos datos
+                                                                </a>
                                                             </div>
                                                         </div>
                                                     </div>

@@ -46,7 +46,7 @@ const empenosReportesController = {
             doc.moveDown();
 
             doc.font('Helvetica-Bold').text('EL DEUDOR (CLIENTE):');
-            doc.font('Helvetica').text(`Sr(a). ${empeno.nombre} ${empeno.apellido}, DNI: ${empeno.dni}.`);
+            doc.font('Helvetica').text(`Sr(a). ${empeno.nombre} ${empeno.apellido}, CC: ${empeno.dni}.`);
             doc.moveDown(2);
 
             doc.font('Helvetica-Bold').text('CLÁUSULA 1: DEL PRÉSTAMO');
@@ -67,7 +67,7 @@ const empenosReportesController = {
             // --- FIRMAS ---
             doc.text('_____________________________             _____________________________', { align: 'center' });
             doc.text('      POR LA EMPRESA                                     FIRMA EL CLIENTE      ', { align: 'center' });
-            doc.text(`                                                               DNI: ${empeno.dni}`, { align: 'center' });
+            doc.text(`                                                               CC: ${empeno.dni}`, { align: 'center' });
 
             doc.end();
 
