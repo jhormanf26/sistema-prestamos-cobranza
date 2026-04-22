@@ -410,10 +410,9 @@ h6 {
 }
 
 .sidebar .nav-link.active {
-    background-color: #3b82f6;
-    /* Azul brillante */
-    color: #fff;
-    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
+    background-color: #fff;
+    color: #005bff;
+    box-shadow: 0 4px 6px #3b82f666;
 }
 
 .sidebar .nav-link i {
