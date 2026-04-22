@@ -84,6 +84,7 @@ cargarRuta('/bitacora', './routes/bitacora');
 cargarRuta('/caja', './routes/caja');
 cargarRuta('/perfil', './routes/perfil');
 cargarRuta('/mi-licencia', './routes/mi-licencia');
+cargarRuta('/plantillas', './routes/plantillas');
 
 // 5. Reportes
 cargarRuta('/reportes', './routes/reportes');

@@ -342,6 +342,124 @@ INSERT INTO `usuarios` (`id`, `nombre_completo`, `email`, `password`, `rol`, `es
 	(13, 'EmpleadoPrueba9', 'empleado9@sistema.local', '$2b$10$Kjz3C2gtC9YvM/ZTh8qX6O3IkP3Ffvr6FiJhKV.qPcEVn7gvNzkVK', 'empleado', 1, '2026-03-26 17:31:47'),
 	(14, 'EmpleadoPrueba10', 'empleado10@sistema.local', '$2b$10$Kjz3C2gtC9YvM/ZTh8qX6O3IkP3Ffvr6FiJhKV.qPcEVn7gvNzkVK', 'empleado', 1, '2026-03-26 17:31:47');
 
+
+-- 1. Crear tabla
+CREATE TABLE IF NOT EXISTS plantillas_correo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) NOT NULL UNIQUE,
+    asunto VARCHAR(200) NOT NULL,
+    html_content MEDIUMTEXT NOT NULL,
+    descripcion VARCHAR(255),
+    variables_disponibles VARCHAR(255),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 2. Insertar plantillas base (con el diseño premium que hicimos)
+-- IMPORTANTE: He puesto {{cliente}}, {{monto}}, etc. como etiquetas para que el código las reemplace dinámicamente.
+INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disponibles, html_content) VALUES 
+('Préstamo Aprobado', 'prestamo_aprobado', '¡Préstamo Aprobado! - Documentos Adjuntos', 'Se envía cuando se registra un nuevo préstamo', 'cliente, monto, cuotas, total, moneda', 
+'<div style="background-color: #6fbff047; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <tr>
+            <td align="center" style="background: #1e3c72; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 40px 20px;">
+                <div style="margin-bottom: 15px; font-size: 40px;">📩</div>
+                <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">¡Préstamo Aprobado!</h1>
+                <p style="margin: 10px 0 0; color: #ffffff; opacity: 0.8; font-size: 16px;">Tu solicitud ha sido procesada con éxito.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px;">
+                <p style="margin: 0 0 10px; font-size: 18px; color: #333;">Hola <strong>{{cliente}}</strong>,</p>
+                <p style="margin: 0 0 30px; font-size: 15px; color: #666; line-height: 1.5;">Estamos encantados de informarte que tu solicitud de préstamo ha sido aprobada con éxito. A continuación los detalles principales:</p>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px;">
+                    <tr>
+                        <td width="55" style="padding-bottom: 20px;">
+                            <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; width: 44px; height: 44px; text-align: center; line-height: 44px; font-size: 22px;">💰</div>
+                        </td>
+                        <td style="padding-bottom: 20px;">
+                            <div style="color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Monto Desembolsado</div>
+                            <div style="color: #0f172a; font-size: 22px; font-weight: bold;">{{moneda}} {{monto}}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="55" style="padding-bottom: 20px;">
+                            <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; width: 44px; height: 44px; text-align: center; line-height: 44px; font-size: 22px;">💳</div>
+                        </td>
+                        <td style="padding-bottom: 20px;">
+                            <div style="color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Total a Pagar</div>
+                            <div style="color: #0f172a; font-size: 20px; font-weight: bold;">{{moneda}} {{total}}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="55">
+                            <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; width: 44px; height: 44px; text-align: center; line-height: 44px; font-size: 22px;">📅</div>
+                        </td>
+                        <td>
+                            <div style="color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Número de Cuotas</div>
+                            <div style="color: #0f172a; font-size: 20px; font-weight: bold;">{{cuotas}} fijas</div>
+                        </td>
+                    </tr>
+                </table>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 30px; background-color: #fffbeb; border-radius: 10px;">
+                    <tr>
+                        <td style="padding: 15px; border-left: 5px solid #f59e0b;">
+                            <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.4;">
+                                ℹ️ <strong>Documentos adjuntos en formato PDF</strong> para su revisión, control y firma.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="padding: 25px; background-color: #f9fafb; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9;">
+                Sistema Financiero Profesional. <br>
+                Este es un correo informativo, no responda a este mensaje.
+            </td>
+        </tr>
+    </table>
+</div>
+'),
+
+('Confirmación de Pago', 'pago_recibido', '¡Recibo de Pago Confirmado!', 'Se envía cuando el cliente paga una cuota', 'cliente, monto, fecha, saldoPendiente, moneda',
+'<div style="background-color: #f0fdf4; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <tr>
+            <td align="center" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); padding: 40px 20px;">
+                <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+                <h1 style="margin: 0; color: #ffffff; font-size: 26px;">¡Recibo de Pago!</h1>
+                <p style="margin: 10px 0 0; color: #ffffff; opacity: 0.8;">Tu abono ha sido procesado exitosamente.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px; text-align: center;">
+                <p style="text-align: left; margin: 0 0 20px; color: #333; font-size: 16px;">Hola <strong>{{cliente}}</strong>,</p>
+                <div style="margin-bottom: 10px; color: #64748b; font-size: 14px; text-transform: uppercase;">Monto Recibido</div>
+                <div style="font-size: 42px; font-weight: bold; color: #15803d; margin-bottom: 30px;">{{moneda}} {{monto}}</div>
+                
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 10px; padding: 20px;">
+                    <tr>
+                        <td align="left" style="color: #64748b; padding: 5px 0;">Fecha del pago:</td>
+                        <td align="right" style="font-weight: bold;">{{fecha}}</td>
+                    </tr>
+                    <tr>
+                        <td align="left" style="color: #64748b; padding: 5px 0;">Saldo restante:</td>
+                        <td align="right" style="font-weight: bold; color: #dc2626; font-size: 16px;">{{moneda}} {{saldoPendiente}}</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 30px; color: #666; font-size: 14px;">Gracias por mantener tu cuenta al día.</p>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="padding: 20px; background-color: #f9fafb; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9;">
+                © Sistema de Cobranza.
+            </td>
+        </tr>
+    </table>
+</div>
+');
+
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;

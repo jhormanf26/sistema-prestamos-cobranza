@@ -5,6 +5,7 @@ const PagoModel = require('../models/PagoModel'); // Asegúrate de tener este mo
 const emailService = require('../utils/emailService');
 const finance = require('../utils/finance');
 const BitacoraModel = require('../models/BitacoraModel'); // <--- TU CÓDIGO DE AUDITORÍA
+const pdfService = require('../utils/pdfService');
 const { formatCurrency } = require('../utils/formatters');
 
 const prestamosController = {
@@ -94,7 +95,7 @@ const prestamosController = {
 
             const fechaFinStr = fechaFin.toISOString().split('T')[0];
 
-            await PrestamoModel.crear({
+            const result = await PrestamoModel.crear({
                 cliente_id,
                 monto_prestado: montoPrestado,
                 tasa_interes: tasa,
@@ -106,16 +107,47 @@ const prestamosController = {
                 observaciones: observaciones || ''
             });
 
+            const prestamoId = result.insertId;
+
             // TU AUDITORÍA
             await BitacoraModel.registrar(usuarioActual, 'NUEVO_PRESTAMO', `Monto: ${montoPrestado} - Cliente ID: ${cliente_id}`);
 
-            // TU ENVÍO DE CORREO
+            // TU ENVÍO DE CORREO CON ADJUNTOS
             const cliente = await ClienteModel.obtenerPorId(cliente_id);
             if (cliente && cliente.email) {
-                let config = await ConfigModel.obtener();
-                const simboloMoneda = config ? config.moneda : '$';
-                const htmlCorreo = emailService.plantillaPrestamo(`${cliente.nombre} ${cliente.apellido}`, montoPrestado, cuotas, montoTotal, simboloMoneda);
-                emailService.enviarCorreo(cliente.email, '¡Préstamo Aprobado!', htmlCorreo);
+                try {
+                    const config = await ConfigModel.obtener();
+                    const simboloMoneda = config ? config.moneda : '$';
+                    
+                    // Generar PDFs en paralelo para mayor velocidad
+                    const [pdfContrato, pdfTicket, pdfCronograma] = await Promise.all([
+                        pdfService.generarContratoBuffer(prestamoId),
+                        pdfService.generarTicketDesembolsoBuffer(prestamoId),
+                        pdfService.generarCronogramaBuffer(prestamoId)
+                    ]);
+
+                    const adjuntos = [
+                        { filename: `Contrato_Prestamo_${prestamoId}.pdf`, content: pdfContrato },
+                        { filename: `Ticket_Desembolso_${prestamoId}.pdf`, content: pdfTicket },
+                        { filename: `Cronograma_Pagos_${prestamoId}.pdf`, content: pdfCronograma }
+                    ];
+
+                    // 3. Obtener el diseño del correo desde el servicio (BD o Fallback)
+                    const { asunto: asuntoBD, html: contenidoHTML } = await emailService.plantillaPrestamo(
+                        `${cliente.nombre} ${cliente.apellido}`,
+                        montoPrestado,
+                        numCuotas,
+                        montoTotal,
+                        config ? config.moneda : '$'
+                    );
+
+                    const asunto = asuntoBD || '¡Préstamo Aprobado! - Documentos Adjuntos';
+
+                    // 4. Enviar correo con los adjuntos
+                    await emailService.enviarCorreo(cliente.email, asunto, contenidoHTML, adjuntos);
+                } catch (err) {
+                    console.error('Error al generar adjuntos o enviar correo:', err);
+                }
             }
 
             req.flash('mensajeExito', 'Préstamo registrado correctamente');
