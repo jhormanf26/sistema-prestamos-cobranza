@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<style>
+    #editor { height: 400px; border-radius: 8px; font-size: 14px; }
+    .main-content-wrapper { background: #f8f9fa; }
+</style>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-4 py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="h3 mb-1"><i class="bi bi-pencil-fill text-danger me-2"></i>Editando: <%= plantilla.nombre %></h2>
+                            <p class="text-muted small mb-0"><%= plantilla.descripcion %></p>
+                        </div>
+                        <div>
+                            <a href="/plantillas-pdf" class="btn btn-light me-2">Regresar</a>
+                            <button type="button" onclick="guardarPlantilla()" class="btn btn-danger px-4 shadow-sm">
+                                <i class="bi bi-save me-2"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <form id="formPlantilla" action="/plantillas-pdf/actualizar/<%= plantilla.id %>" method="POST">
+                                <div class="card border-0 shadow-sm p-4 mb-4">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Contenido del Texto</label>
+                                        <div id="editor"><%= plantilla.contenido %></div>
+                                        <textarea name="contenido" id="html_textarea" class="d-none"></textarea>
+                                    </div>
+                                    
+                                    <div class="alert alert-warning border-0 small">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <strong>Nota:</strong> Evita borrar las etiquetas entre llaves como <code>{{monto}}</code> o <code>{{cliente}}</code>, ya que el sistema las usa para insertar los datos reales automáticamente.
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm p-4">
+                                <h5 class="h6 fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Ayuda de Edición</h5>
+                                <p class="small text-muted">Puedes usar las siguientes variables que serán reemplazadas al generar el PDF:</p>
+                                <ul class="small list-group list-group-flush mb-0">
+                                    <li class="list-group-item px-0"><code>{{cliente}}</code>: Nombre completo</li>
+                                    <li class="list-group-item px-0"><code>{{monto}}</code>: Valor prestado</li>
+                                    <li class="list-group-item px-0"><code>{{total}}</code>: Valor total a pagar</li>
+                                    <li class="list-group-item px-0"><code>{{cuotas}}</code>: Número de cuotas</li>
+                                    <li class="list-group-item px-0"><code>{{frecuencia}}</code>: Periodo de pago</li>
+                                    <li class="list-group-item px-0"><code>{{tasa}}</code>: Porcentaje de interés</li>
+                                    <li class="list-group-item px-0"><code>{{moneda}}</code>: Símbolo ($)</li>
+                                    <li class="list-group-item px-0"><code>{{fecha_inicio}}</code>: Fecha de inicio</li>
+                                    <li class="list-group-item px-0"><code>{{op}}</code>: Número de operación</li>
+                                </ul>
+                            </div>
+
+                            <div class="card border-0 shadow-sm p-4 mt-4 bg-light">
+                                <h5 class="h6 fw-bold mb-2">Vista Previa Visual</h5>
+                                <p class="small text-muted mb-3">Genera una vista previa instantánea de cómo se verá este documento con los cambios actuales.</p>
+                                
+                                <% 
+                                    let tipoPreview = '';
+                                    if (plantilla.slug === 'contrato_clausulas') tipoPreview = 'contrato';
+                                    else if (plantilla.slug === 'ticket_pie') tipoPreview = 'ticket';
+                                    else if (plantilla.slug === 'cronograma_pie') tipoPreview = 'cronograma';
+                                %>
+
+                                <div class="d-grid gap-2">
+                                    <a href="/plantillas/preview-pdf/<%= tipoPreview %>" target="_blank" class="btn btn-danger shadow-sm">
+                                        <i class="bi bi-file-pdf-fill me-2"></i> Ver Vista Previa
+                                    </a>
+                                    <a href="/plantillas/editar/prestamo_aprobado" class="btn btn-sm btn-link text-muted mt-2">Configurar adjuntos de correo</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Ace Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/chrome");
+        editor.session.setMode("ace/mode/text");
+        editor.setOptions({ 
+            wrap: true, 
+            fontSize: "14px",
+            showPrintMargin: false
+        });
+
+        function guardarPlantilla() {
+            document.getElementById('html_textarea').value = editor.getValue();
+            document.getElementById('formPlantilla').submit();
+        }
+    </script>
+    <%- include('../partials/footer') %>
+</body>
+</html>
