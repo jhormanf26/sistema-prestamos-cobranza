@@ -33,9 +33,16 @@ const plantillasController = {
 
     actualizar: async (req, res) => {
         const { id } = req.params;
-        const { asunto, html_content } = req.body;
+        const { asunto, html_content, enviar_pdf, pdfs } = req.body;
+        
+        // Estructurar adjuntos_config
+        const adjuntos_config = {
+            enviar_pdf: enviar_pdf === 'on',
+            pdfs: Array.isArray(pdfs) ? pdfs : (pdfs ? [pdfs] : [])
+        };
+
         try {
-            await PlantillaModel.actualizar(id, { asunto, html_content });
+            await PlantillaModel.actualizar(id, { asunto, html_content, adjuntos_config });
             req.flash('mensajeExito', 'Plantilla actualizada correctamente');
             res.redirect('/plantillas');
         } catch (error) {

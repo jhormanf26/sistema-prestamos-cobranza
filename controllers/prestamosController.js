@@ -99,17 +99,46 @@ const prestamosController = {
             if (cliente && cliente.email) {
                 try {
                     const config = await ConfigModel.obtener();
-                    const [pdfContrato, pdfTicket, pdfCronograma] = await Promise.all([
-                        pdfService.generarContratoBuffer(result.insertId),
-                        pdfService.generarTicketDesembolsoBuffer(result.insertId),
-                        pdfService.generarCronogramaBuffer(result.insertId)
-                    ]);
-                    const { asunto, html } = await emailService.plantillaPrestamo(`${cliente.nombre} ${cliente.apellido}`, montoPrestado, numCuotas, montoTotal, config ? config.moneda : '$');
-                    await emailService.enviarCorreo(cliente.email, asunto || '¡Préstamo Aprobado!', html, [
-                        { filename: 'Contrato.pdf', content: pdfContrato },
-                        { filename: 'Ticket.pdf', content: pdfTicket },
-                        { filename: 'Cronograma.pdf', content: pdfCronograma }
-                    ]);
+                    const { asunto, html, adjuntos_config } = await emailService.plantillaPrestamo(`${cliente.nombre} ${cliente.apellido}`, montoPrestado, numCuotas, montoTotal, config ? config.moneda : '$');
+                    
+                    const attachments = [];
+                    
+                    // Si hay configuración y se desea enviar PDF
+                    if (adjuntos_config && adjuntos_config.enviar_pdf) {
+                        const pdfPromesas = [];
+                        const pdfNombres = [];
+
+                        if (adjuntos_config.pdfs.includes('contrato')) {
+                            pdfPromesas.push(pdfService.generarContratoBuffer(result.insertId));
+                            pdfNombres.push('Contrato.pdf');
+                        }
+                        if (adjuntos_config.pdfs.includes('ticket')) {
+                            pdfPromesas.push(pdfService.generarTicketDesembolsoBuffer(result.insertId));
+                            pdfNombres.push('Ticket.pdf');
+                        }
+                        if (adjuntos_config.pdfs.includes('cronograma')) {
+                            pdfPromesas.push(pdfService.generarCronogramaBuffer(result.insertId));
+                            pdfNombres.push('Cronograma.pdf');
+                        }
+
+                        const pdfBuffers = await Promise.all(pdfPromesas);
+                        pdfBuffers.forEach((buffer, index) => {
+                            attachments.push({ filename: pdfNombres[index], content: buffer });
+                        });
+
+                    } else if (!adjuntos_config) {
+                        // Comportamiento por defecto si no existe configuración (enviar todos)
+                        const [pdfContrato, pdfTicket, pdfCronograma] = await Promise.all([
+                            pdfService.generarContratoBuffer(result.insertId),
+                            pdfService.generarTicketDesembolsoBuffer(result.insertId),
+                            pdfService.generarCronogramaBuffer(result.insertId)
+                        ]);
+                        attachments.push({ filename: 'Contrato.pdf', content: pdfContrato });
+                        attachments.push({ filename: 'Ticket.pdf', content: pdfTicket });
+                        attachments.push({ filename: 'Cronograma.pdf', content: pdfCronograma });
+                    }
+
+                    await emailService.enviarCorreo(cliente.email, asunto || '¡Préstamo Aprobado!', html, attachments);
                 } catch (e) { console.error('Email error:', e); }
             }
 
