@@ -30,10 +30,11 @@ async function renderizar(slug, datos, fallbackHtml) {
         
         return {
             asunto: (plantilla && plantilla.asunto) ? plantilla.asunto : null,
-            html
+            html,
+            adjuntos_config: (plantilla && plantilla.adjuntos_config) ? plantilla.adjuntos_config : null
         };
     } catch (e) {
-        return { asunto: null, html: fallbackHtml };
+        return { asunto: null, html: fallbackHtml, adjuntos_config: null };
     }
 }
 

@@ -13,9 +13,9 @@ class PlantillaModel {
     }
 
     static async actualizar(id, datos) {
-        const { asunto, html_content } = datos;
-        const query = 'UPDATE plantillas_correo SET asunto = ?, html_content = ? WHERE id = ?';
-        return await db.query(query, [asunto, html_content, id]);
+        const { asunto, html_content, adjuntos_config } = datos;
+        const query = 'UPDATE plantillas_correo SET asunto = ?, html_content = ?, adjuntos_config = ? WHERE id = ?';
+        return await db.query(query, [asunto, html_content, JSON.stringify(adjuntos_config), id]);
     }
 }
 

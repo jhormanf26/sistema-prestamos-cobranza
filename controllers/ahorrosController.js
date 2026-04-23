@@ -105,14 +105,16 @@ const ahorrosController = {
                 let config = await ConfigModel.obtener();
                 const simboloMoneda = config ? config.moneda : '$';
 
-                const html = emailService.plantillaAhorro(
+                const { asunto: asuntoBD, html: contenidoHTML } = await emailService.plantillaAhorro(
                     `${cuenta.nombre} ${cuenta.apellido}`,
                     tipo,
                     montoFloat,
                     nuevoSaldo,
                     simboloMoneda // <--- Pasamos moneda
                 );
-                emailService.enviarCorreo(cuenta.email, `Notificación de ${tipo.toUpperCase()}`, html);
+
+                const asunto = asuntoBD || `Notificación de ${tipo.toUpperCase()}`;
+                emailService.enviarCorreo(cuenta.email, asunto, contenidoHTML);
             }
 
             req.flash('mensajeExito', 'Transacción realizada con éxito');

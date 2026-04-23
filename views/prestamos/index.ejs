@@ -21,6 +21,19 @@
     th.sortable-header i { font-size: 0.7rem; margin-left: 5px; color: #ccc; }
     th.sortable-header.active i { color: #0d6efd; opacity: 1; }
     th.sortable-header.active { border-bottom: 2px solid #0d6efd; background-color: #f0f7ff; }
+
+    /* Estilos para botones de acción compactos */
+    .btn-xs {
+        padding: 0.15rem 0.35rem;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        border-radius: 4px;
+    }
+    .main-content-wrapper .table td {
+        vertical-align: middle;
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
 </style>
 <body>
     <div class="container-fluid">
@@ -125,26 +138,39 @@
                                                     <% } %>
                                                 </td>
                                                 <td>
-                                                    <div class="btn-group" role="group">
-                                                        <a href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank" class="btn btn-sm btn-dark" title="Imprimir Comprobante de Entrega">
-                                                            <i class="bi bi-receipt"></i>
-                                                        </a>
-
-                                                        <% if(p.estado != 'pagado') { %>
-                                                            <a href="/pagos/registrar/<%= p.id %>" class="btn btn-sm btn-outline-success" title="Registrar Pago">
-                                                                <i class="bi bi-cash-coin"></i>
-                                                            </a>
-                                                        <% } else { %>
-                                                            <button class="btn btn-sm btn-secondary" disabled title="Pagado"><i class="bi bi-check2-all"></i></button>
-                                                        <% } %>
-                                                        
-                                                        <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
-                                                            <i class="bi bi-calendar-week"></i>
-                                                        </a>
-                                                        
-                                                        <a href="/reportes/contrato/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-danger" title="Descargar Contrato">
-                                                            <i class="bi bi-file-earmark-pdf"></i>
-                                                        </a>
+                                                    <div class="row g-1">
+                                                        <div class="col-6">
+                                                            <div class="btn-group w-100" role="group">
+                                                                <a href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank" class="btn btn-xs btn-dark" title="Ticket Desembolso">
+                                                                    <i class="bi bi-receipt"></i>
+                                                                </a>
+                                                                <a href="/reportes/contrato/<%= p.id %>" target="_blank" class="btn btn-xs btn-outline-danger" title="Contrato">
+                                                                    <i class="bi bi-file-earmark-pdf"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="btn-group w-100" role="group">
+                                                                <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-xs btn-outline-primary" title="Ver Cuotas">
+                                                                    <i class="bi bi-calendar-week"></i>
+                                                                </a>
+                                                                <a href="/reportes/cronograma-pdf/<%= p.id %>" target="_blank" class="btn btn-xs btn-primary" title="Descargar Cronograma">
+                                                                    <i class="bi bi-download"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12 mt-1">
+                                                            <div class="btn-group w-100" role="group">
+                                                                <% if(p.estado != 'pagado') { %>
+                                                                    <a href="/pagos/registrar/<%= p.id %>" class="btn btn-sm btn-success py-1" title="Registrar Pago">
+                                                                        <i class="bi bi-cash-coin"></i> Pago
+                                                                    </a>
+                                                                <% } %>
+                                                                <a href="/reportes/estado-cuenta/<%= p.cliente_id %>" target="_blank" class="btn btn-sm btn-outline-info py-1" title="Estado de Cuenta Cliente">
+                                                                    <i class="bi bi-person-lines-fill"></i> Estado
+                                                                </a>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>
