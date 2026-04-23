@@ -235,6 +235,31 @@
                 }
             });
         }
+
+        // --- LÓGICA DE MODO OSCURO (PERSISTENTE) ---
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            if(themeIcon) themeIcon.classList.replace('bi-moon-fill', 'bi-sun-fill');
+        }
+
+        if(themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-fill');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.classList.replace('bi-moon-fill', 'bi-sun-fill');
+                }
+            });
+        }
     </script>
 </body>
 </html>
