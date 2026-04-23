@@ -13,4 +13,9 @@ router.get('/cronograma/:id', prestamosController.verCronograma); // <--- NUEVA 
 router.get('/crear', prestamosController.mostrarFormulario);
 router.post('/guardar', prestamosController.guardar);
 
+// Descargas PDF
+router.get('/pdf-cronograma/:id', prestamosController.descargarCronograma);
+router.get('/pdf-contrato/:id', prestamosController.descargarContrato);
+router.get('/pdf-ticket/:id', prestamosController.descargarTicket);
+
 module.exports = router;

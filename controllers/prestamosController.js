@@ -143,6 +143,45 @@ const prestamosController = {
             const config = await ConfigModel.obtener();
             res.render('prestamos/cronograma', { title: 'Cronograma de Pagos', prestamo, cronograma, empresa: config || { moneda: '$' } });
         } catch (error) { res.redirect('/prestamos'); }
+    },
+
+    descargarCronograma: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const buffer = await pdfService.generarCronogramaBuffer(id);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=Cronograma_Prestamo_${id}.pdf`);
+            res.send(buffer);
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al generar el PDF del cronograma');
+        }
+    },
+
+    descargarContrato: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const buffer = await pdfService.generarContratoBuffer(id);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=Contrato_Prestamo_${id}.pdf`);
+            res.send(buffer);
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al generar el PDF del contrato');
+        }
+    },
+
+    descargarTicket: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const buffer = await pdfService.generarTicketDesembolsoBuffer(id);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=Ticket_Prestamo_${id}.pdf`);
+            res.send(buffer);
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al generar el PDF del ticket');
+        }
     }
 };
 

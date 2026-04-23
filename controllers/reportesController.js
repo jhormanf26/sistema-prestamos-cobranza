@@ -68,106 +68,14 @@ const reportesController = {
     generarEstadoCuenta: async (req, res) => {
         const { id } = req.params;
         try {
-            const cliente = await ClienteModel.obtenerPorId(id);
-            const prestamos = await PrestamoModel.obtenerPorCliente(id);
-            const ahorros = await AhorroModel.buscarPorCliente(id);
-            const empenos = await EmpenoModel.obtenerPorCliente(id);
-            let config = await ConfigModel.obtener();
-
-            const moneda = (config && config.moneda) ? config.moneda : '$';
-            if (!config) config = { nombre_empresa: 'Sistema', ruc: '' };
-
-            if (!cliente) return res.redirect('/clientes');
-
-            const doc = new PDFDocument({ margin: 50 });
+            const buffer = await pdfService.generarEstadoCuentaBuffer(id);
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `inline; filename=EstadoCuenta_${id}.pdf`);
-            doc.pipe(res);
-
-            if (config.logo) try { doc.image(`public/uploads/${config.logo}`, 50, 45, { width: 60 }); } catch (e) { }
-            doc.fontSize(18).font('Helvetica-Bold').text('ESTADO DE CUENTA INTEGRAL', { align: 'center' });
-            doc.fontSize(10).font('Helvetica').text(config.nombre_empresa, { align: 'center' });
-            doc.text(`Fecha: ${new Date().toLocaleDateString()}`, { align: 'center' });
-
-            doc.y = 160;
-
-            doc.rect(50, doc.y, 500, 70).fillAndStroke('#f8f9fa', '#dee2e6');
-            const startY = doc.y;
-            doc.fill('#000').fontSize(12).font('Helvetica-Bold').text(`CLIENTE: ${cliente.nombre} ${cliente.apellido}`, 60, startY + 15);
-            doc.fontSize(10).font('Helvetica').text(`CC: ${cliente.dni}`, 60, startY + 35);
-
-            doc.y = startY + 90;
-            doc.font('Helvetica-Bold').fontSize(14).text('RESUMEN FINANCIERO', 50, doc.y);
-            doc.moveDown(1);
-
-            let y = doc.y;
-            doc.fontSize(12).font('Helvetica-Bold').text('1. CUENTA DE AHORROS', 50, y);
-            y += 20;
-            doc.font('Helvetica');
-            if (ahorros) {
-                doc.fontSize(12).text(`Saldo Disponible: ${moneda} ${formatCurrency(ahorros.saldo_actual, 2)}`, 50, y);
-            } else {
-                doc.fontSize(10).text('No tiene cuenta de ahorros activa.', 50, y);
-            }
-            y += 40;
-
-            doc.font('Helvetica-Bold').fontSize(12).text('2. PRÉSTAMOS ACTIVOS', 50, y);
-            y += 20;
-
-            doc.fontSize(10).text('ID', 50, y);
-            doc.text('Fecha', 100, y);
-            doc.text('Monto Total', 220, y);
-            doc.text('Estado', 350, y);
-            doc.moveTo(50, y + 15).lineTo(500, y + 15).stroke();
-            y += 20;
-
-            let totalDeuda = 0;
-            let hayDeuda = false;
-            doc.font('Helvetica');
-
-            if (prestamos.length > 0) {
-                prestamos.forEach(p => {
-                    if (p.estado !== 'pagado') {
-                        hayDeuda = true;
-                        doc.text(`#${p.id}`, 50, y);
-                        doc.text(new Date(p.fecha_inicio).toLocaleDateString(), 100, y);
-                        doc.text(`${moneda} ${formatCurrency(p.monto_total, 2)}`, 220, y);
-                        doc.text(p.estado.toUpperCase(), 350, y);
-                        y += 15;
-                        totalDeuda += parseFloat(p.monto_total);
-                    }
-                });
-            }
-            if (!hayDeuda) {
-                doc.text('Sin deudas pendientes.', 50, y);
-                y += 20;
-            } else {
-                y += 10;
-                doc.font('Helvetica-Bold').text(`Total Deuda: ${moneda} ${formatCurrency(totalDeuda, 2)}`, 50, y);
-                y += 20;
-            }
-            y += 20;
-
-            if (y > 650) { doc.addPage(); y = 50; }
-            doc.font('Helvetica-Bold').fontSize(12).text('3. ARTÍCULOS EN GARANTÍA', 50, y);
-            y += 20;
-
-            if (empenos.length > 0) {
-                let hay = false;
-                doc.font('Helvetica').fontSize(10);
-                empenos.forEach(e => {
-                    if (e.estado === 'en_custodia') {
-                        hay = true;
-                        doc.text(`- ${e.nombre_articulo} (${moneda} ${formatCurrency(e.valor_tasacion, 2)})`, 50, y);
-                        y += 15;
-                    }
-                });
-                if (!hay) doc.text('No hay artículos en custodia.', 50, y);
-            } else {
-                doc.font('Helvetica').fontSize(10).text('No hay historial.', 50, y);
-            }
-            doc.end();
-        } catch (error) { res.redirect('/clientes'); }
+            res.setHeader('Content-Disposition', `inline; filename=Estado_Cuenta_Cliente_${id}.pdf`);
+            res.send(buffer);
+        } catch (error) {
+            console.error("Error Estado Cuenta PDF:", error);
+            res.redirect('/clientes');
+        }
     },
 
     // 5. EXPORTAR EXCEL SIMPLE (BOTÓN VERDE)

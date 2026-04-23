@@ -458,7 +458,81 @@ INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disp
         </tr>
     </table>
 </div>
-');
+'),
+
+('Depósito en Ahorros', 'ahorro_deposito', '¡Depósito Confirmado! - Cuenta de Ahorros', 'Se envía cuando se registra un nuevo depósito en la cuenta de ahorros', 'cliente, monto, nuevoSaldo, moneda', 
+'<div style="background-color: #f0fdf4; padding: 20px; font-family: \'Helvetica Neue\', Helvetica, Arial, sans-serif;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <tr>
+            <td align="center" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); padding: 40px 20px;">
+                <div style="font-size: 40px; margin-bottom: 10px;">💰</div>
+                <h1 style="margin: 0; color: #ffffff; font-size: 26px;">¡Depósito Confirmado!</h1>
+                <p style="margin: 10px 0 0; color: #ffffff; opacity: 0.8;">Tu ahorro está creciendo con nosotros.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px; text-align: center;">
+                <p style="text-align: left; margin: 0 0 20px; color: #333; font-size: 16px;">Hola <strong>{{cliente}}</strong>,</p>
+                <div style="margin-bottom: 10px; color: #64748b; font-size: 14px; text-transform: uppercase;">Monto Depositado</div>
+                <div style="font-size: 42px; font-weight: bold; color: #15803d; margin-bottom: 30px;">{{moneda}} {{monto}}</div>
+                
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 10px; padding: 20px;">
+                    <tr>
+                        <td align="left" style="color: #64748b; padding: 5px 0;">Tipo de Operación:</td>
+                        <td align="right" style="font-weight: bold;">Depósito</td>
+                    </tr>
+                    <tr>
+                        <td align="left" style="color: #64748b; padding: 5px 0;">Nuevo Saldo:</td>
+                        <td align="right" style="font-weight: bold; color: #0f172a; font-size: 16px;">{{moneda}} {{nuevoSaldo}}</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 30px; color: #666; font-size: 14px;">Gracias por confiar en nuestra gestión de ahorros.</p>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="padding: 20px; background-color: #f9fafb; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9;">
+                © Sistema de Ahorros y Préstamos.
+            </td>
+        </tr>
+    </table>
+</div>'),
+
+('Retiro de Ahorros', 'ahorro_retiro', 'Notificación de Retiro - Cuenta de Ahorros', 'Se envía cuando se registra un retiro de la cuenta de ahorros', 'cliente, monto, nuevoSaldo, moneda', 
+'<div style="background-color: #f8fafc; padding: 20px; font-family: \'Helvetica Neue\', Helvetica, Arial, sans-serif;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+        <tr>
+            <td align="center" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 40px 20px;">
+                <div style="font-size: 40px; margin-bottom: 10px;">🏧</div>
+                <h1 style="margin: 0; color: #ffffff; font-size: 26px;">Retiro Realizado</h1>
+                <p style="margin: 10px 0 0; color: #ffffff; opacity: 0.8;">Se ha procesado un retiro de tu cuenta.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px; text-align: center;">
+                <p style="text-align: left; margin: 0 0 20px; color: #333; font-size: 16px;">Hola <strong>{{cliente}}</strong>,</p>
+                <div style="margin-bottom: 10px; color: #64748b; font-size: 14px; text-transform: uppercase;">Monto Retirado</div>
+                <div style="font-size: 42px; font-weight: bold; color: #1e293b; margin-bottom: 30px;">{{moneda}} {{monto}}</div>
+                
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 10px; padding: 20px;">
+                    <tr>
+                        <td align="left" style="color: #64748b; padding: 5px 0;">Tipo de Operación:</td>
+                        <td align="right" style="font-weight: bold;">Retiro de Efectivo</td>
+                    </tr>
+                    <tr>
+                        <td align="left" style="color: #64748b; padding: 5px 0;">Saldo Disponible:</td>
+                        <td align="right" style="font-weight: bold; color: #0f172a; font-size: 16px;">{{moneda}} {{nuevoSaldo}}</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 30px; color: #666; font-size: 14px;">Si no reconoces esta operación, por favor contáctanos de inmediato.</p>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="padding: 20px; background-color: #f9fafb; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9;">
+                © Sistema de Ahorros y Préstamos.
+            </td>
+        </tr>
+    </table>
+</div>');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
