@@ -251,7 +251,7 @@ const reportesController = {
             doc.moveDown(0.5);
             doc.text('--------------------------------', { align: 'center' });
             doc.font('Helvetica').text(`Cliente: ${mov.nombre} ${mov.apellido}`);
-            doc.text(`DNI: ${mov.dni}`);
+            doc.text(`CC: ${mov.dni}`);
             doc.text(`Cuenta: #${mov.cuenta_id}`);
 
             doc.moveDown(1);

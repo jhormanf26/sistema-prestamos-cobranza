@@ -43,14 +43,14 @@ const pdfService = {
                 doc.fontSize(18).font('Helvetica-Bold').fillColor('#2c3e50').text('CONTRATO DE PRÉSTAMO', 140, 50, { align: 'center' });
                 doc.fontSize(10).font('Helvetica').fillColor('#7f8c8d').text(`OPERACIÓN N°: ${prestamo.id.toString().padStart(6, '0')}`, { align: 'center' });
                 doc.moveDown(2);
-                
+
                 const boxY = 120;
                 doc.rect(50, boxY, 500, 100).fill('#f8f9fa').stroke('#dee2e6');
                 doc.fillColor('#2c3e50').font('Helvetica-Bold').fontSize(11).text('PARTES CONTRATANTES', 65, boxY + 15);
-                
+
                 doc.font('Helvetica-Bold').fontSize(10).text('EL ACREEDOR:', 65, boxY + 35);
                 doc.font('Helvetica').text(`${config.nombre_empresa} - RUC: ${config.ruc}`, 150, boxY + 35);
-                
+
                 doc.font('Helvetica-Bold').text('EL DEUDOR:', 65, boxY + 55);
                 doc.font('Helvetica').text(`${prestamo.nombre} ${prestamo.apellido}`, 150, boxY + 55);
                 doc.text(`Documento: ${prestamo.dni}`, 150, boxY + 70);
@@ -59,7 +59,7 @@ const pdfService = {
                 doc.moveDown(4);
 
                 // Forzamos el reset de la posición X al margen izquierdo (50)
-                doc.x = 50; 
+                doc.x = 50;
                 doc.font('Helvetica-Bold').fontSize(12).fillColor('#0d6efd').text('CLÁUSULAS DEL COMPROMISO', { align: 'center' });
                 doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#0d6efd').stroke();
                 doc.moveDown(1);
@@ -78,15 +78,15 @@ const pdfService = {
 
                 doc.x = 50;
                 doc.fontSize(10).font('Helvetica').fillColor('#333').text(clausulasTexto || 'No se definieron cláusulas para este contrato.', { align: 'justify', lineGap: 3 });
-                
+
                 const firmaY = 620;
                 doc.strokeColor('#ccc').moveTo(50, firmaY).lineTo(230, firmaY).stroke();
                 doc.moveTo(330, firmaY).lineTo(510, firmaY).stroke();
-                
+
                 doc.fontSize(10).font('Helvetica-Bold').fillColor('#2c3e50');
                 doc.text('FIRMA ACREEDOR', 50, firmaY + 10, { width: 180, align: 'center' });
                 doc.text('FIRMA DEUDOR', 330, firmaY + 10, { width: 180, align: 'center' });
-                
+
                 doc.fontSize(9).font('Helvetica').fillColor('#7f8c8d');
                 doc.text(config.nombre_empresa, 50, firmaY + 25, { width: 180, align: 'center' });
                 doc.text(`${prestamo.nombre} ${prestamo.apellido}`, 330, firmaY + 25, { width: 180, align: 'center' });
@@ -157,7 +157,7 @@ const pdfService = {
                 doc.text(`CC: ${prestamo.dni}`, { align: 'center' });
 
                 doc.moveDown(2);
-                
+
                 // Cargar Pie de Ticket desde BD
                 const pTicketPie = await PlantillaPdfModel.obtenerPorSlug('ticket_pie');
                 const ticketPieTexto = _reemplazarVariables(pTicketPie ? pTicketPie.contenido : '', {
@@ -234,7 +234,7 @@ const pdfService = {
                 doc.fillColor('#2c3e50').font('Helvetica-Bold').fontSize(11).text('INFORMACIÓN DEL CLIENTE:', 65, infoTop + 12);
                 doc.font('Helvetica').fontSize(10).fillColor('#444');
                 doc.text(`Nombre: ${prestamo.nombre} ${prestamo.apellido}`, 65, infoTop + 30);
-                doc.text(`DNI / Documento: ${prestamo.dni}`, 65, infoTop + 45);
+                doc.text(`CC / Documento: ${prestamo.dni}`, 65, infoTop + 45);
                 doc.text(`Préstamo N°: #${prestamo.id}`, 65, infoTop + 60);
 
                 // Rectángulo de Resumen de Préstamo (Derecha)
@@ -265,12 +265,12 @@ const pdfService = {
                     doc.fillColor('#444').fontSize(10).text(c.numero.toString().padStart(2, '0'), 75, y + 6);
                     doc.text(c.fecha.toLocaleDateString(), 130, y + 6);
                     doc.text(`${moneda} ${formatCurrency(c.monto, 2)}`, 260, y + 6);
-                    
+
                     // Estados con Estilo de Badge
                     let estadoColor = '#7f8c8d';
                     if (c.estado === 'PAGADO') estadoColor = '#198754';
                     else if (c.estado === 'PARCIAL') estadoColor = '#fd7e14';
-                    
+
                     doc.font('Helvetica-Bold').fillColor(estadoColor).text(c.estado, 410, y + 6);
                     doc.fillColor('#000').font('Helvetica');
                     y += 22;
@@ -327,10 +327,10 @@ const pdfService = {
                 doc.on('end', () => resolve(Buffer.concat(buffers)));
 
                 // Encabezado
-                if (conf.logo) try { doc.image(`public/uploads/${conf.logo}`, 40, 40, { width: 50 }); } catch (e) {}
+                if (conf.logo) try { doc.image(`public/uploads/${conf.logo}`, 40, 40, { width: 50 }); } catch (e) { }
                 doc.fontSize(20).font('Helvetica-Bold').fillColor('#2c3e50').text('ESTADO DE CUENTA', 100, 45);
                 doc.fontSize(10).font('Helvetica').fillColor('#7f8c8d').text('RESUMEN INTEGRAL DE SERVICIOS', 100, 65);
-                
+
                 doc.fontSize(9).font('Helvetica').text(`Fecha Reporte: ${new Date().toLocaleString()}`, 400, 45, { align: 'right' });
                 doc.moveDown(3);
 
@@ -347,7 +347,7 @@ const pdfService = {
                     doc.fillColor('#2c3e50').font('Helvetica-Bold').fontSize(13).text(`${seccionNum}. SALDOS EN AHORROS`, 40, y);
                     doc.moveTo(40, y + 18).lineTo(560, y + 18).strokeColor('#0d6efd').stroke();
                     y += 30;
-                    
+
                     doc.rect(40, y, 520, 35).fill('#e7f1ff');
                     doc.fillColor('#0d6efd').font('Helvetica-Bold').fontSize(12).text(`SALDO DISPONIBLE:`, 55, y + 12);
                     doc.text(`${moneda} ${formatCurrency(ahorros.saldo_actual, 2)}`, 400, y + 12, { align: 'right', width: 140 });
@@ -376,11 +376,11 @@ const pdfService = {
                     prestamos.forEach(p => {
                         const pagado = parseFloat(p.total_pagado || 0);
                         const saldo = Math.max(0, parseFloat(p.monto_total) - pagado);
-                        
+
                         doc.fillColor('#444').font('Helvetica').text(`#${p.id}`, 50, y);
                         doc.text(new Date(p.fecha_inicio).toLocaleDateString(), 90, y);
                         doc.text(`${moneda} ${formatCurrency(p.monto_total, 2)}`, 180, y);
-                        
+
                         // Color según estado
                         if (p.estado === 'pagado') {
                             doc.fillColor('#198754').font('Helvetica-Bold').text(p.estado.toUpperCase(), 320, y);
@@ -390,12 +390,12 @@ const pdfService = {
                             doc.fillColor('#dc3545').text(`${moneda} ${formatCurrency(saldo, 2)}`, 440, y);
                             totalDeuda += saldo;
                         }
-                        
+
                         y += 18;
                         // Manejo simple de nueva página si hay muchos préstamos
                         if (y > 700) { doc.addPage(); y = 50; }
                     });
-                    
+
                     if (totalDeuda > 0) {
                         doc.moveDown(1.5);
                         doc.rect(340, y, 220, 30).fill('#dc3545');
@@ -419,7 +419,7 @@ const pdfService = {
                     doc.fillColor('#2c3e50').font('Helvetica-Bold').fontSize(13).text(`${seccionNum}. GARANTÍAS EN CUSTODIA`, 40, y);
                     doc.moveTo(40, y + 18).lineTo(560, y + 18).strokeColor('#6c757d').stroke();
                     y += 30;
-                    
+
                     garantiasActivas.forEach(e => {
                         doc.fillColor('#444').font('Helvetica').text(`• ${e.nombre_articulo} (Avalúo: ${moneda} ${formatCurrency(e.valor_tasacion, 2)})`, 55, y);
                         y += 18;

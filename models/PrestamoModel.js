@@ -15,7 +15,8 @@ class PrestamoModel {
             if (columna === 'id') orderBy = `p.id ${direccion}`;
 
             const query = `
-                SELECT p.*, c.nombre, c.apellido, c.dni 
+                SELECT p.*, c.nombre, c.apellido, c.dni,
+                (SELECT IFNULL(SUM(monto_pagado), 0) FROM pagos WHERE prestamo_id = p.id) as total_pagado
                 FROM prestamos p
                 INNER JOIN clientes c ON p.cliente_id = c.id
                 ORDER BY ${orderBy}
@@ -40,7 +41,8 @@ class PrestamoModel {
             if (columna === 'nombre') orderBy = `c.nombre ${direccion}, c.apellido ${direccion}`;
 
             const query = `
-                SELECT p.*, c.nombre, c.apellido, c.dni 
+                SELECT p.*, c.nombre, c.apellido, c.dni,
+                (SELECT IFNULL(SUM(monto_pagado), 0) FROM pagos WHERE prestamo_id = p.id) as total_pagado
                 FROM prestamos p
                 INNER JOIN clientes c ON p.cliente_id = c.id
                 WHERE c.nombre LIKE ? OR c.apellido LIKE ? OR p.id LIKE ?

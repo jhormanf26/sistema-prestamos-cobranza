@@ -85,96 +85,97 @@
 
                     <div class="card card-box p-3">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <!-- SOLO MODIFICAMOS EL ENCABEZADO -->
-                                        <th class="sortable-header <%= sort === 'id' ? 'active' : '' %>">
-                                            <a href="/prestamos?q=<%= busqueda %>&sort=id&order=<%= sort === 'id' && order === 'asc' ? 'desc' : 'asc' %>">
-                                                ID <i class="bi <%= sort === 'id' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
-                                            </a>
-                                        </th>
-                                        <th class="sortable-header <%= sort === 'nombre' ? 'active' : '' %>">
-                                            <a href="/prestamos?q=<%= busqueda %>&sort=nombre&order=<%= sort === 'nombre' && order === 'asc' ? 'desc' : 'asc' %>">
-                                                Cliente <i class="bi <%= sort === 'nombre' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
-                                            </a>
-                                        </th>
-                                        <th class="sortable-header <%= sort === 'monto_total' ? 'active' : '' %>">
-                                            <a href="/prestamos?q=<%= busqueda %>&sort=monto_total&order=<%= sort === 'monto_total' && order === 'asc' ? 'desc' : 'asc' %>">
-                                                Total a Pagar <i class="bi <%= sort === 'monto_total' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
-                                            </a>
-                                        </th>
-                                        <th>Observaciones</th>
-                                        <th class="sortable-header <%= sort === 'estado' ? 'active' : '' %>">
-                                            <a href="/prestamos?q=<%= busqueda %>&sort=estado&order=<%= sort === 'estado' && order === 'asc' ? 'desc' : 'asc' %>">
-                                                Estado <i class="bi <%= sort === 'estado' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
-                                            </a>
-                                        </th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% if (prestamos.length > 0) { %>
-                                        <% prestamos.forEach(p => { %>
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light text-uppercase small fw-bold">
                                             <tr>
-                                                <td><span class="badge bg-secondary">#<%= p.id %></span></td>
-                                                <td>
-                                                    <div class="fw-bold"><%= p.nombre %> <%= p.apellido %></div>
-                                                    <small class="text-muted">CC: <%= p.dni %></small>
-                                                </td>
-                                                <td class="text-success fw-bold">
-                                                    <%= empresa.moneda %> <%= formatCurrency(p.monto_total, 2) %>
-                                                </td>
-                                                <td class="text-muted small">
-                                                    <%= p.observaciones && p.observaciones.trim() !== '' ? p.observaciones : '--' %>
-                                                </td>
-                                                <td>
-                                                    <% if(p.estado == 'pendiente') { %>
-                                                        <span class="badge bg-primary">Por Cobrar</span>
-                                                    <% } else if(p.estado == 'pagado') { %>
-                                                        <span class="badge bg-success">Pagado</span>
-                                                    <% } else { %>
-                                                        <span class="badge bg-danger">Vencido</span>
-                                                    <% } %>
-                                                </td>
-                                                <td>
-                                                    <div class="row g-1">
-                                                        <div class="col-6">
-                                                            <div class="btn-group w-100" role="group">
-                                                                <a href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank" class="btn btn-xs btn-dark" title="Ticket Desembolso">
-                                                                    <i class="bi bi-receipt"></i>
-                                                                </a>
-                                                                <a href="/reportes/contrato/<%= p.id %>" target="_blank" class="btn btn-xs btn-outline-danger" title="Contrato">
-                                                                    <i class="bi bi-file-earmark-pdf"></i>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <div class="btn-group w-100" role="group">
-                                                                <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-xs btn-outline-primary" title="Ver Cuotas">
-                                                                    <i class="bi bi-calendar-week"></i>
-                                                                </a>
-                                                                <a href="/reportes/cronograma-pdf/<%= p.id %>" target="_blank" class="btn btn-xs btn-primary" title="Descargar Cronograma">
-                                                                    <i class="bi bi-download"></i>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-12 mt-1">
-                                                            <div class="btn-group w-100" role="group">
-                                                                <% if(p.estado != 'pagado') { %>
-                                                                    <a href="/pagos/registrar/<%= p.id %>" class="btn btn-sm btn-success py-1" title="Registrar Pago">
-                                                                        <i class="bi bi-cash-coin"></i> Pago
-                                                                    </a>
-                                                                <% } %>
-                                                                <a href="/reportes/estado-cuenta/<%= p.cliente_id %>" target="_blank" class="btn btn-sm btn-outline-info py-1" title="Estado de Cuenta Cliente">
-                                                                    <i class="bi bi-person-lines-fill"></i> Estado
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                <th class="sortable-header <%= sort === 'id' ? 'active' : '' %>">
+                                                    <a href="/prestamos?q=<%= busqueda %>&sort=id&order=<%= sort === 'id' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                        ID <i class="bi <%= sort === 'id' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                                    </a>
+                                                </th>
+                                                <th class="sortable-header <%= sort === 'nombre' ? 'active' : '' %>">
+                                                    <a href="/prestamos?q=<%= busqueda %>&sort=nombre&order=<%= sort === 'nombre' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                        Cliente <i class="bi <%= sort === 'nombre' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                                    </a>
+                                                </th>
+                                                <th class="sortable-header <%= sort === 'monto_total' ? 'active' : '' %>">
+                                                    <a href="/prestamos?q=<%= busqueda %>&sort=monto_total&order=<%= sort === 'monto_total' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                        Total <i class="bi <%= sort === 'monto_total' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                                    </a>
+                                                </th>
+                                                <th>Pagado</th>
+                                                <th>Saldo</th>
+                                                <th class="sortable-header <%= sort === 'estado' ? 'active' : '' %>">
+                                                    <a href="/prestamos?q=<%= busqueda %>&sort=estado&order=<%= sort === 'estado' && order === 'asc' ? 'desc' : 'asc' %>">
+                                                        Estado <i class="bi <%= sort === 'estado' ? (order === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill') : 'bi-caret-down' %>"></i>
+                                                    </a>
+                                                </th>
+                                                <th class="text-end pe-3">Acciones</th>
                                             </tr>
-                                        <% }) %>
+                                        </thead>
+                                        <tbody>
+                                            <% if (prestamos.length > 0) { %>
+                                                <% prestamos.forEach(p => { 
+                                                    const pagado = p.total_pagado || 0;
+                                                    const saldo = p.monto_total - pagado;
+                                                %>
+                                                    <tr>
+                                                        <td><span class="badge bg-dark">#<%= p.id %></span></td>
+                                                        <td>
+                                                            <div class="fw-bold"><%= p.nombre %> <%= p.apellido %></div>
+                                                            <div class="text-muted small"><i class="bi bi-person-vcard me-1"></i><%= p.dni %></div>
+                                                        </td>
+                                                        <td class="small fw-bold text-muted">
+                                                            <%= empresa.moneda %> <%= formatCurrency(p.monto_total, 2) %>
+                                                        </td>
+                                                        <td class="text-primary fw-bold">
+                                                            <%= empresa.moneda %> <%= formatCurrency(pagado, 2) %>
+                                                        </td>
+                                                        <td class="text-danger fw-bold">
+                                                            <%= empresa.moneda %> <%= formatCurrency(saldo, 2) %>
+                                                        </td>
+                                                        <td>
+                                                            <% if(p.estado == 'pendiente') { %>
+                                                                <span class="badge bg-warning text-dark px-3 rounded-pill" style="font-size: 0.65rem;">PENDIENTE</span>
+                                                            <% } else if(p.estado == 'pagado') { %>
+                                                                <span class="badge bg-success px-3 rounded-pill" style="font-size: 0.65rem;">PAGADO</span>
+                                                            <% } else { %>
+                                                                <span class="badge bg-danger px-3 rounded-pill" style="font-size: 0.65rem;">VENCIDO</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="d-flex flex-column align-items-end gap-1" style="min-width: 160px;">
+                                                                <!-- Acciones Principales -->
+                                                                <div class="btn-group btn-group-sm w-100 shadow-sm rounded border overflow-hidden">
+                                                                    <% if(p.estado != 'pagado') { %>
+                                                                        <a href="/pagos/registrar/<%= p.id %>" class="btn btn-success py-2 border-end" title="Registrar Pago">
+                                                                            <i class="bi bi-cash-coin me-1"></i> PAGO
+                                                                        </a>
+                                                                    <% } %>
+                                                                    <a href="/clientes/ver/<%= p.cliente_id %>" class="btn btn-white py-2" title="Ir al Perfil">
+                                                                        <i class="bi bi-person-fill text-primary"></i>
+                                                                    </a>
+                                                                </div>
+
+                                                                <!-- Documentos y Otros -->
+                                                                <div class="btn-group btn-group-sm w-100 shadow-sm rounded border overflow-hidden bg-white">
+                                                                    <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-light py-2 flex-fill border-end" title="Cronograma Interactivo">
+                                                                        <i class="bi bi-calendar3 text-primary"></i>
+                                                                    </a>
+                                                                    <a href="/reportes/cronograma-pdf/<%= p.id %>" target="_blank" class="btn btn-light py-2 flex-fill border-end" title="PDF Cronograma">
+                                                                        <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                                                    </a>
+                                                                    <a href="/reportes/contrato/<%= p.id %>" target="_blank" class="btn btn-light py-2 flex-fill border-end" title="PDF Contrato">
+                                                                        <i class="bi bi-file-text text-secondary"></i>
+                                                                    </a>
+                                                                    <a href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank" class="btn btn-light py-2 flex-fill" title="PDF Desembolso">
+                                                                        <i class="bi bi-receipt text-success"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                <% }) %>
                                     <% } else { %>
                                         <tr><td colspan="6" class="text-center py-5 text-muted">No se encontraron préstamos registrados.</td></tr>
                                     <% } %>
