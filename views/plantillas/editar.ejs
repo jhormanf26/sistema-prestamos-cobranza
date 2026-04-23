@@ -51,18 +51,27 @@
 
                                     <div id="pdfOptions" class="<%= config.enviar_pdf ? '' : 'd-none' %>">
                                         <p class="small text-muted mb-2">Selecciona qué documentos deseas incluir:</p>
-                                        <div class="d-flex gap-4">
-                                            <div class="form-check">
+                                        <div class="d-flex flex-wrap gap-4">
+                                            <div class="form-check d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" name="pdfs" value="contrato" id="pdfContrato" <%= config.pdfs.includes('contrato') ? 'checked' : '' %>>
-                                                <label class="form-check-label" for="pdfContrato">Contrato</label>
+                                                <label class="form-check-label ms-2" for="pdfContrato">Contrato</label>
+                                                <a href="/plantillas/preview-pdf/contrato" target="_blank" class="ms-2 text-primary" title="Ver vista previa">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </a>
                                             </div>
-                                            <div class="form-check">
+                                            <div class="form-check d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" name="pdfs" value="ticket" id="pdfTicket" <%= config.pdfs.includes('ticket') ? 'checked' : '' %>>
-                                                <label class="form-check-label" for="pdfTicket">Ticket</label>
+                                                <label class="form-check-label ms-2" for="pdfTicket">Ticket</label>
+                                                <a href="/plantillas/preview-pdf/ticket" target="_blank" class="ms-2 text-primary" title="Ver vista previa">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </a>
                                             </div>
-                                            <div class="form-check">
+                                            <div class="form-check d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" name="pdfs" value="cronograma" id="pdfCronograma" <%= config.pdfs.includes('cronograma') ? 'checked' : '' %>>
-                                                <label class="form-check-label" for="pdfCronograma">Cronograma</label>
+                                                <label class="form-check-label ms-2" for="pdfCronograma">Cronograma</label>
+                                                <a href="/plantillas/preview-pdf/cronograma" target="_blank" class="ms-2 text-primary" title="Ver vista previa">
+                                                    <i class="bi bi-eye-fill"></i>
+                                                </a>
                                             </div>
                                         </div>
                                     </div>

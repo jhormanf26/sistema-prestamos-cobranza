@@ -1,4 +1,5 @@
 const PlantillaModel = require('../models/PlantillaModel');
+const pdfService = require('../utils/pdfService');
 
 const plantillasController = {
 
@@ -63,6 +64,18 @@ const plantillasController = {
             res.send(html);
         } catch (error) {
             res.send('Error al generar previsualización');
+        }
+    },
+
+    previsualizarPDF: async (req, res) => {
+        const { tipo } = req.params;
+        try {
+            const buffer = await pdfService.generarEjemploBuffer(tipo);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.send(buffer);
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al generar la vista previa del PDF');
         }
     }
 };

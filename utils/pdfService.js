@@ -7,10 +7,10 @@ const { formatCurrency } = require('./formatters');
 
 const pdfService = {
 
-    generarContratoBuffer: async (id) => {
+    generarContratoBuffer: async (id, prestamoData = null) => {
         return new Promise(async (resolve, reject) => {
             try {
-                const prestamo = await PrestamoModel.obtenerPorId(id);
+                const prestamo = prestamoData || await PrestamoModel.obtenerPorId(id);
                 let config = await ConfigModel.obtener();
                 if (!config) config = { nombre_empresa: 'EMPRESA', moneda: '$', ruc: '000000000' };
                 const moneda = config.moneda;
@@ -92,10 +92,10 @@ const pdfService = {
         });
     },
 
-    generarTicketDesembolsoBuffer: async (id) => {
+    generarTicketDesembolsoBuffer: async (id, prestamoData = null) => {
         return new Promise(async (resolve, reject) => {
             try {
-                const prestamo = await PrestamoModel.obtenerPorId(id);
+                const prestamo = prestamoData || await PrestamoModel.obtenerPorId(id);
                 let config = await ConfigModel.obtener();
                 if (!config) config = { nombre_empresa: 'Sistema Financiero', ruc: '000000', direccion: 'Oficina Principal' };
                 const moneda = config.moneda;
@@ -160,10 +160,10 @@ const pdfService = {
         });
     },
 
-    generarCronogramaBuffer: async (id) => {
+    generarCronogramaBuffer: async (id, prestamoData = null) => {
         return new Promise(async (resolve, reject) => {
             try {
-                const prestamo = await PrestamoModel.obtenerPorId(id);
+                const prestamo = prestamoData || await PrestamoModel.obtenerPorId(id);
                 if (!prestamo) return reject('Préstamo no encontrado');
                 let config = await ConfigModel.obtener();
                 const moneda = (config && config.moneda) ? config.moneda : '$';
@@ -403,6 +403,26 @@ const pdfService = {
 
             } catch (error) { reject(error); }
         });
+    },
+    generarEjemploBuffer: async (tipo) => {
+        const dummyPrestamo = {
+            id: 0,
+            nombre: 'CLIENTE',
+            apellido: 'EJEMPLO',
+            dni: '00000000',
+            telefono: '555-0000',
+            monto_prestado: 1000000,
+            monto_total: 1200000,
+            tasa_interes: 20,
+            cuotas: 12,
+            frecuencia: 'mensual',
+            fecha_inicio: new Date().toISOString()
+        };
+
+        if (tipo === 'contrato') return await pdfService.generarContratoBuffer(0, dummyPrestamo);
+        if (tipo === 'ticket') return await pdfService.generarTicketDesembolsoBuffer(0, dummyPrestamo);
+        if (tipo === 'cronograma') return await pdfService.generarCronogramaBuffer(0, dummyPrestamo);
+        return null;
     }
 };
 

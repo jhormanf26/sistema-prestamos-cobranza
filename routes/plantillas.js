@@ -7,5 +7,6 @@ router.get('/', plantillasController.listar);
 router.get('/editar/:slug', plantillasController.editar);
 router.post('/actualizar/:id', plantillasController.actualizar);
 router.get('/preview/:slug', plantillasController.previsualizar);
+router.get('/preview-pdf/:tipo', plantillasController.previsualizarPDF);
 
 module.exports = router;
