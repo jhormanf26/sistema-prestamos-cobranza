@@ -85,6 +85,7 @@ cargarRuta('/caja', './routes/caja');
 cargarRuta('/perfil', './routes/perfil');
 cargarRuta('/mi-licencia', './routes/mi-licencia');
 cargarRuta('/plantillas', './routes/plantillas');
+cargarRuta('/plantillas-pdf', './routes/plantillasPdf');
 
 // 5. Reportes
 cargarRuta('/reportes', './routes/reportes');

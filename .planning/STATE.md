@@ -13,6 +13,7 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 
 7. **[HECHO]** Añadir plantillas de correo para ahorros (depósito y retiro) en BD y UI.
 8. **[HECHO]** Implementar configuración de adjuntos PDF dinámicos para la plantilla de Préstamo Aprobado.
+9. **[HECHO]** Crear sistema de gestión de Plantillas PDF (Cláusulas y Textos legales) editables desde la UI.
 
 ## Decisiones de Diseño
 - Se utiliza `Intl.NumberFormat` con el locale `es-CO` para garantizar la consistencia según el estándar colombiano.
@@ -21,3 +22,4 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 - Se añadió la columna `observaciones` (TEXT) a la tabla `prestamos`. La información es capturada al crear el crédito y es visible tanto en el cronograma como en la tabla principal (reemplazando la columna de monto prestado).
 - Las plantillas de ahorro se diseñarán con una estética premium consistente con las de préstamos, utilizando `ahorro_deposito` y `ahorro_retiro` como slugs.
 - Se añadió la columna `adjuntos_config` (JSON) a `plantillas_correo` para permitir que el usuario elija qué PDFs adjuntar (Contrato, Ticket, Cronograma) en la plantilla de Préstamo Aprobado.
+- Se implementó un sistema de **Plantillas PDF** donde los textos legales y cláusulas se almacenan en la tabla `plantillas_pdf` y se inyectan dinámicamente en `pdfService.js`, permitiendo su edición sin modificar código.

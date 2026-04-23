@@ -2,8 +2,20 @@ const PDFDocument = require('pdfkit');
 const PrestamoModel = require('../models/PrestamoModel');
 const ConfigModel = require('../models/ConfigModel');
 const PagoModel = require('../models/PagoModel');
+const PlantillaPdfModel = require('../models/PlantillaPdfModel');
 const finance = require('./finance');
 const { formatCurrency } = require('./formatters');
+
+const _reemplazarVariables = (texto, datos) => {
+    if (!texto) return '';
+    // Normalizar saltos de línea (eliminar retornos de carro de Windows \r)
+    let resultado = texto.replace(/\r/g, '');
+    Object.keys(datos).forEach(key => {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        resultado = resultado.replace(regex, datos[key]);
+    });
+    return resultado;
+};
 
 const pdfService = {
 
@@ -52,25 +64,20 @@ const pdfService = {
                 doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#0d6efd').stroke();
                 doc.moveDown(1);
 
-                const clausulaStyle = { align: 'justify', lineGap: 2, indent: 0 };
-                doc.x = 50; // Aseguramos que empiece en el margen
-                doc.fillColor('#333').font('Helvetica-Bold').text('PRIMERO (OBJETO): ', { continued: true });
-                doc.font('Helvetica').text(`El ACREEDOR entrega al DEUDOR la suma de ${moneda} ${formatCurrency(prestamo.monto_prestado, 2)} por concepto de préstamo de libre inversión.`, clausulaStyle);
-                doc.moveDown(0.8);
+                // Cargar Cláusulas desde BD
+                const pClausulas = await PlantillaPdfModel.obtenerPorSlug('contrato_clausulas');
+                const clausulasTexto = _reemplazarVariables(pClausulas ? pClausulas.contenido : '', {
+                    moneda,
+                    monto: formatCurrency(prestamo.monto_prestado, 2),
+                    total: formatCurrency(prestamo.monto_total, 2),
+                    tasa: prestamo.tasa_interes,
+                    cuotas: prestamo.cuotas,
+                    frecuencia: prestamo.frecuencia.toUpperCase(),
+                    fecha_inicio: new Date(prestamo.fecha_inicio).toLocaleDateString()
+                });
 
                 doc.x = 50;
-                doc.font('Helvetica-Bold').text('SEGUNDO (INTERESES Y TOTAL): ', { continued: true });
-                doc.font('Helvetica').text(`El DEUDOR se obliga a devolver la suma total de ${moneda} ${formatCurrency(prestamo.monto_total, 2)}, la cual incluye una tasa de interés del ${prestamo.tasa_interes}%.`, clausulaStyle);
-                doc.moveDown(0.8);
-
-                doc.x = 50;
-                doc.font('Helvetica-Bold').text('TERCERO (FORMA DE PAGO): ', { continued: true });
-                doc.font('Helvetica').text(`La obligación será cancelada en ${prestamo.cuotas} cuotas con una frecuencia de pago ${prestamo.frecuencia.toUpperCase()}. La primera cuota vence el ${new Date(prestamo.fecha_inicio).toLocaleDateString()}.`, clausulaStyle);
-                doc.moveDown(0.8);
-
-                doc.x = 50;
-                doc.font('Helvetica-Bold').text('CUARTO (MORA): ', { continued: true });
-                doc.font('Helvetica').text('El incumplimiento en las fechas pactadas generará el reporte en las centrales de riesgo y las acciones legales pertinentes para el cobro del saldo total.', clausulaStyle);
+                doc.fontSize(10).font('Helvetica').fillColor('#333').text(clausulasTexto || 'No se definieron cláusulas para este contrato.', { align: 'justify', lineGap: 3 });
                 
                 const firmaY = 620;
                 doc.strokeColor('#ccc').moveTo(50, firmaY).lineTo(230, firmaY).stroke();
@@ -150,7 +157,15 @@ const pdfService = {
                 doc.text(`CC: ${prestamo.dni}`, { align: 'center' });
 
                 doc.moveDown(2);
-                doc.fontSize(7).text('Este comprobante certifica la recepción del dinero en efectivo o transferencia.', { align: 'center', oblique: true });
+                
+                // Cargar Pie de Ticket desde BD
+                const pTicketPie = await PlantillaPdfModel.obtenerPorSlug('ticket_pie');
+                const ticketPieTexto = _reemplazarVariables(pTicketPie ? pTicketPie.contenido : '', {
+                    op: prestamo.id,
+                    cliente: `${prestamo.nombre} ${prestamo.apellido}`
+                });
+
+                doc.fontSize(7).text(ticketPieTexto || 'Este comprobante certifica la recepción del dinero.', { align: 'center', oblique: true });
 
                 doc.end();
 
@@ -274,10 +289,14 @@ const pdfService = {
                     }
                 });
 
-                // Pie de Página Legal
+                // Pie de Página Legal desde BD
+                const pCronoPie = await PlantillaPdfModel.obtenerPorSlug('cronograma_pie');
+                const cronoPieTexto = _reemplazarVariables(pCronoPie ? pCronoPie.contenido : '', {
+                    fecha_hoy: new Date().toLocaleString()
+                });
+
                 const footerY = 760;
-                doc.fontSize(8).fillColor('#7f8c8d').text('Este cronograma de pagos es un documento informativo sujeto a términos y condiciones establecidos en el contrato de préstamo.', 50, footerY, { align: 'center', width: 500 });
-                doc.text(`Generado automáticamente por el Sistema de Préstamos el ${new Date().toLocaleString()}`, { align: 'center', width: 500 });
+                doc.fontSize(8).fillColor('#7f8c8d').text(cronoPieTexto || 'Documento informativo sujeto a términos y condiciones.', 50, footerY, { align: 'center', width: 500 });
 
                 doc.end();
 
@@ -355,20 +374,29 @@ const pdfService = {
                     let totalDeuda = 0;
                     let prestamosActivos = false;
                     prestamos.forEach(p => {
-                        if (p.estado !== 'pagado') {
-                            prestamosActivos = true;
-                            const saldo = parseFloat(p.monto_total);
-                            doc.fillColor('#444').font('Helvetica').text(`#${p.id}`, 50, y);
-                            doc.text(new Date(p.fecha_inicio).toLocaleDateString(), 90, y);
-                            doc.text(`${moneda} ${formatCurrency(p.monto_total, 2)}`, 180, y);
+                        const pagado = parseFloat(p.total_pagado || 0);
+                        const saldo = Math.max(0, parseFloat(p.monto_total) - pagado);
+                        
+                        doc.fillColor('#444').font('Helvetica').text(`#${p.id}`, 50, y);
+                        doc.text(new Date(p.fecha_inicio).toLocaleDateString(), 90, y);
+                        doc.text(`${moneda} ${formatCurrency(p.monto_total, 2)}`, 180, y);
+                        
+                        // Color según estado
+                        if (p.estado === 'pagado') {
+                            doc.fillColor('#198754').font('Helvetica-Bold').text(p.estado.toUpperCase(), 320, y);
+                            doc.text(`${moneda} 0,00`, 440, y);
+                        } else {
                             doc.font('Helvetica-Bold').text(p.estado.toUpperCase(), 320, y);
                             doc.fillColor('#dc3545').text(`${moneda} ${formatCurrency(saldo, 2)}`, 440, y);
                             totalDeuda += saldo;
-                            y += 18;
                         }
+                        
+                        y += 18;
+                        // Manejo simple de nueva página si hay muchos préstamos
+                        if (y > 700) { doc.addPage(); y = 50; }
                     });
                     
-                    if (prestamosActivos) {
+                    if (totalDeuda > 0) {
                         doc.moveDown(1.5);
                         doc.rect(340, y, 220, 30).fill('#dc3545');
                         doc.fillColor('#ffffff').font('Helvetica-Bold').text('TOTAL DEUDA:', 355, y + 10);
