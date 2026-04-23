@@ -211,6 +211,31 @@ const prestamosController = {
             console.error(error);
             res.status(500).send('Error al generar el PDF del ticket');
         }
+    },
+
+    enviarRecordatorio: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const prestamo = await PrestamoModel.obtenerPorId(id);
+            if (!prestamo || !prestamo.email) {
+                return res.json({ success: false, mensaje: 'El cliente no tiene correo registrado.' });
+            }
+
+            const config = await ConfigModel.obtener();
+            const { asunto, html } = await emailService.plantillaRecordatorio(
+                `${prestamo.nombre} ${prestamo.apellido}`,
+                prestamo.monto_total,
+                prestamo.fecha_fin,
+                config ? config.moneda : '$'
+            );
+
+            await emailService.enviarCorreo(prestamo.email, asunto || 'Recordatorio de Pago', html);
+            
+            res.json({ success: true });
+        } catch (error) {
+            console.error(error);
+            res.json({ success: false, mensaje: 'Error interno del servidor.' });
+        }
     }
 };
 

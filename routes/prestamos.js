@@ -7,7 +7,8 @@ router.get('/', prestamosController.listar);
 
 // Reportes especiales
 router.get('/vencidos', prestamosController.verVencidos);
-router.get('/cronograma/:id', prestamosController.verCronograma); // <--- NUEVA RUTA
+router.get('/cronograma/:id', prestamosController.verCronograma);
+router.get('/recordatorio/:id', prestamosController.enviarRecordatorio);
 
 // Crear
 router.get('/crear', prestamosController.mostrarFormulario);

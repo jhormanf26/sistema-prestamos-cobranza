@@ -36,7 +36,7 @@ const ahorrosController = {
 
     // 3. Guardar nueva cuenta
     guardarCuenta: async (req, res) => {
-        const { cliente_id } = req.body;
+        const { cliente_id, meta_monto, meta_nombre } = req.body;
         try {
             const existe = await AhorroModel.buscarPorCliente(cliente_id);
             if (existe) {
@@ -44,7 +44,9 @@ const ahorrosController = {
                 return res.redirect('/ahorros/aperturar');
             }
 
-            await AhorroModel.crear(cliente_id);
+            const metaMontoFinal = meta_monto ? parseFloat(meta_monto.replace(/\./g, '')) : null;
+
+            await AhorroModel.crear(cliente_id, metaMontoFinal, meta_nombre);
             req.flash('mensajeExito', 'Cuenta aperturada correctamente');
             res.redirect('/ahorros');
 

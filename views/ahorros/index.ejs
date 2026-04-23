@@ -32,6 +32,7 @@
                                                             <th>Titular</th>
                                                             <th>CC</th>
                                                             <th class="text-end">Saldo Disponible</th>
+                                                            <th class="text-center" style="width: 250px;">Meta de Ahorro</th>
                                                             <th>Acciones</th>
                                                         </tr>
                                                     </thead>
@@ -51,6 +52,25 @@
                                                                     <td class="text-end fw-bold text-success fs-5">
                                                                         <%= empresa.moneda %>
                                                                             <%= formatCurrency(c.saldo_actual, 2) %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <% if (c.meta_monto > 0) { 
+                                                                            let porc = Math.min((c.saldo_actual / c.meta_monto) * 100, 100).toFixed(0);
+                                                                            let colorClass = porc == 100 ? 'bg-success' : 'bg-primary';
+                                                                        %>
+                                                                            <div class="small mb-1 d-flex justify-content-between">
+                                                                                <span class="text-truncate" style="max-width: 150px;"><%= c.meta_nombre || 'Meta' %></span>
+                                                                                <span class="fw-bold"><%= porc %>%</span>
+                                                                            </div>
+                                                                            <div class="progress" style="height: 8px;">
+                                                                                <div class="progress-bar <%= colorClass %>" role="progressbar" style="width: <%= porc %>%"></div>
+                                                                            </div>
+                                                                            <small class="text-muted" style="font-size: 0.7rem;">
+                                                                                Meta: <%= empresa.moneda %> <%= formatCurrency(c.meta_monto, 0) %>
+                                                                            </small>
+                                                                        <% } else { %>
+                                                                            <span class="text-muted small">Sin meta definida</span>
+                                                                        <% } %>
                                                                     </td>
                                                                     <td>
                                                                         <a href="/ahorros/ver/<%= c.id %>"

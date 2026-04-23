@@ -6,7 +6,7 @@ class AhorroModel {
     static async obtenerTodas() {
         try {
             const query = `
-                SELECT a.id, a.saldo_actual, c.nombre, c.apellido, c.dni 
+                SELECT a.id, a.saldo_actual, a.meta_monto, a.meta_nombre, c.nombre, c.apellido, c.dni 
                 FROM cuentas_ahorro a
                 INNER JOIN clientes c ON a.cliente_id = c.id
                 ORDER BY a.saldo_actual DESC
@@ -47,10 +47,10 @@ class AhorroModel {
     }
 
     // 4. Crear Cuenta
-    static async crear(clienteId) {
+    static async crear(clienteId, metaMonto = null, metaNombre = null) {
         try {
-            const query = 'INSERT INTO cuentas_ahorro (cliente_id, saldo_actual) VALUES (?, 0.00)';
-            const [result] = await db.query(query, [clienteId]);
+            const query = 'INSERT INTO cuentas_ahorro (cliente_id, saldo_actual, meta_monto, meta_nombre) VALUES (?, 0.00, ?, ?)';
+            const [result] = await db.query(query, [clienteId, metaMonto, metaNombre]);
             return result;
         } catch (error) {
             throw error;

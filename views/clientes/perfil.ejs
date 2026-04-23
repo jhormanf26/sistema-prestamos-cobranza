@@ -51,12 +51,14 @@
                                         </div>
                                     </div>
 
-                                    <div class="text-end mt-3 mt-md-0">
-                                        <a href="/reportes/estado_cuenta/<%= cliente.id %>" target="_blank"
-                                            class="btn btn-dark shadow-sm">
-                                            <i class="bi bi-file-earmark-pdf-fill"></i> Estado de Cuenta
+                                    <div class="text-end mt-3 mt-md-0 d-flex gap-2">
+                                        <a href="/reportes/estado-cuenta/<%= cliente.id %>" target="_blank"
+                                            class="btn btn-dark shadow-sm px-4 fw-bold rounded-pill">
+                                            <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Estado de Cuenta
                                         </a>
-                                        <a href="/clientes" class="btn btn-outline-secondary ms-2">Volver</a>
+                                        <a href="/clientes" class="btn btn-outline-secondary px-3 rounded-pill" title="Volver al listado">
+                                            <i class="bi bi-arrow-left"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -102,54 +104,110 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <% prestamos.forEach(p=> { 
+                                                        <% prestamos.forEach(p=> {
                                                             const pagado = p.total_pagado || 0;
                                                             const saldo = p.monto_total - pagado;
-                                                            const porcentaje = Math.min(100, Math.round((pagado / p.monto_total) * 100));
-                                                            const colorProgreso = porcentaje >= 100 ? 'bg-success' : (porcentaje > 50 ? 'bg-primary' : 'bg-warning');
-                                                        %>
+                                                            const porcentaje = Math.min(100, Math.round((pagado /
+                                                            p.monto_total) * 100));
+                                                            const colorProgreso = porcentaje >= 100 ? 'bg-success' :
+                                                            (porcentaje > 50 ? 'bg-primary' : 'bg-warning');
+                                                            %>
                                                             <tr>
                                                                 <td><span class="badge bg-dark">#<%= p.id %></span></td>
                                                                 <td>
-                                                                    <div class="small fw-bold"><%= new Date(p.fecha_inicio).toLocaleDateString() %></div>
-                                                                    <div class="text-muted" style="font-size: 0.7rem;"><%= p.frecuencia.toUpperCase() %></div>
+                                                                    <div class="small fw-bold">
+                                                                        <%= new
+                                                                            Date(p.fecha_inicio).toLocaleDateString() %>
+                                                                    </div>
+                                                                    <div class="text-muted" style="font-size: 0.7rem;">
+                                                                        <%= p.frecuencia.toUpperCase() %>
+                                                                    </div>
                                                                 </td>
                                                                 <td class="small fw-bold text-muted">
-                                                                    <%= empresa.moneda %> <%= formatCurrency(p.monto_prestado, 2) %>
+                                                                    <%= empresa.moneda %>
+                                                                        <%= formatCurrency(p.monto_prestado, 2) %>
                                                                 </td>
                                                                 <td class="text-primary fw-bold">
-                                                                    <%= empresa.moneda %> <%= formatCurrency(pagado, 2) %>
+                                                                    <%= empresa.moneda %>
+                                                                        <%= formatCurrency(pagado, 2) %>
                                                                 </td>
                                                                 <td class="text-danger fw-bold">
-                                                                    <%= empresa.moneda %> <%= formatCurrency(saldo, 2) %>
+                                                                    <%= empresa.moneda %>
+                                                                        <%= formatCurrency(saldo, 2) %>
                                                                 </td>
                                                                 <td>
                                                                     <div class="d-flex align-items-center">
-                                                                        <div class="progress flex-grow-1" style="height: 6px; background-color: #e9ecef;">
-                                                                            <div class="progress-bar <%= colorProgreso %>" role="progressbar" style="width: <%= porcentaje %>%" aria-valuenow="<%= porcentaje %>" aria-valuemin="0" aria-valuemax="100"></div>
+                                                                        <div class="progress flex-grow-1"
+                                                                            style="height: 6px; background-color: #e9ecef;">
+                                                                            <div class="progress-bar <%= colorProgreso %>"
+                                                                                role="progressbar"
+                                                                                style="width: <%= porcentaje %>%"
+                                                                                aria-valuenow="<%= porcentaje %>"
+                                                                                aria-valuemin="0" aria-valuemax="100">
+                                                                            </div>
                                                                         </div>
-                                                                        <span class="ms-2 fw-bold text-muted" style="font-size: 0.7rem;"><%= porcentaje %>%</span>
+                                                                        <span class="ms-2 fw-bold text-muted"
+                                                                            style="font-size: 0.7rem;">
+                                                                            <%= porcentaje %>%
+                                                                        </span>
                                                                     </div>
                                                                 </td>
                                                                 <td>
                                                                     <% if(p.estado=='pendiente' ) { %>
-                                                                        <span class="badge bg-warning text-dark px-3 rounded-pill" style="font-size: 0.65rem;">PENDIENTE</span>
-                                                                    <% } else if(p.estado=='pagado' ) { %>
-                                                                        <span class="badge bg-success px-3 rounded-pill" style="font-size: 0.65rem;">PAGADO</span>
-                                                                    <% } else { %>
-                                                                        <span class="badge bg-danger px-3 rounded-pill" style="font-size: 0.65rem;">VENCIDO</span>
-                                                                    <% } %>
+                                                                        <span
+                                                                            class="badge bg-warning text-dark px-3 rounded-pill"
+                                                                            style="font-size: 0.65rem;">PENDIENTE</span>
+                                                                        <% } else if(p.estado=='pagado' ) { %>
+                                                                            <span
+                                                                                class="badge bg-success px-3 rounded-pill"
+                                                                                style="font-size: 0.65rem;">PAGADO</span>
+                                                                            <% } else { %>
+                                                                                <span
+                                                                                    class="badge bg-danger px-3 rounded-pill"
+                                                                                    style="font-size: 0.65rem;">VENCIDO</span>
+                                                                                <% } %>
                                                                 </td>
                                                                 <td class="text-end pe-3">
-                                                                    <div class="btn-group shadow-sm rounded">
-                                                                        <% if(p.estado !='pagado' ) { %>
-                                                                            <a href="/pagos/registrar/<%= p.id %>" class="btn btn-sm btn-success" title="Cobrar"><i class="bi bi-cash"></i></a>
+                                                                    <div class="d-flex flex-column align-items-end gap-2" style="min-width: 180px;">
+                                                                        <!-- Botón Principal: Pago -->
+                                                                        <% if(p.estado !== 'pagado') { %>
+                                                                            <a href="/pagos/registrar/<%= p.id %>" 
+                                                                               class="btn btn-success btn-sm w-100 py-2 px-3 fw-bold rounded shadow-sm border-0 d-flex align-items-center justify-content-center"
+                                                                               style="background: linear-gradient(135deg, #198754 0%, #157347 100%);">
+                                                                                <i class="bi bi-cash-coin me-2"></i> PAGO
+                                                                            </a>
                                                                         <% } %>
-                                                                        <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-sm btn-primary" title="Ver Cronograma"><i class="bi bi-calendar-week"></i></a>
+                                                                
+                                                                        <!-- Barra de Herramientas de Documentos -->
+                                                                        <div class="btn-group w-100 shadow-sm rounded overflow-hidden border bg-white">
+                                                                            <a href="/prestamos/cronograma/<%= p.id %>" 
+                                                                               class="btn btn-light btn-sm py-2 flex-fill border-end" 
+                                                                               title="Cronograma Interactivo">
+                                                                                <i class="bi bi-calendar-event text-primary"></i>
+                                                                            </a>
+                                                                            <a href="/reportes/cronograma-pdf/<%= p.id %>" 
+                                                                               target="_blank" 
+                                                                               class="btn btn-light btn-sm py-2 flex-fill border-end" 
+                                                                               title="PDF Cronograma">
+                                                                                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                                                            </a>
+                                                                            <a href="/reportes/contrato/<%= p.id %>" 
+                                                                               target="_blank" 
+                                                                               class="btn btn-light btn-sm py-2 flex-fill border-end" 
+                                                                               title="PDF Contrato">
+                                                                                <i class="bi bi-file-text text-secondary"></i>
+                                                                            </a>
+                                                                            <a href="/reportes/ticket-desembolso/<%= p.id %>" 
+                                                                               target="_blank" 
+                                                                               class="btn btn-light btn-sm py-2 flex-fill" 
+                                                                               title="PDF Desembolso">
+                                                                                <i class="bi bi-receipt text-success"></i>
+                                                                            </a>
+                                                                        </div>
                                                                     </div>
                                                                 </td>
                                                             </tr>
-                                                        <% }) %>
+                                                            <% }) %>
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -192,7 +250,8 @@
                                                                                 <span class="badge bg-primary">Prestado:
                                                                                     <%= empresa.moneda %>
                                                                                         <%= formatCurrency(e.monto_prestado,
-                                                                                            2) %></span>
+                                                                                            2) %>
+                                                                                </span>
                                                                                 <% if(e.estado==='en_custodia' ) { %>
                                                                                     <span
                                                                                         class="badge bg-info text-dark">En
