@@ -97,7 +97,19 @@ class PrestamoModel {
     }
 
     static async obtenerPorCliente(clienteId) {
-        try { return (await db.query('SELECT * FROM prestamos WHERE cliente_id = ? ORDER BY fecha_inicio DESC', [clienteId]))[0]; } catch (error) { throw error; }
+        try {
+            const query = `
+                SELECT p.*, 
+                (SELECT IFNULL(SUM(monto_pagado), 0) FROM pagos WHERE prestamo_id = p.id) as total_pagado
+                FROM prestamos p 
+                WHERE p.cliente_id = ? 
+                ORDER BY p.fecha_inicio DESC
+            `;
+            const [rows] = await db.query(query, [clienteId]);
+            return rows;
+        } catch (error) {
+            throw error;
+        }
     }
 
     static async procesarVencimientos() {

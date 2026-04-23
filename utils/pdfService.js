@@ -374,20 +374,29 @@ const pdfService = {
                     let totalDeuda = 0;
                     let prestamosActivos = false;
                     prestamos.forEach(p => {
-                        if (p.estado !== 'pagado') {
-                            prestamosActivos = true;
-                            const saldo = parseFloat(p.monto_total);
-                            doc.fillColor('#444').font('Helvetica').text(`#${p.id}`, 50, y);
-                            doc.text(new Date(p.fecha_inicio).toLocaleDateString(), 90, y);
-                            doc.text(`${moneda} ${formatCurrency(p.monto_total, 2)}`, 180, y);
+                        const pagado = parseFloat(p.total_pagado || 0);
+                        const saldo = Math.max(0, parseFloat(p.monto_total) - pagado);
+                        
+                        doc.fillColor('#444').font('Helvetica').text(`#${p.id}`, 50, y);
+                        doc.text(new Date(p.fecha_inicio).toLocaleDateString(), 90, y);
+                        doc.text(`${moneda} ${formatCurrency(p.monto_total, 2)}`, 180, y);
+                        
+                        // Color según estado
+                        if (p.estado === 'pagado') {
+                            doc.fillColor('#198754').font('Helvetica-Bold').text(p.estado.toUpperCase(), 320, y);
+                            doc.text(`${moneda} 0,00`, 440, y);
+                        } else {
                             doc.font('Helvetica-Bold').text(p.estado.toUpperCase(), 320, y);
                             doc.fillColor('#dc3545').text(`${moneda} ${formatCurrency(saldo, 2)}`, 440, y);
                             totalDeuda += saldo;
-                            y += 18;
                         }
+                        
+                        y += 18;
+                        // Manejo simple de nueva página si hay muchos préstamos
+                        if (y > 700) { doc.addPage(); y = 50; }
                     });
                     
-                    if (prestamosActivos) {
+                    if (totalDeuda > 0) {
                         doc.moveDown(1.5);
                         doc.rect(340, y, 220, 30).fill('#dc3545');
                         doc.fillColor('#ffffff').font('Helvetica-Bold').text('TOTAL DEUDA:', 355, y + 10);
