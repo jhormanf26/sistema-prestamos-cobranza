@@ -124,6 +124,25 @@ const emailService = {
             moneda
         }, fallback);
         return res;
+    },
+
+    plantillaCadena: async (cliente, monto, cadenaNombre, ciclo, moneda) => {
+        const fallback = `
+            <div style="background-color: #f0f9ff; padding: 20px; font-family: Arial;">
+                <table align="center" width="100%" style="max-width: 600px; background: #fff; border-radius: 15px;">
+                    <tr><td align="center" style="background: #0284c7; padding: 30px; color: #fff;"><h1>Recordatorio de Ahorro</h1></td></tr>
+                    <tr><td style="padding: 30px;">Hola ${cliente}, recuerda tu aporte de ${moneda} ${formatCurrency(monto, 2)} para la cadena ${cadenaNombre} (Ciclo ${ciclo}).</td></tr>
+                </table>
+            </div>
+        `;
+        const res = await renderizar('recordatorio_cadena', {
+            cliente,
+            monto: formatCurrency(monto, 2),
+            cadena: cadenaNombre,
+            ciclo,
+            moneda
+        }, fallback);
+        return res;
     }
 };
 

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<style>
+    .status-badge { width: 100px; text-align: center; }
+    .table-vcenter td { vertical-align: middle; }
+</style>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+                <div class="container-fluid px-4 py-4">
+                    
+                    <!-- Cabecera y Resumen -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-lg-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <a href="/cadenas" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Volver</a>
+                                <h2 class="fw-bold mb-0"><%= cadena.nombre %></h2>
+                                <span class="badge bg-success ms-3 rounded-pill text-uppercase" style="font-size: 0.7rem;"><%= cadena.estado %></span>
+                            </div>
+                            <p class="text-muted"><i class="bi bi-calendar-event"></i> Iniciado el: <%= new Date(cadena.fecha_inicio).toLocaleDateString() %> | Frecuencia: <span class="text-capitalize"><%= cadena.frecuencia %></span></p>
+                        </div>
+                        <div class="col-lg-4 text-end">
+                            <div class="p-3 bg-primary text-white rounded-4 shadow-sm">
+                                <small class="text-uppercase opacity-75">Total Acumulado x Turno</small>
+                                <h3 class="fw-bold mb-0"><%= empresa.moneda %> <%= formatCurrency(cadena.monto_cuota * cadena.numero_participantes, 0) %></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Lado Izquierdo: Gestión de Participantes -->
+                        <div class="col-xl-8">
+                            <div class="card card-box border-0 shadow-sm overflow-hidden">
+                                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 fw-bold"><i class="bi bi-people"></i> Participantes y Turnos</h5>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="text-end me-2 d-none d-md-block">
+                                            <div class="small text-muted fw-bold">Periodo Actual:</div>
+                                            <div class="small fw-bold text-primary">
+                                                <%= rangoCiclo.desde.toLocaleDateString() %> - <%= rangoCiclo.hasta.toLocaleDateString() %>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <span class="badge bg-dark p-2">Ciclo Actual: <%= cicloActual %></span>
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle p-2">
+                                                <i class="bi bi-clock-history"></i> Faltan <%= diasRestantes %> días
+                                            </span>
+                                        </div>
+                                        
+                                        <% if (puedeAvanzar) { %>
+                                            <form action="/cadenas/avanzar/<%= cadena.id %>" method="POST" class="ms-2">
+                                                <button type="submit" class="btn btn-success btn-sm shadow-sm animate__animated animate__pulse animate__infinite">
+                                                    <i class="bi bi-arrow-right-circle"></i> Iniciar Siguiente Ciclo
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-vcenter mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-center">Turno</th>
+                                                <th>Nombre</th>
+                                                <th class="text-center">Cuota (Ciclo <%= cicloActual %>)</th>
+                                                <th class="text-center">Acumulado</th>
+                                                <th class="text-end">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% for(let i=1; i <= cadena.numero_participantes; i++) { 
+                                                const p = cadena.participantes.find(part => part.turno === i);
+                                            %>
+                                                <tr class="<%= (p && p.estado_entrega) ? 'table-success opacity-75' : '' %>">
+                                                    <td class="text-center"><span class="badge bg-secondary rounded-circle" style="width:28px; height:28px; line-height:20px;"><%= i %></span></td>
+                                                    <td>
+                                                        <% if(p) { %>
+                                                            <div class="fw-bold"><%= p.nombre %></div>
+                                                            <div class="small text-muted">
+                                                                <i class="bi bi-whatsapp"></i> <%= p.telefono %> 
+                                                                <% if(p.email) { %> | <i class="bi bi-envelope"></i> <%= p.email %><% } %>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <span class="text-muted font-italic">Turno Disponible</span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <% if(p) { %>
+                                                            <% if(p.pagado_actual) { %>
+                                                                <span class="badge bg-success-subtle text-success border border-success-subtle status-badge">PAGADO</span>
+                                                            <% } else { %>
+                                                                <form action="/cadenas/pagos/registrar" method="POST">
+                                                                    <input type="hidden" name="id_participante" value="<%= p.id %>">
+                                                                    <input type="hidden" name="id_cadena" value="<%= cadena.id %>">
+                                                                    <input type="hidden" name="ciclo" value="<%= cicloActual %>">
+                                                                    <button type="submit" class="btn btn-xs btn-warning py-0 px-2 small">Marcar Pago</button>
+                                                                </form>
+                                                            <% } %>
+                                                        <% } else { %>-<% } %>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <% if(p) { %>
+                                                            <% if(p.estado_entrega) { %>
+                                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle status-badge">RECIBIDO</span>
+                                                            <% } else { %>
+                                                                <form action="/cadenas/entregar" method="POST">
+                                                                    <input type="hidden" name="id_participante" value="<%= p.id %>">
+                                                                    <input type="hidden" name="id_cadena" value="<%= cadena.id %>">
+                                                                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 small" 
+                                                                            <%= (i > cicloActual || !todosPagaron) ? 'disabled' : '' %>
+                                                                            title="<%= !todosPagaron ? 'Faltan pagos por registrar' : '' %>"
+                                                                            onclick="confirmarEntrega(this.form, '<%= p.nombre %>')">
+                                                                        Entregar
+                                                                    </button>
+                                                                </form>
+                                                            <% } %>
+                                                        <% } else { %>-<% } %>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <div class="d-flex justify-content-end gap-1">
+                                                            <% if(!p) { %>
+                                                                <button class="btn btn-sm btn-primary rounded-pill py-0" 
+                                                                        onclick="abrirModalAdd(<%= i %>)">
+                                                                    <i class="bi bi-plus"></i> Asignar
+                                                                </button>
+                                                            <% } else if (!p.pagado_actual && p.email) { %>
+                                                                <button type="button" class="btn btn-xs btn-outline-info py-0 px-2 small" 
+                                                                        title="Enviar recordatorio de pago"
+                                                                        onclick="enviarRecordatorioCadena('<%= p.id %>', '<%= p.nombre %>', '<%= p.email %>')">
+                                                                    <i class="bi bi-bell"></i>
+                                                                </button>
+                                                            <% } %>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lado Derecho: Info y Ayuda -->
+                        <div class="col-xl-4">
+                            <div class="card card-box border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3"><i class="bi bi-info-circle text-primary"></i> Información del Ciclo</h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Cuota:</span>
+                                        <span class="fw-bold"><%= empresa.moneda %> <%= formatCurrency(cadena.monto_cuota, 0) %></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Frecuencia:</span>
+                                        <span class="text-capitalize fw-bold"><%= cadena.frecuencia %></span>
+                                    </div>
+                                    <hr>
+                                    <p class="small text-muted">En cada ciclo, un participante recibe el acumulado. El turno determina el orden. Asegúrate de registrar los pagos antes de entregar el capital.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Agregar Participante -->
+    <div class="modal fade" id="modalParticipante" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white border-0">
+                    <h5 class="modal-title fw-bold">Asignar Turno <span id="spanTurno"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/cadenas/participantes/agregar/<%= cadena.id %>" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="turno" id="inputTurno">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre Completo</label>
+                            <input type="text" name="nombre" class="form-control" required placeholder="Nombre del participante">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Teléfono (Solo 10 números)</label>
+                            <input type="text" name="telefono" class="form-control" 
+                                   required pattern="[0-9]{10}" maxlength="10" minlength="10"
+                                   placeholder="Ej: 3101234567"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Correo Electrónico</label>
+                            <input type="email" name="email" class="form-control" required placeholder="correo@ejemplo.com">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4">Guardar Participante</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function abrirModalAdd(turno) {
+            document.getElementById('spanTurno').innerText = turno;
+            document.getElementById('inputTurno').value = turno;
+            new bootstrap.Modal(document.getElementById('modalParticipante')).show();
+        }
+
+        function enviarRecordatorioCadena(id, nombre, email) {
+            Swal.fire({
+                title: '¿Enviar recordatorio?',
+                text: `Se enviará un correo de cobro a ${nombre} (${email})`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0dcaf0',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Enviando...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                    
+                    fetch(`/cadenas/recordatorio/${id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('¡Enviado!', 'El recordatorio ha sido enviado con éxito.', 'success');
+                            } else {
+                                Swal.fire('Error', data.mensaje || 'No se pudo enviar el correo.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', 'Hubo un problema con la conexión.', 'error');
+                        });
+                }
+            });
+        }
+
+        function confirmarEntrega(form, nombre) {
+            Swal.fire({
+                title: '¿Confirmar Entrega?',
+                html: `Estás a punto de marcar el acumulado como <strong>entregado</strong> a:<br><span class="text-primary">${nombre}</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, entregar capital',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

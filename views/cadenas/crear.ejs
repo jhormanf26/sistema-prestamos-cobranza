@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+                <div class="container py-4" style="max-width: 800px;">
+                    <div class="d-flex align-items-center mb-4">
+                        <a href="/cadenas" class="btn btn-link text-decoration-none p-0 me-3"><i class="bi bi-arrow-left fs-4"></i></a>
+                        <h2 class="fw-bold mb-0">Nueva Cadena de Ahorro</h2>
+                    </div>
+
+                    <div class="card card-box p-4 border-0 shadow-lg">
+                        <form action="/cadenas/guardar" method="POST" id="formCadena">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-bold">Nombre de la Cadena</label>
+                                    <input type="text" name="nombre" class="form-control" placeholder="Ej: Cadena Navideña 2026" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Monto de la Cuota</label>
+                                    <input type="text" name="monto_cuota" class="form-control currency-input" placeholder="0" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Frecuencia de Pago</label>
+                                    <select name="frecuencia" class="form-select" required>
+                                        <option value="semanal">Semanal</option>
+                                        <option value="quincenal">Quincenal</option>
+                                        <option value="mensual">Mensual</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Fecha de Inicio</label>
+                                    <input type="date" name="fecha_inicio" class="form-control" value="<%= new Date().toISOString().split('T')[0] %>" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Número de Participantes (Turnos)</label>
+                                    <input type="number" name="numero_participantes" class="form-control" min="2" max="50" placeholder="Ej: 10" required>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info mt-3 border-0 bg-opacity-10" style="background-color: var(--primary-color);">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                El sistema calculará el **Total a Recibir** automáticamente (Cuota × Participantes).
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg shadow">
+                                    <i class="bi bi-check-circle"></i> Crear y Definir Participantes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('../partials/footer') %>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            window.applyCurrencyMask('.currency-input');
+        });
+    </script>
+</body>
+</html>
