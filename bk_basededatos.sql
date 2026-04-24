@@ -133,6 +133,8 @@ CREATE TABLE IF NOT EXISTS `cuentas_ahorro` (
   `id` int NOT NULL AUTO_INCREMENT,
   `cliente_id` int NOT NULL,
   `saldo_actual` decimal(12,2) DEFAULT '0.00',
+  `meta_monto` decimal(12,2) DEFAULT NULL,
+  `meta_nombre` varchar(100) DEFAULT NULL,
   `fecha_apertura` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `cliente_id` (`cliente_id`),
@@ -532,7 +534,54 @@ INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disp
             </td>
         </tr>
     </table>
-</div>');
+</div>'),
+
+('Recordatorio de Pago', 'recordatorio_pago', '⚠️ Recordatorio: Tu cuota vence pronto', 'Se envía manualmente para recordar el vencimiento de una cuota', 'cliente, monto, fecha, moneda', 
+'<div style="background-color: #fefce8; padding: 20px; font-family: sans-serif;"><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);"><tr><td align="center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 10px;">📅</div><h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">Recordatorio de Pago</h1></td></tr><tr><td style="padding: 40px 35px;"><p style="margin: 0 0 20px; font-size: 18px; color: #1e293b;">Hola <strong>{{cliente}}</strong>,</p><p style="margin: 0 0 30px; font-size: 16px; color: #475569; line-height: 1.6;">Te recordamos que tienes una cuota próxima a vencer:</p><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0;"><tr><td><div style="color: #64748b; font-size: 12px; text-transform: uppercase;">Monto de la Cuota</div><div style="color: #0f172a; font-size: 24px; font-weight: bold;">{{moneda}} {{monto}}</div></td></tr><tr><td style="padding-top: 15px;"><div style="color: #64748b; font-size: 12px; text-transform: uppercase;">Vencimiento</div><div style="color: #dc2626; font-size: 20px; font-weight: bold;">{{fecha}}</div></td></tr></table></td></tr></table></div>'),
+
+('Recordatorio de Cadena', 'recordatorio_cadena', '🔔 Recordatorio: Tu aporte de la Cadena', 'Se envía para recordar el pago de una cuota de cadena', 'cliente, monto, cadena, ciclo, moneda', 
+'<div style="background-color: #f0f9ff; padding: 20px; font-family: sans-serif;"><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);"><tr><td align="center" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 10px;">🔔</div><h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: bold;">Recordatorio de Ahorro</h1><p style="margin: 10px 0 0; color: #ffffff; opacity: 0.9;">{{cadena}} - Ciclo #{{ciclo}}</p></td></tr><tr><td style="padding: 40px 35px;"><p style="margin: 0 0 20px; font-size: 18px; color: #1e293b;">Hola <strong>{{cliente}}</strong>,</p><p style="margin: 0 0 30px; font-size: 16px; color: #475569; line-height: 1.6;">Te escribimos para recordarte tu aporte para el ciclo actual de la cadena de ahorro.</p><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0;"><tr><td><div style="color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold;">Monto de tu Cuota</div><div style="color: #0369a1; font-size: 28px; font-weight: bold;">{{moneda}} {{monto}}</div></td></tr></table><p style="margin-top: 30px; color: #64748b; font-size: 14px; font-style: italic; text-align: center;">"El ahorro constante es el camino al éxito financiero."</p></td></tr></table></div>');
+
+-- Estructura para Cadenas de Ahorro
+CREATE TABLE IF NOT EXISTS `cadenas` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `nombre` varchar(100) NOT NULL,
+    `monto_cuota` decimal(12,2) NOT NULL,
+    `frecuencia` enum('semanal', 'quincenal', 'mensual') NOT NULL,
+    `estado` enum('activa', 'finalizada') DEFAULT 'activa',
+    `fecha_inicio` date NOT NULL,
+    `numero_participantes` int NOT NULL,
+    `ciclo_actual` int DEFAULT 1,
+    `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `participantes_cadena` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `cadena_id` int NOT NULL,
+    `nombre` varchar(100) NOT NULL,
+    `telefono` varchar(20),
+    `email` varchar(100) DEFAULT NULL,
+    `turno` int NOT NULL,
+    `estado_entrega` boolean DEFAULT FALSE,
+    `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_turno_cadena` (`cadena_id`, `turno`),
+    CONSTRAINT `participantes_cadena_ibfk_1` FOREIGN KEY (`cadena_id`) REFERENCES `cadenas` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS `pagos_cadena` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `participante_id` int NOT NULL,
+    `cadena_id` int NOT NULL,
+    `ciclo` int NOT NULL,
+    `pagado` boolean DEFAULT FALSE,
+    `fecha_pago` timestamp NULL,
+    `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `pagos_cadena_ibfk_1` FOREIGN KEY (`participante_id`) REFERENCES `participantes_cadena` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `pagos_cadena_ibfk_2` FOREIGN KEY (`cadena_id`) REFERENCES `cadenas` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
