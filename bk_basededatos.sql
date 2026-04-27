@@ -542,6 +542,28 @@ INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disp
 ('Recordatorio de Cadena', 'recordatorio_cadena', '🔔 Recordatorio: Tu aporte de la Cadena', 'Se envía para recordar el pago de una cuota de cadena', 'cliente, monto, cadena, ciclo, moneda', 
 '<div style="background-color: #f0f9ff; padding: 20px; font-family: sans-serif;"><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);"><tr><td align="center" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 10px;">🔔</div><h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: bold;">Recordatorio de Ahorro</h1><p style="margin: 10px 0 0; color: #ffffff; opacity: 0.9;">{{cadena}} - Ciclo #{{ciclo}}</p></td></tr><tr><td style="padding: 40px 35px;"><p style="margin: 0 0 20px; font-size: 18px; color: #1e293b;">Hola <strong>{{cliente}}</strong>,</p><p style="margin: 0 0 30px; font-size: 16px; color: #475569; line-height: 1.6;">Te escribimos para recordarte tu aporte para el ciclo actual de la cadena de ahorro.</p><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0;"><tr><td><div style="color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold;">Monto de tu Cuota</div><div style="color: #0369a1; font-size: 28px; font-weight: bold;">{{moneda}} {{monto}}</div></td></tr></table><p style="margin-top: 30px; color: #64748b; font-size: 14px; font-style: italic; text-align: center;">"El ahorro constante es el camino al éxito financiero."</p></td></tr></table></div>');
 
+
+
+-- Volcando estructura para tabla sistema_prestamos.plantillas_pdf
+CREATE TABLE IF NOT EXISTS `plantillas_pdf` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `slug` varchar(100) NOT NULL,
+  `contenido` text NOT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando datos para la tabla sistema_prestamos.plantillas_pdf: ~3 rows (aproximadamente)
+DELETE FROM `plantillas_pdf`;
+INSERT INTO `plantillas_pdf` (`id`, `nombre`, `slug`, `contenido`, `descripcion`, `updated_at`) VALUES
+	(1, 'Cláusulas del Contrato', 'contrato_clausulas', 'PRIMERO (OBJETO): El ACREEDOR entrega al DEUDOR la suma de {{moneda}} {{monto}} por concepto de préstamo de libre inversión.\r\n\r\nSEGUNDO (INTERESES Y TOTAL): El DEUDOR se obliga a devolver la suma total de {{moneda}} {{total}}, la cual incluye una tasa de interés del {{tasa}}%.\r\n\r\nTERCERO (FORMA DE PAGO): La obligación será cancelada en {{cuotas}} cuotas con una frecuencia de pago {{frecuencia}}. La primera cuota vence el {{fecha_inicio}}.\r\n\r\nCUARTO (MORA): El incumplimiento en las fechas pactadas generará el reporte en las centrales de riesgo y las acciones legales pertinentes para el cobro del saldo total.', 'Cuerpo principal de las cláusulas legales del préstamo', '2026-04-23 18:46:42'),
+	(2, 'Pie de Página - Ticket', 'ticket_pie', 'Este comprobante certifica la recepción del dinero en efectivo o transferencia. Al firmar, el cliente acepta los términos del contrato vinculado a la operación Nro {{op}}.', 'Texto legal que aparece al final del comprobante de desembolso', '2026-04-23 18:23:44'),
+	(3, 'Pie de Página - Cronograma', 'cronograma_pie', 'Este cronograma de pagos es un documento informativo sujeto a términos y condiciones establecidos en el contrato de préstamo. Generado automáticamente por el Sistema de Préstamos el {{fecha_hoy}}.', 'Texto informativo al final del calendario de pagos', '2026-04-23 18:23:44');
+
+
 -- Estructura para Cadenas de Ahorro
 CREATE TABLE IF NOT EXISTS `cadenas` (
     `id` int NOT NULL AUTO_INCREMENT,
