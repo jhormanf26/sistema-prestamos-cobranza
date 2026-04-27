@@ -84,7 +84,7 @@ class PrestamoModel {
 
     static async obtenerPorId(id) {
         try {
-            const query = 'SELECT p.*, c.nombre, c.apellido, c.dni, c.email FROM prestamos p JOIN clientes c ON p.cliente_id = c.id WHERE p.id = ?';
+            const query = 'SELECT p.*, c.nombre, c.apellido, c.dni, c.email, c.telefono, c.direccion FROM prestamos p JOIN clientes c ON p.cliente_id = c.id WHERE p.id = ?';
             const [rows] = await db.query(query, [id]);
             return rows[0];
         } catch (error) { throw error; }
@@ -95,7 +95,7 @@ class PrestamoModel {
     }
 
     static async obtenerTodos() {
-        try { return (await db.query('SELECT p.*, c.nombre, c.apellido, c.dni FROM prestamos p JOIN clientes c ON p.cliente_id = c.id ORDER BY p.fecha_inicio DESC'))[0]; } catch (error) { throw error; }
+        try { return (await db.query('SELECT p.*, c.nombre, c.apellido, c.dni, c.email, c.telefono, c.direccion FROM prestamos p JOIN clientes c ON p.cliente_id = c.id ORDER BY p.fecha_inicio DESC'))[0]; } catch (error) { throw error; }
     }
 
     static async obtenerPorCliente(clienteId) {
