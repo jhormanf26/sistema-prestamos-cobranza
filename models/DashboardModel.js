@@ -4,6 +4,55 @@ class DashboardModel {
 
     // ... (otros métodos se mantienen igual)
 
+    // 7. Gastos por categoría
+    static async obtenerGastosPorCategoria() {
+        try {
+            const query = 'SELECT categoria, SUM(monto) as total FROM gastos GROUP BY categoria';
+            const [rows] = await db.query(query);
+            return rows;
+        } catch (error) { throw error; }
+    }
+
+    // 8. Gastos últimos 7 días
+    static async obtenerGastosUltimosDias() {
+        try {
+            const query = "SELECT DATE(fecha_gasto) as fecha, SUM(monto) as total FROM gastos WHERE fecha_gasto >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(fecha_gasto) ORDER BY fecha ASC";
+            const [rows] = await db.query(query);
+            return rows;
+        } catch (error) { throw error; }
+    }
+
+    // 9. Flujo de Caja (Ingresos vs Gastos últimos 6 meses)
+    static async obtenerFlujoCaja() {
+        try {
+            const query = `
+                SELECT 
+                    DATE_FORMAT(fecha, '%Y-%m') as mes,
+                    SUM(ingresos) as ingresos,
+                    SUM(gastos) as gastos
+                FROM (
+                    SELECT fecha_pago as fecha, monto_pagado as ingresos, 0 as gastos FROM pagos
+                    UNION ALL
+                    SELECT fecha_gasto as fecha, 0 as ingresos, monto as gastos FROM gastos
+                ) as combinados
+                WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                GROUP BY DATE_FORMAT(fecha, '%Y-%m')
+                ORDER BY mes ASC
+            `;
+            const [rows] = await db.query(query);
+            return rows;
+        } catch (error) { throw error; }
+    }
+
+    // 10. Gastos por Registrador
+    static async obtenerGastosPorUsuario() {
+        try {
+            const query = 'SELECT registrado_por as usuario, SUM(monto) as total FROM gastos GROUP BY registrado_por ORDER BY total DESC';
+            const [rows] = await db.query(query);
+            return rows;
+        } catch (error) { throw error; }
+    }
+
     // 6. Oportunidades de Re-Inversión (Préstamos > 80% pagados)
     static async obtenerOportunidadesRenovacion() {
         try {

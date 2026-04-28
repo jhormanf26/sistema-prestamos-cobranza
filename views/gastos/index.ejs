@@ -59,6 +59,7 @@
                                                                     <th>FECHA</th>
                                                                     <th>DESCRIPCIÓN</th>
                                                                     <th>CATEGORÍA</th>
+                                                                    <th>OBSERVACIÓN</th>
                                                                     <th>REGISTRADO POR</th>
                                                                     <th class="text-end">MONTO</th>
                                                                     <th class="text-center">ACCIONES</th>
@@ -80,6 +81,9 @@
                                                                                     <%= g.categoria %>
                                                                                 </span></td>
                                                                             <td class="text-muted small">
+                                                                                <%= g.observacion || 'N/A' %>
+                                                                            </td>
+                                                                            <td class="text-muted small">
                                                                                 <%= g.registrado_por %>
                                                                             </td>
 
@@ -99,7 +103,7 @@
                                                                         <% }) %>
                                                                             <% } else { %>
                                                                                 <tr>
-                                                                                    <td colspan="6"
+                                                                                    <td colspan="7"
                                                                                         class="text-center py-5 text-muted">
                                                                                         No hay gastos registrados.</td>
                                                                                 </tr>
@@ -149,12 +153,16 @@
                                     placeholder="Ej: Pago de luz, Artículos de oficina...">
                             </div>
                             <div class="row">
-                                <div class="col-6 mb-3">
+                                <div class="col-md-4 col-12 mb-3">
+                                    <label class="form-label">Fecha</label>
+                                    <input type="date" name="fecha_gasto" id="fechaGasto" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 col-6 mb-3">
                                     <label class="form-label">Monto (<%= empresa.moneda %>)</label>
                                     <input type="text" name="monto" id="montoGasto" class="form-control currency-input"
                                         required placeholder="0">
                                 </div>
-                                <div class="col-6 mb-3">
+                                <div class="col-md-4 col-6 mb-3">
                                     <label class="form-label">Categoría</label>
                                     <select name="categoria" class="form-select">
                                         <option value="Servicios">Servicios</option>
@@ -184,6 +192,15 @@
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     window.applyCurrencyMask('.currency-input');
+
+                    const fechaInput = document.getElementById('fechaGasto');
+                    if (fechaInput && !fechaInput.value) {
+                        const hoy = new Date();
+                        const yyyy = hoy.getFullYear();
+                        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+                        const dd = String(hoy.getDate()).padStart(2, '0');
+                        fechaInput.value = `${yyyy}-${mm}-${dd}`;
+                    }
 
                     const form = document.querySelector('form[action="/gastos/guardar"]');
                     if (form) {

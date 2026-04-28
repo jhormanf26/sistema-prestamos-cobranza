@@ -45,11 +45,11 @@ const gastosController = {
 
     guardar: async (req, res) => {
         try {
-            const { descripcion, monto, categoria, observacion } = req.body;
+            const { descripcion, monto, categoria, observacion, fecha_gasto } = req.body;
             const registrado_por = (req.session.usuario && req.session.usuario.nombre) ? req.session.usuario.nombre : 'Administrador';
 
-            if (!descripcion || !monto) {
-                req.flash('mensajeError', 'Descripción y Monto son obligatorios');
+            if (!descripcion || !monto || !fecha_gasto) {
+                req.flash('mensajeError', 'Descripción, Monto y Fecha son obligatorios');
                 return res.redirect('/gastos');
             }
 
@@ -59,7 +59,8 @@ const gastosController = {
                 monto: parseFloat(monto),
                 categoria,
                 registrado_por,
-                observacion
+                observacion,
+                fecha_gasto
             });
 
             // 2. REGISTRAR EN AUDITORÍA (NUEVO)
