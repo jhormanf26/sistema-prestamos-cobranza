@@ -4,11 +4,12 @@ const dashboardController = {
     
     mostrarDashboard: async (req, res) => {
         try {
+            const diasVencimiento = parseInt(req.query.diasVencimiento) || 7;
             const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion, gastosCategoria, gastosDias, flujoCaja, gastosUsuario] = await Promise.all([
                 DashboardModel.obtenerTotales(),
                 DashboardModel.obtenerDatosGraficos(),
                 DashboardModel.obtenerDetalleMora(),
-                DashboardModel.obtenerProximosVencimientos(),
+                DashboardModel.obtenerProximosVencimientos(diasVencimiento),
                 DashboardModel.obtenerHistorialFinalizados(),
                 DashboardModel.obtenerOportunidadesRenovacion(), // La nueva consulta estratégica
                 DashboardModel.obtenerGastosPorCategoria(),
@@ -40,6 +41,7 @@ const dashboardController = {
                 totales,
                 detalleMora,
                 proximosVencimientos,
+                diasVencimiento,
                 historialFinalizados,
                 oportunidadesRenovacion, // Pasamos los datos a la vista
                 graficos: {
