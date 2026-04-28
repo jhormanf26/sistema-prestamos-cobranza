@@ -84,7 +84,20 @@ class DashboardModel {
             const [ahorros] = await db.query("SELECT SUM(saldo_actual) as total FROM cuentas_ahorro");
             const [pagos] = await db.query("SELECT SUM(monto_pagado) as total FROM pagos");
             const [totalPrestadoHistorico] = await db.query("SELECT SUM(monto_prestado) as total FROM prestamos");
-            const [mora] = await db.query("SELECT COUNT(*) as total, SUM(monto_total) as montoRiesgo FROM prestamos WHERE estado = 'pendiente' AND fecha_fin < CURDATE()");
+            const [mora] = await db.query(`
+                SELECT COUNT(*) as total, SUM(monto_total) as montoRiesgo FROM (
+                    SELECT p.monto_total, 
+                    CASE p.frecuencia
+                        WHEN 'Diario' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 DAY)
+                        WHEN 'Semanal' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 WEEK)
+                        WHEN 'Quincenal' THEN DATE_ADD(p.fecha_inicio, INTERVAL (FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1) * 15 DAY)
+                        WHEN 'Mensual' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
+                        ELSE DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
+                    END as proxima_fecha
+                    FROM prestamos p WHERE p.estado = 'pendiente'
+                ) as calc
+                WHERE proxima_fecha < CURDATE()
+            `);
             return {
                 clientes: clientes[0].total || 0,
                 dineroPrestado: prestamos[0].total || 0,
@@ -106,7 +119,33 @@ class DashboardModel {
 
     static async obtenerDetalleMora() {
         try {
-            const query = `SELECT p.*, c.nombre, c.apellido, c.telefono FROM prestamos p JOIN clientes c ON p.cliente_id = c.id WHERE p.estado = 'pendiente' AND p.fecha_fin < CURDATE() ORDER BY p.fecha_fin ASC LIMIT 5`;
+            const query = `
+                SELECT *, 
+                    CASE frecuencia
+                        WHEN 'Diario' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 DAY)
+                        WHEN 'Semanal' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 WEEK)
+                        WHEN 'Quincenal' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 15 DAY)
+                        WHEN 'Mensual' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
+                        ELSE DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
+                    END as proxima_fecha
+                FROM (
+                    SELECT 
+                        p.*, 
+                        c.nombre, 
+                        c.apellido, 
+                        c.telefono,
+                        IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) as total_pagado,
+                        FLOOR(
+                            IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)
+                        ) as cuotas_cubiertas
+                    FROM prestamos p
+                    JOIN clientes c ON p.cliente_id = c.id
+                    WHERE p.estado = 'pendiente'
+                ) as prestamos_calculados
+                HAVING proxima_fecha < CURDATE()
+                ORDER BY proxima_fecha ASC
+                LIMIT 10
+            `;
             const [rows] = await db.query(query);
             return rows;
         } catch (error) { throw error; }
@@ -114,7 +153,32 @@ class DashboardModel {
 
     static async obtenerProximosVencimientos() {
         try {
-            const query = `SELECT p.*, c.nombre, c.apellido FROM prestamos p JOIN clientes c ON p.cliente_id = c.id WHERE p.estado = 'pendiente' AND p.fecha_fin >= CURDATE() AND p.fecha_fin <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) ORDER BY p.fecha_fin ASC LIMIT 5`;
+            const query = `
+                SELECT *, 
+                    CASE frecuencia
+                        WHEN 'Diario' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 DAY)
+                        WHEN 'Semanal' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 WEEK)
+                        WHEN 'Quincenal' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 15 DAY)
+                        WHEN 'Mensual' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
+                        ELSE DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
+                    END as proxima_fecha
+                FROM (
+                    SELECT 
+                        p.*, 
+                        c.nombre, 
+                        c.apellido,
+                        IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) as total_pagado,
+                        FLOOR(
+                            IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)
+                        ) as cuotas_cubiertas
+                    FROM prestamos p
+                    JOIN clientes c ON p.cliente_id = c.id
+                    WHERE p.estado = 'pendiente'
+                ) as prestamos_calculados
+                HAVING proxima_fecha >= CURDATE() AND proxima_fecha <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                ORDER BY proxima_fecha ASC
+                LIMIT 10
+            `;
             const [rows] = await db.query(query);
             return rows;
         } catch (error) { throw error; }

@@ -54,7 +54,9 @@
                 <div class="container-fluid px-4 py-3">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="fw-bold text-dark my-0 text-uppercase fs-4">Tablero de Control</h2>
-                        <span class="badge bg-white text-dark border p-2 fw-normal shadow-sm">Hoy: <%= new Date().toLocaleDateString() %></span>
+                        <span class="badge bg-white text-dark border p-2 fw-normal shadow-sm">
+                            Hoy: <%= new Date().toLocaleDateString() %> | <span id="live-clock"><%= new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span>
+                        </span>
                     </div>
 
                     <!-- KPI Cards (Mantenemos el diseño premium) -->
@@ -111,7 +113,7 @@
                                                 <% if(proximosVencimientos.length > 0) { proximosVencimientos.forEach(v => { %>
                                                     <tr>
                                                         <td class="ps-3"><span class="fw-bold d-block"><%= v.nombre %> <%= v.apellido %></span><small class="text-muted"><%= v.frecuencia %></small></td>
-                                                        <td><%= new Date(v.fecha_fin).toLocaleDateString() %></td>
+                                                        <td><%= new Date(v.proxima_fecha || v.fecha_fin).toLocaleDateString() %></td>
                                                         <td class="text-end pe-3">
                                                             <div class="btn-group">
                                                                 <button onclick="enviarRecordatorio(<%= v.id %>, '<%= v.nombre %> <%= v.apellido %>')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
@@ -285,6 +287,12 @@
                         });
                 }
             });
+        function actualizarReloj() {
+            const ahora = new Date();
+            const timeStr = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) clockEl.innerText = timeStr;
         }
+        setInterval(actualizarReloj, 60000);
     </script>
 <%- include('partials/footer') %>
