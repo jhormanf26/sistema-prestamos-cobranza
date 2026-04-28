@@ -112,8 +112,40 @@ class DashboardModel {
 
     static async obtenerDatosGraficos() {
         try {
-            const [rows] = await db.query('SELECT estado, COUNT(*) as cantidad FROM prestamos GROUP BY estado');
-            return { distribucionPrestamos: rows };
+            // 1. Lógica por Préstamos (Original)
+            const [rowsPrestamos] = await db.query('SELECT estado, COUNT(*) as cantidad FROM prestamos GROUP BY estado');
+            
+            // 2. Lógica por Cuotas (Nueva Dinámica)
+            const queryCuotas = `
+                SELECT 
+                    IFNULL(SUM(cp), 0) as pagado,
+                    IFNULL(SUM(cv), 0) as vencido,
+                    IFNULL(SUM(ctot - cp - cv), 0) as pendiente
+                FROM (
+                    SELECT 
+                        p.cuotas as ctot,
+                        FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) as cp,
+                        GREATEST(0, 
+                            LEAST(p.cuotas, 
+                                CASE p.frecuencia
+                                    WHEN 'Diario' THEN GREATEST(0, DATEDIFF(CURDATE(), p.fecha_inicio))
+                                    WHEN 'Semanal' THEN GREATEST(0, FLOOR(DATEDIFF(CURDATE(), p.fecha_inicio) / 7))
+                                    WHEN 'Quincenal' THEN GREATEST(0, FLOOR(DATEDIFF(CURDATE(), p.fecha_inicio) / 15))
+                                    WHEN 'Mensual' THEN GREATEST(0, TIMESTAMPDIFF(MONTH, p.fecha_inicio, CURDATE()))
+                                    ELSE GREATEST(0, TIMESTAMPDIFF(MONTH, p.fecha_inicio, CURDATE()))
+                                END
+                            ) - FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas))
+                        ) as cv
+                    FROM prestamos p
+                    WHERE p.estado != 'anulado'
+                ) as base
+            `;
+            const [rowsCuotas] = await db.query(queryCuotas);
+
+            return { 
+                porPrestamos: rowsPrestamos, 
+                porCuotas: rowsCuotas[0] 
+            };
         } catch (error) { throw error; }
     }
 

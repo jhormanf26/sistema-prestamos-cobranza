@@ -84,7 +84,18 @@
                                 <div class="col-md-6 col-lg-4"><div class="card card-box border-start border-warning border-4 shadow-sm"><div class="card-body"><h6 class="text-muted text-uppercase small">Monto en Riesgo</h6><h4 class="fw-bold text-warning mb-0"><%= empresa.moneda %> <%= parseFloat(totales.montoEnRiesgo).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h4></div></div></div>
                             </div>
                             <div class="row g-3">
-                                <div class="col-lg-5"><div class="card card-box shadow-sm border-0"><div class="card-header bg-white fw-bold border-0">Estado de Cartera</div><div class="card-body"><div style="height: 280px;"><canvas id="chartEstados"></canvas></div></div></div></div>
+                                <div class="col-lg-5">
+                                    <div class="card card-box shadow-sm border-0">
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between align-items-center">
+                                            <span>Estado de Cartera</span>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary active" id="btn-ver-cuotas" onclick="cambiarVistaCartera('cuotas')">Cuotas</button>
+                                                <button type="button" class="btn btn-outline-primary" id="id-ver-prestamos" onclick="cambiarVistaCartera('prestamos')">Préstamos</button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartEstados"></canvas></div></div>
+                                    </div>
+                                </div>
                                 <div class="col-lg-7"><div class="card card-box shadow-sm border-0"><div class="card-header bg-white fw-bold border-0">Capital vs Recuperado</div><div class="card-body"><div style="height: 280px;"><canvas id="chartBalance"></canvas></div></div></div></div>
                             </div>
                         </div>
@@ -226,7 +237,41 @@
         const datosGastosUsuario = <%- JSON.stringify(graficos.gastosUsuario) %>;
         const moneda = "<%= empresa.moneda %>";
         
-        new Chart(document.getElementById('chartEstados'), { type: 'doughnut', data: { labels: ['Pendiente', 'Pagado', 'Vencido'], datasets: [{ data: datosEstados, backgroundColor: ['#ffc107', '#198754', '#dc3545'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+        let chartCartera;
+
+        function renderizarCartera(modo) {
+            const ctx = document.getElementById('chartEstados');
+            const data = modo === 'cuotas' ? [datosEstados.cuotas.pendiente, datosEstados.cuotas.pagado, datosEstados.cuotas.vencido] : [datosEstados.prestamos.pendiente, datosEstados.prestamos.pagado, datosEstados.prestamos.vencido];
+            const labels = modo === 'cuotas' ? ['Cuotas Pendientes', 'Cuotas Pagadas', 'Cuotas Vencidas'] : ['Préstamos Pendientes', 'Préstamos Pagados', 'Préstamos Vencidos'];
+
+            if (chartCartera) chartCartera.destroy();
+
+            chartCartera = new Chart(ctx, { 
+                type: 'doughnut', 
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: data, 
+                        backgroundColor: ['#ffc107', '#198754', '#dc3545'] 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { position: 'bottom' } } 
+                } 
+            });
+        }
+
+        function cambiarVistaCartera(modo) {
+            renderizarCartera(modo);
+            document.getElementById('btn-ver-cuotas').classList.toggle('active', modo === 'cuotas');
+            document.getElementById('id-ver-prestamos').classList.toggle('active', modo === 'prestamos');
+        }
+
+        // Render inicial por cuotas
+        renderizarCartera('cuotas');
+        
         new Chart(document.getElementById('chartBalance'), { type: 'bar', data: { labels: ['Prestado', 'Recuperado'], datasets: [{ label: `Monto en ${moneda}`, data: datosBalance, backgroundColor: ['#0d6efd', '#0dcaf0'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
 
         if (datosGastosCat && datosGastosCat.length > 0) {
