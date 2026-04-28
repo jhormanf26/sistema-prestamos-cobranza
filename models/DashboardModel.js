@@ -183,7 +183,7 @@ class DashboardModel {
         } catch (error) { throw error; }
     }
 
-    static async obtenerProximosVencimientos() {
+    static async obtenerProximosVencimientos(dias = 7) {
         try {
             const query = `
                 SELECT *, 
@@ -207,11 +207,11 @@ class DashboardModel {
                     JOIN clientes c ON p.cliente_id = c.id
                     WHERE p.estado = 'pendiente'
                 ) as prestamos_calculados
-                HAVING proxima_fecha >= CURDATE() AND proxima_fecha <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                HAVING proxima_fecha >= CURDATE() AND proxima_fecha <= DATE_ADD(CURDATE(), INTERVAL ? DAY)
                 ORDER BY proxima_fecha ASC
                 LIMIT 10
             `;
-            const [rows] = await db.query(query);
+            const [rows] = await db.query(query, [dias]);
             return rows;
         } catch (error) { throw error; }
     }

@@ -117,7 +117,14 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="card card-box shadow-sm border-0 h-100">
-                                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center"><span>📅 Vencimientos (7 días)</span><span class="badge bg-warning text-dark"><%= proximosVencimientos.length %></span></div>
+                                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                                            <span>📅 Vencimientos (<%= diasVencimiento %> días)</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="/?diasVencimiento=7" class="btn btn-outline-warning text-dark <%= diasVencimiento == 7 ? 'active' : '' %>">7d</a>
+                                                <a href="/?diasVencimiento=15" class="btn btn-outline-warning text-dark <%= diasVencimiento == 15 ? 'active' : '' %>">15d</a>
+                                                <a href="/?diasVencimiento=30" class="btn btn-outline-warning text-dark <%= diasVencimiento == 30 ? 'active' : '' %>">30d</a>
+                                            </div>
+                                        </div>
                                         <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
                                             <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Fecha</th><th class="text-end pe-3">Acciones</th></tr></thead>
                                             <tbody>
