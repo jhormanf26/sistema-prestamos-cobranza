@@ -17,11 +17,21 @@ const dashboardController = {
                 DashboardModel.obtenerGastosPorUsuario()
             ]);
 
-            // Procesar Estados para el gráfico
-            let estados = { pendiente: 0, pagado: 0, vencido: 0 };
-            resGraficos.distribucionPrestamos.forEach(d => {
+            // Procesar datos para el gráfico conmutables (Préstamos vs Cuotas)
+            const estados = {
+                prestamos: { pendiente: 0, pagado: 0, vencido: 0 },
+                cuotas: {
+                    pendiente: resGraficos.porCuotas.pendiente || 0,
+                    pagado: resGraficos.porCuotas.pagado || 0,
+                    vencido: resGraficos.porCuotas.vencido || 0
+                }
+            };
+
+            resGraficos.porPrestamos.forEach(d => {
                 const est = d.estado.toLowerCase();
-                if (estados.hasOwnProperty(est)) estados[est] = d.cantidad;
+                if (estados.prestamos.hasOwnProperty(est)) {
+                    estados.prestamos[est] = d.cantidad;
+                }
             });
 
             res.render('index', { 
@@ -33,7 +43,7 @@ const dashboardController = {
                 historialFinalizados,
                 oportunidadesRenovacion, // Pasamos los datos a la vista
                 graficos: {
-                    estados: [estados.pendiente, estados.pagado, estados.vencido],
+                    estados: estados,
                     balance: [totales.totalPrestadoHistorico, totales.dineroCobrado],
                     gastosCat: gastosCategoria.map(g => ({ label: g.categoria, data: g.total })),
                     gastosDias: gastosDias.map(g => {
