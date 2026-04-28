@@ -58,12 +58,13 @@ class GastoModel {
     // 5. Crear Gasto (ACTUALIZADO CON NUEVOS CAMPOS)
     static async crear(datos) {
         try {
-            const { descripcion, monto, categoria, registrado_por, observacion } = datos;
+            const { descripcion, monto, categoria, registrado_por, observacion, fecha_gasto } = datos;
+            const fechaValue = fecha_gasto ? `${fecha_gasto} 12:00:00` : new Date();
             const query = `
                 INSERT INTO gastos (descripcion, monto, categoria, registrado_por, observacion, fecha_gasto) 
-                VALUES (?, ?, ?, ?, ?, NOW())
+                VALUES (?, ?, ?, ?, ?, ?)
             `;
-            const [result] = await db.query(query, [descripcion, monto, categoria, registrado_por, observacion]);
+            const [result] = await db.query(query, [descripcion, monto, categoria, registrado_por, observacion, fechaValue]);
             return result;
         } catch (error) {
             console.error("Error SQL al crear gasto:", error); // Esto te ayudará a ver el error en la terminal

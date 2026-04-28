@@ -4,13 +4,17 @@ const dashboardController = {
     
     mostrarDashboard: async (req, res) => {
         try {
-            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion] = await Promise.all([
+            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion, gastosCategoria, gastosDias, flujoCaja, gastosUsuario] = await Promise.all([
                 DashboardModel.obtenerTotales(),
                 DashboardModel.obtenerDatosGraficos(),
                 DashboardModel.obtenerDetalleMora(),
                 DashboardModel.obtenerProximosVencimientos(),
                 DashboardModel.obtenerHistorialFinalizados(),
-                DashboardModel.obtenerOportunidadesRenovacion() // La nueva consulta estratégica
+                DashboardModel.obtenerOportunidadesRenovacion(), // La nueva consulta estratégica
+                DashboardModel.obtenerGastosPorCategoria(),
+                DashboardModel.obtenerGastosUltimosDias(),
+                DashboardModel.obtenerFlujoCaja(),
+                DashboardModel.obtenerGastosPorUsuario()
             ]);
 
             // Procesar Estados para el gráfico
@@ -30,13 +34,21 @@ const dashboardController = {
                 oportunidadesRenovacion, // Pasamos los datos a la vista
                 graficos: {
                     estados: [estados.pendiente, estados.pagado, estados.vencido],
-                    balance: [totales.totalPrestadoHistorico, totales.dineroCobrado]
+                    balance: [totales.totalPrestadoHistorico, totales.dineroCobrado],
+                    gastosCat: gastosCategoria.map(g => ({ label: g.categoria, data: g.total })),
+                    gastosDias: gastosDias.map(g => {
+                        const dateObj = new Date(g.fecha);
+                        const labelStr = `${dateObj.getUTCDate().toString().padStart(2, '0')}/${(dateObj.getUTCMonth()+1).toString().padStart(2, '0')}`;
+                        return { label: labelStr, data: g.total };
+                    }),
+                    flujoCaja: flujoCaja.map(f => ({ mes: f.mes, ingresos: f.ingresos, gastos: f.gastos })),
+                    gastosUsuario: gastosUsuario.map(g => ({ label: g.usuario, data: g.total }))
                 }
             });
 
         } catch (error) {
             console.error("Error Dashboard:", error);
-            res.redirect('/');
+            res.status(500).send("Error en el dashboard: " + error.message + "<br><br>" + error.stack);
         }
     }
 };

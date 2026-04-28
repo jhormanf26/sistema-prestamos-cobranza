@@ -70,6 +70,7 @@
                         <li class="nav-item"><button class="btn-dash active" data-bs-toggle="pill" data-bs-target="#tab-analisis" type="button"><i class="bi bi-graph-up"></i> Análisis</button></li>
                         <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-accion" type="button"><i class="bi bi-lightning-charge"></i> Acción Diaria</button></li>
                         <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-crecimiento" type="button"><i class="bi bi-rocket-takeoff"></i> Crecimiento</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-gastos" type="button"><i class="bi bi-receipt"></i> Gastos</button></li>
                     </ul>
 
                     <div class="tab-content tab-content-dash" id="pills-tabContent">
@@ -124,6 +125,38 @@
                                                     </tr>
                                                 <% }) } else { %><tr><td colspan="3" class="text-center py-5 text-muted">Sin movimientos cercanos</td></tr><% } %>
                                             </tbody></table></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: GASTOS -->
+                        <div class="tab-pane fade" id="tab-gastos" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-lg-5">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0">Distribución de Gastos</div>
+                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartGastosCat"></canvas></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0">Evolución de Gastos (Últimos 7 días)</div>
+                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartGastosDias"></canvas></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-1">
+                                <div class="col-lg-8">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0">Flujo de Caja: Ingresos vs Gastos (Últimos 6 meses)</div>
+                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartFlujoCaja"></canvas></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0">Gastos por Registrador</div>
+                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartGastosUsuario"></canvas></div></div>
                                     </div>
                                 </div>
                             </div>
@@ -185,9 +218,40 @@
     <script>
         const datosEstados = <%- JSON.stringify(graficos.estados) %>;
         const datosBalance = <%- JSON.stringify(graficos.balance) %>;
+        const datosGastosCat = <%- JSON.stringify(graficos.gastosCat) %>;
+        const datosGastosDias = <%- JSON.stringify(graficos.gastosDias) %>;
+        const datosFlujoCaja = <%- JSON.stringify(graficos.flujoCaja) %>;
+        const datosGastosUsuario = <%- JSON.stringify(graficos.gastosUsuario) %>;
         const moneda = "<%= empresa.moneda %>";
+        
         new Chart(document.getElementById('chartEstados'), { type: 'doughnut', data: { labels: ['Pendiente', 'Pagado', 'Vencido'], datasets: [{ data: datosEstados, backgroundColor: ['#ffc107', '#198754', '#dc3545'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
         new Chart(document.getElementById('chartBalance'), { type: 'bar', data: { labels: ['Prestado', 'Recuperado'], datasets: [{ label: `Monto en ${moneda}`, data: datosBalance, backgroundColor: ['#0d6efd', '#0dcaf0'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+
+        if (datosGastosCat && datosGastosCat.length > 0) {
+            new Chart(document.getElementById('chartGastosCat'), { type: 'doughnut', data: { labels: datosGastosCat.map(d => d.label), datasets: [{ data: datosGastosCat.map(d => d.data), backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#0dcaf0', '#6f42c1'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+        }
+        
+        if (datosGastosDias && datosGastosDias.length > 0) {
+            new Chart(document.getElementById('chartGastosDias'), { type: 'line', data: { labels: datosGastosDias.map(d => d.label), datasets: [{ label: `Gastos (${moneda})`, data: datosGastosDias.map(d => d.data), borderColor: '#dc3545', backgroundColor: 'rgba(220, 53, 69, 0.2)', fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        }
+
+        if (datosFlujoCaja && datosFlujoCaja.length > 0) {
+            new Chart(document.getElementById('chartFlujoCaja'), { 
+                type: 'bar', 
+                data: { 
+                    labels: datosFlujoCaja.map(d => d.mes), 
+                    datasets: [
+                        { label: 'Ingresos', data: datosFlujoCaja.map(d => d.ingresos), backgroundColor: '#198754' },
+                        { label: 'Gastos', data: datosFlujoCaja.map(d => d.gastos), backgroundColor: '#dc3545' }
+                    ] 
+                }, 
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } 
+            });
+        }
+
+        if (datosGastosUsuario && datosGastosUsuario.length > 0) {
+            new Chart(document.getElementById('chartGastosUsuario'), { type: 'bar', data: { labels: datosGastosUsuario.map(d => d.label), datasets: [{ label: `Gastos por Persona`, data: datosGastosUsuario.map(d => d.data), backgroundColor: '#6f42c1' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
 
         function enviarRecordatorio(id, cliente) {
             Swal.fire({
