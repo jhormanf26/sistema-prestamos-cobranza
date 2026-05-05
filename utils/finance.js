@@ -16,6 +16,17 @@ const finance = {
         return nuevaFecha;
     },
 
+    // Calcular interés total basado en tasa mensual y duración
+    calcularInteresTotal: (tasaMensual, cuotas, frecuencia) => {
+        let factor = 1;
+        if (frecuencia === 'diario') factor = 1/30;
+        else if (frecuencia === 'semanal') factor = 7/30;
+        else if (frecuencia === 'quincenal') factor = 0.5;
+        else if (frecuencia === 'mensual') factor = 1;
+        
+        return tasaMensual * (cuotas * factor);
+    },
+
     // Generar el array de cuotas
     calcularCronograma: (montoTotal, cuotas, frecuencia, fechaInicio) => {
         const listaCuotas = [];

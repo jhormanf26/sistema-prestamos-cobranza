@@ -73,24 +73,29 @@ const prestamosController = {
 
     guardar: async (req, res) => {
         try {
-            const { cliente_id, monto, interes, cuotas, frecuencia, fecha_inicio, observaciones } = req.body;
+            const { cliente_id, monto, interes, interes_mora, cuotas, frecuencia, fecha_inicio, observaciones } = req.body;
             const usuarioActual = (req.session && req.session.usuario) ? req.session.usuario.nombre : 'Administrador';
 
             const montoPrestado = parseFloat(monto);
-            const tasa = parseFloat(interes);
+            const tasaMensual = parseFloat(interes);
+            const tasaMoraMensual = parseFloat(interes_mora) || 0;
             const numCuotas = parseInt(cuotas);
-            const montoInteres = montoPrestado * (tasa / 100);
+            
+            // Calculamos el porcentaje de interés total basado en la tasa mensual y la duración
+            const tasaTotal = finance.calcularInteresTotal(tasaMensual, numCuotas, frecuencia);
+            const montoInteres = montoPrestado * (tasaTotal / 100);
             const montoTotal = montoPrestado + montoInteres;
 
             let fechaFin = new Date(fecha_inicio);
             if (frecuencia === 'diario') fechaFin.setDate(fechaFin.getDate() + numCuotas);
             else if (frecuencia === 'semanal') fechaFin.setDate(fechaFin.getDate() + (numCuotas * 7));
+            else if (frecuencia === 'quincenal') fechaFin.setDate(fechaFin.getDate() + (numCuotas * 15));
             else if (frecuencia === 'mensual') fechaFin.setMonth(fechaFin.getMonth() + numCuotas);
 
             const result = await PrestamoModel.crear({
-                cliente_id, monto_prestado: montoPrestado, tasa_interes: tasa, monto_total: montoTotal, 
-                cuotas: numCuotas, frecuencia, fecha_inicio, fecha_fin: fechaFin.toISOString().split('T')[0], 
-                observaciones: observaciones || ''
+                cliente_id, monto_prestado: montoPrestado, tasa_interes: tasaMensual, tasa_mora: tasaMoraMensual,
+                monto_total: montoTotal, cuotas: numCuotas, frecuencia, fecha_inicio, 
+                fecha_fin: fechaFin.toISOString().split('T')[0], observaciones: observaciones || ''
             });
 
             await BitacoraModel.registrar(usuarioActual, 'NUEVO_PRESTAMO', `Monto: ${montoPrestado} - Cliente ID: ${cliente_id}`);

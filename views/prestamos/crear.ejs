@@ -41,18 +41,24 @@
                                                         </div>
 
                                                         <div class="row">
-                                                            <div class="col-md-6 mb-3">
+                                                            <div class="col-md-4 mb-3">
                                                                 <label class="form-label">Monto a Prestar (<%=
                                                                         empresa.moneda %>)</label>
                                                                 <input type="text" name="monto" id="inputMonto"
                                                                     class="form-control currency-input" required
                                                                     placeholder="0">
                                                             </div>
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label">Interés (%)</label>
+                                                            <div class="col-md-4 mb-3">
+                                                                <label class="form-label">Interés Mensual (%)</label>
                                                                 <input type="number" step="0.01" name="interes"
                                                                     id="inputInteres" class="form-control" required
-                                                                    placeholder="20">
+                                                                    placeholder="2">
+                                                            </div>
+                                                            <div class="col-md-4 mb-3">
+                                                                <label class="form-label">Interés Mora (%)</label>
+                                                                <input type="number" step="0.01" name="interes_mora"
+                                                                    id="inputInteresMora" class="form-control" required
+                                                                    placeholder="5" value="5">
                                                             </div>
                                                         </div>
 
@@ -118,6 +124,13 @@
                                                                 <%= empresa.moneda %> 0.00
                                                             </h3>
                                                         </div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <small class="text-white-50">Mora Diaria Estimada</small>
+                                                            <h3 class="fw-bold text-danger" id="simMora">
+                                                                <%= empresa.moneda %> 0.00
+                                                            </h3>
+                                                        </div>
 
                                                         <div class="d-grid mt-auto">
                                                             <button type="submit"
@@ -150,7 +163,9 @@
                     const simInteres = document.getElementById('simInteres');
                     const simTotal = document.getElementById('simTotal');
                     const simCuota = document.getElementById('simCuota');
+                    const simMora = document.getElementById('simMora');
                     const inputCuotas = document.getElementById('inputCuotas');
+                    const inputInteresMora = document.getElementById('inputInteresMora');
 
                     // Obtenemos el símbolo de moneda desde el servidor
                     const moneda = "<%= empresa.moneda %>";
@@ -164,11 +179,13 @@
                     const urlParams = new URLSearchParams(window.location.search);
                     const pMonto = urlParams.get('monto');
                     const pInteres = urlParams.get('interes');
+                    const pMora = urlParams.get('interes_mora');
                     const pCuotas = urlParams.get('cuotas');
                     const pFrecuencia = urlParams.get('frecuencia');
 
                     if (pMonto) inputMonto.value = pMonto;
                     if (pInteres) inputInteres.value = pInteres;
+                    if (pMora) document.getElementById('inputInteresMora').value = pMora;
                     if (pCuotas) inputCuotas.value = pCuotas;
                     if (pFrecuencia) document.querySelector('select[name="frecuencia"]').value = pFrecuencia;
 
@@ -185,21 +202,36 @@
                         const m = parseFloat(rawValue) || 0;
                         const i = parseFloat(inputInteres.value) || 0;
                         const c = parseInt(inputCuotas.value) || 1;
+                        const f = document.querySelector('select[name="frecuencia"]').value;
 
-                        const interesGanado = m * (i / 100);
+                        // Lógica de interés mensual (debe coincidir con utils/finance.js)
+                        let factor = 1;
+                        if (f === 'diario') factor = 1/30;
+                        else if (f === 'semanal') factor = 7/30;
+                        else if (f === 'quincenal') factor = 0.5;
+                        else if (f === 'mensual') factor = 1;
+
+                        const tasaTotal = i * (c * factor);
+                        const interesGanado = m * (tasaTotal / 100);
                         const total = m + interesGanado;
                         const cuota = total / (c > 0 ? c : 1);
+                        
+                        // Cálculo de mora diaria (basado en el monto total prestado)
+                        const im = parseFloat(inputInteresMora.value) || 0;
+                        const moraDiaria = (m * (im / 100)) / 30;
 
                         if (window.formatCurrency) {
                             simMonto.innerText = `${moneda} ${window.formatCurrency(m, 2)}`;
                             simInteres.innerText = `${moneda} ${window.formatCurrency(interesGanado, 2)}`;
                             simTotal.innerText = `${moneda} ${window.formatCurrency(total, 2)}`;
                             simCuota.innerText = `${moneda} ${window.formatCurrency(cuota, 2)}`;
+                            simMora.innerText = `${moneda} ${window.formatCurrency(moraDiaria, 2)}`;
                         } else {
                             simMonto.innerText = `${moneda} ${m.toFixed(2)}`;
                             simInteres.innerText = `${moneda} ${interesGanado.toFixed(2)}`;
                             simTotal.innerText = `${moneda} ${total.toFixed(2)}`;
                             simCuota.innerText = `${moneda} ${cuota.toFixed(2)}`;
+                            simMora.innerText = `${moneda} ${moraDiaria.toFixed(2)}`;
                         }
                     }
 
@@ -208,7 +240,9 @@
                     inputMonto.addEventListener('input', calcular);
 
                     inputInteres.addEventListener('input', calcular);
+                    inputInteresMora.addEventListener('input', calcular);
                     inputCuotas.addEventListener('input', calcular);
+                    document.querySelector('select[name="frecuencia"]').addEventListener('change', calcular);
 
                     // LIMPIAR PUNTOS ANTES DE ENVIAR AL SERVIDOR
                     if (formPrestamo) {
