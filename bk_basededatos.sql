@@ -287,6 +287,7 @@ CREATE TABLE IF NOT EXISTS `prestamos` (
   `cliente_id` int NOT NULL,
   `monto_prestado` decimal(10,2) NOT NULL,
   `tasa_interes` decimal(5,2) NOT NULL,
+  `tasa_mora` decimal(5,2) DEFAULT 0.00,
   `monto_total` decimal(10,2) NOT NULL,
   `cuotas` int NOT NULL,
   `frecuencia` enum('diario','semanal','mensual') NOT NULL,
@@ -301,19 +302,19 @@ CREATE TABLE IF NOT EXISTS `prestamos` (
 
 -- Volcando datos para la tabla sistema_prestamos.prestamos: ~12 rows (aproximadamente)
 DELETE FROM `prestamos`;
-INSERT INTO `prestamos` (`id`, `cliente_id`, `monto_prestado`, `tasa_interes`, `monto_total`, `cuotas`, `frecuencia`, `estado`, `fecha_inicio`, `fecha_fin`) VALUES
-	(1, 1, 1000.00, 20.00, 1200.00, 12, 'mensual', 'pendiente', '2026-01-29', '2027-01-29'),
-	(2, 1, 1000.00, 20.00, 1200.00, 12, 'mensual', 'pendiente', '2026-02-17', '2027-02-17'),
-	(3, 2, 500.00, 20.00, 600.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26'),
-	(4, 3, 1000.00, 20.00, 1200.00, 5, 'semanal', 'pagado', '2026-03-26', '2026-04-26'),
-	(5, 4, 1500.00, 20.00, 1800.00, 5, 'mensual', 'vencido', '2026-03-26', '2026-04-26'),
-	(6, 5, 2000.00, 20.00, 2400.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26'),
-	(7, 6, 2500.00, 20.00, 3000.00, 5, 'semanal', 'pagado', '2026-03-26', '2026-04-26'),
-	(8, 7, 3000.00, 20.00, 3600.00, 5, 'mensual', 'vencido', '2026-03-26', '2026-04-26'),
-	(9, 8, 3500.00, 20.00, 4200.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26'),
-	(10, 9, 4000.00, 20.00, 4800.00, 5, 'semanal', 'pagado', '2026-03-26', '2026-04-26'),
-	(11, 10, 4500.00, 20.00, 5400.00, 5, 'mensual', 'vencido', '2026-03-26', '2026-04-26'),
-	(12, 11, 5000.00, 20.00, 6000.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26');
+INSERT INTO `prestamos` (`id`, `cliente_id`, `monto_prestado`, `tasa_interes`, `tasa_mora`, `monto_total`, `cuotas`, `frecuencia`, `estado`, `fecha_inicio`, `fecha_fin`) VALUES
+	(1, 1, 1000.00, 20.00, 0.00, 1200.00, 12, 'mensual', 'pendiente', '2026-01-29', '2027-01-29'),
+	(2, 1, 1000.00, 20.00, 0.00, 1200.00, 12, 'mensual', 'pendiente', '2026-02-17', '2027-02-17'),
+	(3, 2, 500.00, 20.00, 0.00, 600.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26'),
+	(4, 3, 1000.00, 20.00, 0.00, 1200.00, 5, 'semanal', 'pagado', '2026-03-26', '2026-04-26'),
+	(5, 4, 1500.00, 20.00, 0.00, 1800.00, 5, 'mensual', 'vencido', '2026-03-26', '2026-04-26'),
+	(6, 5, 2000.00, 20.00, 0.00, 2400.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26'),
+	(7, 6, 2500.00, 20.00, 0.00, 3000.00, 5, 'semanal', 'pagado', '2026-03-26', '2026-04-26'),
+	(8, 7, 3000.00, 20.00, 0.00, 3600.00, 5, 'mensual', 'vencido', '2026-03-26', '2026-04-26'),
+	(9, 8, 3500.00, 20.00, 0.00, 4200.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26'),
+	(10, 9, 4000.00, 20.00, 0.00, 4800.00, 5, 'semanal', 'pagado', '2026-03-26', '2026-04-26'),
+	(11, 10, 4500.00, 20.00, 0.00, 5400.00, 5, 'mensual', 'vencido', '2026-03-26', '2026-04-26'),
+	(12, 11, 5000.00, 20.00, 0.00, 6000.00, 5, 'diario', 'pendiente', '2026-03-26', '2026-04-26');
 
 -- Volcando estructura para tabla sistema_prestamos.usuarios
 CREATE TABLE IF NOT EXISTS `usuarios` (

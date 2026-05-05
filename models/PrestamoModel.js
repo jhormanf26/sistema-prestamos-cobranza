@@ -75,9 +75,9 @@ class PrestamoModel {
 
     static async crear(datos) {
         try {
-            const { cliente_id, monto_prestado, tasa_interes, monto_total, cuotas, frecuencia, fecha_inicio, fecha_fin, observaciones } = datos;
-            const query = 'INSERT INTO prestamos (cliente_id, monto_prestado, tasa_interes, monto_total, cuotas, frecuencia, fecha_inicio, fecha_fin, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            const [result] = await db.query(query, [cliente_id, monto_prestado, tasa_interes, monto_total, cuotas, frecuencia, fecha_inicio, fecha_fin, observaciones]);
+            const { cliente_id, monto_prestado, tasa_interes, tasa_mora, monto_total, cuotas, frecuencia, fecha_inicio, fecha_fin, observaciones } = datos;
+            const query = 'INSERT INTO prestamos (cliente_id, monto_prestado, tasa_interes, tasa_mora, monto_total, cuotas, frecuencia, fecha_inicio, fecha_fin, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const [result] = await db.query(query, [cliente_id, monto_prestado, tasa_interes, tasa_mora, monto_total, cuotas, frecuencia, fecha_inicio, fecha_fin, observaciones]);
             return result;
         } catch (error) { throw error; }
     }

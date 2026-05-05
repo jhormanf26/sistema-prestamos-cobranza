@@ -4,6 +4,7 @@ const ConfigModel = require('../models/ConfigModel');
 const emailService = require('../utils/emailService');
 const BitacoraModel = require('../models/BitacoraModel'); // TU AUDITORÍA
 const CajaModel = require('../models/CajaModel'); // <--- AGREGADO: NECESARIO PARA VIDEO 2
+const finance = require('../utils/finance');
 const { formatCurrency } = require('../utils/formatters');
 
 const pagosController = {
@@ -29,12 +30,51 @@ const pagosController = {
             const historial = await PagoModel.obtenerHistorial(id_prestamo);
             const empresaConfig = config || { moneda: '$' };
 
+            // --- CÁLCULO DE MORA Y CUOTA PENDIENTE ---
+            const cronograma = finance.calcularCronograma(totalDeuda, prestamo.cuotas, prestamo.frecuencia, prestamo.fecha_inicio);
+            let cuotaPendiente = null;
+            let acumulado = 0;
+
+            for (const c of cronograma) {
+                acumulado += c.monto;
+                // Si lo que se ha pagado es menor a lo que se debería llevar acumulado hasta esta cuota
+                if (totalPagado < (acumulado - 0.01)) { // Margen de 0.01 para decimales
+                    cuotaPendiente = c;
+                    break;
+                }
+            }
+
+            // Si no hay cuota pendiente (todo pagado), tomamos la última por si acaso, aunque saldoPendiente será 0
+            if (!cuotaPendiente && cronograma.length > 0) {
+                cuotaPendiente = cronograma[cronograma.length - 1];
+            }
+
+            let diasAtraso = 0;
+            let interesMoraAcumulado = 0;
+            const hoy = new Date();
+            hoy.setHours(0,0,0,0);
+
+            // Mora diaria sobre capital (monto_prestado)
+            const tasaMoraMensual = parseFloat(prestamo.tasa_mora) || 0;
+            const montoPrestado = parseFloat(prestamo.monto_prestado);
+            const moraDiaria = (montoPrestado * (tasaMoraMensual / 100)) / 30;
+
+            if (cuotaPendiente && cuotaPendiente.fecha < hoy && saldoPendiente > 0) {
+                const diffTime = Math.abs(hoy - cuotaPendiente.fecha);
+                diasAtraso = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                interesMoraAcumulado = diasAtraso * moraDiaria;
+            }
+
             res.render('pagos/registrar', {
                 title: 'Registrar Pago',
                 prestamo: prestamo,
                 saldoPendiente: saldoPendiente,
                 historial: historial,
-                empresa: empresaConfig
+                empresa: empresaConfig,
+                cuotaPendiente: cuotaPendiente,
+                diasAtraso: diasAtraso,
+                moraDiaria: moraDiaria,
+                interesMoraAcumulado: interesMoraAcumulado
             });
 
         } catch (error) {

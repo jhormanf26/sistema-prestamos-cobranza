@@ -4,7 +4,7 @@ const simuladorController = {
 
     // 1. Mostrar la pantalla del simulador
     mostrar: (req, res) => {
-        res.render('simulador/index', { 
+        res.render('simulador/index', {
             title: 'Calculadora de Préstamos',
             resultado: null, // Al inicio no hay resultados
             datos: {} // Para mantener los datos en el formulario
@@ -13,7 +13,7 @@ const simuladorController = {
 
     // 2. Procesar el cálculo
     calcular: (req, res) => {
-        const { monto, interes, cuotas, frecuencia } = req.body;
+        const { monto, interes, interes_mora, cuotas, frecuencia } = req.body;
 
         // Validar datos básicos
         if (!monto || !interes || !cuotas) {
@@ -22,18 +22,24 @@ const simuladorController = {
         }
 
         const montoPrestado = parseFloat(monto);
-        const tasa = parseFloat(interes);
+        const tasaMensual = parseFloat(interes);
+        const tasaMoraMensual = parseFloat(interes_mora) || 0;
         const numCuotas = parseInt(cuotas);
 
-        // Cálculo de Interés Simple
-        const montoInteres = montoPrestado * (tasa / 100);
+        // Cálculo de Interés basado en tasa mensual y duración
+        const tasaTotal = finance.calcularInteresTotal(tasaMensual, numCuotas, frecuencia);
+        const montoInteres = montoPrestado * (tasaTotal / 100);
         const montoTotal = montoPrestado + montoInteres;
+        const montoCuota = montoTotal / numCuotas;
+
+        // Interés Diario por Mora (basado en el monto de la cuota)
+        const interesMoraDiario = (montoPrestado * (tasaMoraMensual / 100)) / 30;
 
         // Generar Cronograma (Proyectado desde hoy)
         const cronograma = finance.calcularCronograma(
-            montoTotal, 
-            numCuotas, 
-            frecuencia, 
+            montoTotal,
+            numCuotas,
+            frecuencia,
             new Date() // Usamos fecha de hoy para la simulación
         );
 
@@ -41,9 +47,11 @@ const simuladorController = {
             title: 'Calculadora de Préstamos',
             resultado: {
                 montoPrestado,
-                tasa,
+                tasa: tasaMensual,
+                tasaMora: tasaMoraMensual,
                 montoTotal,
                 montoInteres,
+                interesMoraDiario,
                 cronograma
             },
             datos: req.body // Devolvemos lo que escribió el usuario para que no se borre
