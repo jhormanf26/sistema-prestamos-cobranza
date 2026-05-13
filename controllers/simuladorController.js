@@ -13,10 +13,10 @@ const simuladorController = {
 
     // 2. Procesar el cálculo
     calcular: (req, res) => {
-        const { monto, interes, interes_mora, cuotas, frecuencia } = req.body;
-
+        const { monto, interes, interes_mora, cuotas, frecuencia, fecha_inicio } = req.body;
+        
         // Validar datos básicos
-        if (!monto || !interes || !cuotas) {
+        if (!monto || !interes || !cuotas || !fecha_inicio) {
             req.flash('mensajeError', 'Complete todos los campos para calcular');
             return res.redirect('/simulador');
         }
@@ -35,12 +35,12 @@ const simuladorController = {
         // Interés Diario por Mora (basado en el monto de la cuota)
         const interesMoraDiario = (montoPrestado * (tasaMoraMensual / 100)) / 30;
 
-        // Generar Cronograma (Proyectado desde hoy)
+        // Generar Cronograma (Proyectado desde la fecha seleccionada)
         const cronograma = finance.calcularCronograma(
             montoTotal,
             numCuotas,
             frecuencia,
-            new Date() // Usamos fecha de hoy para la simulación
+            fecha_inicio
         );
 
         res.render('simulador/index', {

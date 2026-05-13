@@ -81,7 +81,7 @@
 
                                                         <div class="mb-3">
                                                             <label class="form-label">Fecha de Inicio</label>
-                                                            <input type="date" name="fecha_inicio" class="form-control"
+                                                            <input type="date" name="fecha_inicio" id="inputFechaInicio" class="form-control"
                                                                 required
                                                                 value="<%= new Date().toISOString().split('T')[0] %>">
                                                         </div>
@@ -132,6 +132,13 @@
                                                             </h3>
                                                         </div>
 
+                                                        <div class="mb-4">
+                                                            <small class="text-white-50">Finalización Estimada</small>
+                                                            <h3 class="fw-bold text-white" id="simFechaFin">
+                                                                --/--/----
+                                                            </h3>
+                                                        </div>
+
                                                         <div class="d-grid mt-auto">
                                                             <button type="submit"
                                                                 class="btn btn-success btn-lg fw-bold">
@@ -166,6 +173,8 @@
                     const simMora = document.getElementById('simMora');
                     const inputCuotas = document.getElementById('inputCuotas');
                     const inputInteresMora = document.getElementById('inputInteresMora');
+                    const inputFechaInicio = document.getElementById('inputFechaInicio');
+                    const simFechaFin = document.getElementById('simFechaFin');
 
                     // Obtenemos el símbolo de moneda desde el servidor
                     const moneda = "<%= empresa.moneda %>";
@@ -182,12 +191,14 @@
                     const pMora = urlParams.get('interes_mora');
                     const pCuotas = urlParams.get('cuotas');
                     const pFrecuencia = urlParams.get('frecuencia');
+                    const pFechaInicio = urlParams.get('fecha_inicio');
 
                     if (pMonto) inputMonto.value = pMonto;
                     if (pInteres) inputInteres.value = pInteres;
                     if (pMora) document.getElementById('inputInteresMora').value = pMora;
                     if (pCuotas) inputCuotas.value = pCuotas;
                     if (pFrecuencia) document.querySelector('select[name="frecuencia"]').value = pFrecuencia;
+                    if (pFechaInicio) inputFechaInicio.value = pFechaInicio;
 
                     // Si el monto fue seteado, disparamos el formateo
                     if (pMonto && window.applyCurrencyMask) {
@@ -233,6 +244,19 @@
                             simCuota.innerText = `${moneda} ${cuota.toFixed(2)}`;
                             simMora.innerText = `${moneda} ${moraDiaria.toFixed(2)}`;
                         }
+
+                        // Calcular Fecha de Finalización
+                        if (inputFechaInicio.value) {
+                            const fechaI = new Date(inputFechaInicio.value + 'T00:00:00');
+                            let fechaF = new Date(fechaI);
+                            if (f === 'diario') fechaF.setDate(fechaF.getDate() + c);
+                            else if (f === 'semanal') fechaF.setDate(fechaF.getDate() + (c * 7));
+                            else if (f === 'quincenal') fechaF.setDate(fechaF.getDate() + (c * 15));
+                            else if (f === 'mensual') fechaF.setMonth(fechaF.getMonth() + c);
+
+                            const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                            simFechaFin.innerText = fechaF.toLocaleDateString('es-CO', opciones);
+                        }
                     }
 
                     // Escuchamos tanto el evento personalizado como el estándar
@@ -242,6 +266,7 @@
                     inputInteres.addEventListener('input', calcular);
                     inputInteresMora.addEventListener('input', calcular);
                     inputCuotas.addEventListener('input', calcular);
+                    inputFechaInicio.addEventListener('change', calcular);
                     document.querySelector('select[name="frecuencia"]').addEventListener('change', calcular);
 
                     // LIMPIAR PUNTOS ANTES DE ENVIAR AL SERVIDOR
