@@ -71,6 +71,12 @@
                                                             </div>
                                                         </div>
 
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Fecha Inicio</label>
+                                                            <input type="date" name="fecha_inicio" class="form-control"
+                                                                value="<%= datos.fecha_inicio || new Date().toISOString().split('T')[0] %>" required>
+                                                        </div>
+
                                                         <div class="d-grid mt-3">
                                                             <button type="submit" class="btn btn-primary btn-lg"><i
                                                                     class="bi bi-calculator"></i> Calcular
@@ -171,9 +177,8 @@
                                                                 <i class="bi bi-info-circle"></i> Fechas referenciales.
                                                             </div>
 
-                                                            <!-- BOTÓN HACER PRÉSTAMO (NUEVO) -->
                                                             <div class="d-grid">
-                                                                <a href="/prestamos/crear?monto=<%= datos.monto %>&interes=<%= datos.interes %>&interes_mora=<%= datos.interes_mora %>&cuotas=<%= datos.cuotas %>&frecuencia=<%= datos.frecuencia %>" 
+                                                                <a href="/prestamos/crear?monto=<%= datos.monto %>&interes=<%= datos.interes %>&interes_mora=<%= datos.interes_mora %>&cuotas=<%= datos.cuotas %>&frecuencia=<%= datos.frecuencia %>&fecha_inicio=<%= datos.fecha_inicio %>" 
                                                                    class="btn btn-dark btn-lg fw-bold shadow">
                                                                     <i class="bi bi-person-plus-fill"></i> Hacer Préstamo con estos datos
                                                                 </a>

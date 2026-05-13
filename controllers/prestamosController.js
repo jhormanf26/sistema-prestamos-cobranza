@@ -86,7 +86,7 @@ const prestamosController = {
             const montoInteres = montoPrestado * (tasaTotal / 100);
             const montoTotal = montoPrestado + montoInteres;
 
-            let fechaFin = new Date(fecha_inicio);
+            let fechaFin = new Date(fecha_inicio + 'T00:00:00');
             if (frecuencia === 'diario') fechaFin.setDate(fechaFin.getDate() + numCuotas);
             else if (frecuencia === 'semanal') fechaFin.setDate(fechaFin.getDate() + (numCuotas * 7));
             else if (frecuencia === 'quincenal') fechaFin.setDate(fechaFin.getDate() + (numCuotas * 15));

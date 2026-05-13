@@ -33,7 +33,9 @@ const finance = {
         const montoCuota = montoTotal / cuotas;
         
         // La primera cuota suele ser un periodo DESPUÉS de la fecha de inicio
-        let fechaActual = new Date(fechaInicio);
+        let fechaActual = (typeof fechaInicio === 'string' && !fechaInicio.includes('T')) 
+            ? new Date(fechaInicio + 'T00:00:00') 
+            : new Date(fechaInicio);
         fechaActual = finance.sumarFecha(fechaActual, frecuencia);
 
         for (let i = 1; i <= cuotas; i++) {
