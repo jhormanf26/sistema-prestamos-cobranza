@@ -81,6 +81,7 @@
                         <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-accion" type="button"><i class="bi bi-lightning-charge"></i> Acción Diaria</button></li>
                         <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-crecimiento" type="button"><i class="bi bi-rocket-takeoff"></i> Crecimiento</button></li>
                         <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-gastos" type="button"><i class="bi bi-receipt"></i> Gastos</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-marketing" type="button"><i class="bi bi-megaphone"></i> Marketing</button></li>
                     </ul>
 
                     <div class="tab-content tab-content-dash" id="pills-tabContent">
@@ -255,6 +256,82 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- TAB 4: MARKETING (Analítica Web) -->
+                        <div class="tab-pane fade" id="tab-marketing" role="tabpanel">
+                            <div class="row g-4 mb-4">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Rendimiento Web (Landing Page)</h5>
+                                            <a href="/promocion/detalle" class="btn btn-sm btn-primary rounded-pill px-3">
+                                                <i class="bi bi-list-ul me-1"></i> Ver Detalle de Sesiones
+                                            </a>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <div class="row g-3 mb-4">
+                                                <div class="col-md-3">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Impactos (Visitas)</h6>
+                                                        <h3 class="fw-bold mb-0"><%= analytics.totalVisitas %></h3>
+                                                        <span class="text-primary small">Visitas totales</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Únicos</h6>
+                                                        <h3 class="fw-bold mb-0 text-purple"><%= analytics.visitantesUnicos %></h3>
+                                                        <span class="text-purple small">Personas</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Clicks</h6>
+                                                        <h3 class="fw-bold mb-0 text-success"><%= analytics.totalClics %></h3>
+                                                        <span class="text-success small">Interesados</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Conversión</h6>
+                                                        <h3 class="fw-bold mb-0 text-info">
+                                                            <%= analytics.totalVisitas > 0 ? ((analytics.totalClics / analytics.totalVisitas) * 100).toFixed(1) : 0 %>%
+                                                        </h3>
+                                                        <span class="text-info small">Efectividad web</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Hoy</h6>
+                                                        <h3 class="fw-bold mb-0 text-warning"><%= analytics.eventosHoy %></h3>
+                                                        <span class="text-warning small">Eventos</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Gráfico de Tendencia -->
+                                            <div class="row mb-4">
+                                                <div class="col-12">
+                                                    <div class="p-3 border rounded-3 bg-white">
+                                                        <h6 class="fw-bold mb-3"><i class="bi bi-graph-up me-2 text-primary"></i>Tendencia de Actividad (Últimos 7 Días)</h6>
+                                                        <div style="height: 250px;">
+                                                            <canvas id="chartAnalytics"></canvas>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 d-flex align-items-center">
+                                                <i class="bi bi-info-circle-fill text-primary fs-4 me-3"></i>
+                                                <p class="mb-0 small text-dark">
+                                                    <strong>¿Cómo funciona?</strong> Cada vez que alguien entra a tu página de promoción o usa el simulador y hace clic en el botón de WhatsApp, el sistema lo registra aquí en tiempo real.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -271,9 +348,52 @@
         const datosFlujoCaja = <%- JSON.stringify(graficos.flujoCaja) %>;
         const datosGastosUsuario = <%- JSON.stringify(graficos.gastosUsuario) %>;
         const datosGanancias = <%- JSON.stringify(graficos.ganancias) %>;
+        const datosAnalytics = <%- JSON.stringify(analytics.historial) %>;
         const moneda = "<%= empresa.moneda %>";
         
         let chartCartera;
+
+        // --- Gráfico de Analítica Web ---
+        if (datosAnalytics && datosAnalytics.length > 0) {
+            const ctxAnalytics = document.getElementById('chartAnalytics').getContext('2d');
+            new Chart(ctxAnalytics, {
+                type: 'line',
+                data: {
+                    labels: datosAnalytics.map(d => {
+                        const date = new Date(d.fecha);
+                        return `${date.getUTCDate().toString().padStart(2, '0')}/${(date.getUTCMonth()+1).toString().padStart(2, '0')}`;
+                    }),
+                    datasets: [
+                        {
+                            label: 'Visitas',
+                            data: datosAnalytics.map(d => d.visitas),
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Solicitudes (Clicks)',
+                            data: datosAnalytics.map(d => d.clics),
+                            borderColor: '#198754',
+                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
 
         function renderizarCartera(modo) {
             const ctx = document.getElementById('chartEstados');

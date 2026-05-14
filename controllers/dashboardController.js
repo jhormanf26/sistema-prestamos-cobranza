@@ -1,21 +1,23 @@
 const DashboardModel = require('../models/DashboardModel');
+const AnalyticsModel = require('../models/AnalyticsModel');
 
 const dashboardController = {
     
     mostrarDashboard: async (req, res) => {
         try {
             const diasVencimiento = parseInt(req.query.diasVencimiento) || 7;
-            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion, gastosCategoria, gastosDias, flujoCaja, gastosUsuario] = await Promise.all([
+            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion, gastosCategoria, gastosDias, flujoCaja, gastosUsuario, analytics] = await Promise.all([
                 DashboardModel.obtenerTotales(),
                 DashboardModel.obtenerDatosGraficos(),
                 DashboardModel.obtenerDetalleMora(),
                 DashboardModel.obtenerProximosVencimientos(diasVencimiento),
                 DashboardModel.obtenerHistorialFinalizados(),
-                DashboardModel.obtenerOportunidadesRenovacion(), // La nueva consulta estratégica
+                DashboardModel.obtenerOportunidadesRenovacion(),
                 DashboardModel.obtenerGastosPorCategoria(),
                 DashboardModel.obtenerGastosUltimosDias(),
                 DashboardModel.obtenerFlujoCaja(),
-                DashboardModel.obtenerGastosPorUsuario()
+                DashboardModel.obtenerGastosPorUsuario(),
+                AnalyticsModel.obtenerResumen()
             ]);
 
             // Procesar datos para el gráfico conmutables (Préstamos vs Cuotas)
@@ -43,7 +45,8 @@ const dashboardController = {
                 proximosVencimientos,
                 diasVencimiento,
                 historialFinalizados,
-                oportunidadesRenovacion, // Pasamos los datos a la vista
+                oportunidadesRenovacion, 
+                analytics, 
                 graficos: {
                     estados: estados,
                     balance: [totales.totalPrestadoHistorico, totales.dineroCobrado],

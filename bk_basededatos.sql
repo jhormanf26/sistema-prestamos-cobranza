@@ -651,6 +651,19 @@ CREATE TABLE IF NOT EXISTS `pagos_cadena` (
     CONSTRAINT `pagos_cadena_ibfk_2` FOREIGN KEY (`cadena_id`) REFERENCES `cadenas` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Volcando estructura para tabla web_analytics
+CREATE TABLE IF NOT EXISTS `web_analytics` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `evento` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `ip` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_agent` text COLLATE utf8mb4_general_ci,
+  `data` json DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_evento` (`evento`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
