@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+    <div class="container-fluid p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">👥 Visitantes Únicos</h2>
+                <div class="btn-group mt-2" role="group">
+                    <a href="/promocion/detalle?vista=eventos" class="btn btn-sm btn-outline-primary">Historial de Eventos</a>
+                    <a href="/promocion/detalle?vista=visitantes" class="btn btn-sm btn-primary active">Agrupar por Visitantes</a>
+                </div>
+            </div>
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">ID Visitante / Dispositivo</th>
+                                <th>Última Actividad</th>
+                                <th>Ubicación Detectada</th>
+                                <th>Acciones Realizadas</th>
+                                <th class="text-end pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% visitantes.forEach(v => { 
+                                const geo = v.geo ? (typeof v.geo === 'string' ? JSON.parse(v.geo) : v.geo) : {};
+                            %>
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-light rounded-circle p-2 me-3 text-center" style="width: 40px; height: 40px;">
+                                                <i class="bi bi-person-fill text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <span class="fw-bold d-block"><%= v.visitorId ? v.visitorId.substring(0, 15) + '...' : 'ID Desconocido' %></span>
+                                                <small class="text-muted"><%= v.ip %></small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="d-block"><%= new Date(v.ultima_actividad).toLocaleDateString() %></span>
+                                        <small class="text-muted"><%= new Date(v.ultima_actividad).toLocaleTimeString() %></small>
+                                    </td>
+                                    <td>
+                                        <% if(geo.ciudad) { %>
+                                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                            <%= geo.ciudad %>, <%= geo.pais %>
+                                        <% } else { %>
+                                            <span class="text-muted small">No disponible</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <%= v.total_eventos %> eventos registrados
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="/promocion/visitante/<%= v.visitorId %>" class="btn btn-sm btn-primary rounded-pill">
+                                            <i class="bi bi-clock-history me-1"></i> Ver Línea de Tiempo
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                </div> <!-- Fin container-fluid -->
+            </div> <!-- Fin col -->
+        </div> <!-- Fin row -->
+    </div> <!-- Fin container-fluid general -->
+</body>
+
+<style>
+    .avatar-sm { display: flex; align-items: center; justify-content: center; }
+</style>
+
+<%- include('../partials/footer') %>

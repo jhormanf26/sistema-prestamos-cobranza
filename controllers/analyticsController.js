@@ -6,13 +6,9 @@ const analyticsController = {
         try {
             const { evento, data } = req.body;
             let ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-            
-            // Limpiar IP de localhost si es necesario
-            if (ip === '::1' || ip === '127.0.0.1') ip = '8.8.8.8'; // IP de prueba para desarrollo
+            if (ip === '::1' || ip === '127.0.0.1') ip = '8.8.8.8'; 
 
             const userAgent = req.headers['user-agent'];
-
-            // Intentar obtener Geo-IP (Opcional para no bloquear si falla el servicio externo)
             let geo = {};
             try {
                 const response = await axios.get(`http://ip-api.com/json/${ip}?fields=status,country,city,regionName,isp`);
@@ -44,15 +40,43 @@ const analyticsController = {
 
     verDetalle: async (req, res) => {
         try {
-            const eventos = await AnalyticsModel.obtenerEventosRecientes(100);
-            res.render('analytics/detalles', {
-                eventos,
-                title: 'Detalle de Analítica',
-                pagina: 'marketing'
-            });
+            const vista = req.query.vista || 'eventos'; // 'eventos' o 'visitantes'
+            
+            if (vista === 'visitantes') {
+                const visitantes = await AnalyticsModel.obtenerVisitantesUnicos();
+                res.render('analytics/visitantes', {
+                    visitantes,
+                    title: 'Visitantes Únicos',
+                    pagina: 'marketing'
+                });
+            } else {
+                const eventos = await AnalyticsModel.obtenerEventosRecientes(100);
+                res.render('analytics/detalles', {
+                    eventos,
+                    title: 'Detalle de Analítica',
+                    pagina: 'marketing'
+                });
+            }
         } catch (error) {
             console.error('Error verDetalle:', error);
             res.status(500).send('Error al cargar detalles');
+        }
+    },
+
+    verVisitante: async (req, res) => {
+        try {
+            const visitorId = req.params.id;
+            const eventos = await AnalyticsModel.obtenerEventosPorVisitante(visitorId);
+            
+            res.render('analytics/visitante_detalle', {
+                eventos,
+                visitorId,
+                title: 'Línea de Tiempo del Visitante',
+                pagina: 'marketing'
+            });
+        } catch (error) {
+            console.error('Error verVisitante:', error);
+            res.status(500).send('Error al cargar línea de tiempo');
         }
     }
 };

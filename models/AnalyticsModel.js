@@ -13,7 +13,6 @@ class AnalyticsModel {
         const [hoy] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE DATE(created_at) = CURDATE()");
         const [unicos] = await db.query("SELECT COUNT(DISTINCT JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId'))) as total FROM web_analytics");
         
-        // Obtener historial de los últimos 7 días para el gráfico
         const [historial] = await db.query(`
             SELECT 
                 DATE(created_at) as fecha,
@@ -34,9 +33,33 @@ class AnalyticsModel {
         };
     }
 
-    static async obtenerEventosRecientes(limit = 10) {
-        const query = 'SELECT * FROM web_analytics ORDER BY created_at DESC LIMIT ?';
-        const [rows] = await db.query(query, [limit]);
+    static async obtenerVisitantesUnicos() {
+        const [rows] = await db.query(`
+            SELECT 
+                JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId')) as visitorId,
+                MAX(created_at) as ultima_actividad,
+                COUNT(*) as total_eventos,
+                ANY_VALUE(ip) as ip,
+                ANY_VALUE(user_agent) as user_agent,
+                ANY_VALUE(JSON_EXTRACT(data, '$.geo')) as geo
+            FROM web_analytics
+            GROUP BY visitorId
+            ORDER BY ultima_actividad DESC
+        `);
+        return rows;
+    }
+
+    static async obtenerEventosPorVisitante(visitorId) {
+        const [rows] = await db.query(`
+            SELECT * FROM web_analytics 
+            WHERE JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId')) = ?
+            ORDER BY created_at DESC
+        `, [visitorId]);
+        return rows;
+    }
+
+    static async obtenerEventosRecientes(limite = 100) {
+        const [rows] = await db.query('SELECT * FROM web_analytics ORDER BY created_at DESC LIMIT ?', [limite]);
         return rows;
     }
 }
