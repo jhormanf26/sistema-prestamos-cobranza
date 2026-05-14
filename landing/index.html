@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Préstamos Pro | Tu Aliado Financiero</title>
+    <meta name="description"
+        content="Obtén el capital que necesitas para tus proyectos con los mejores intereses y sin trámites complicados.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- Header / Nav -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo">
+                <i class="bi bi-rocket-takeoff-fill"></i>
+                <span>Préstamos<span>Pro</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#beneficios">Beneficios</a></li>
+                <li><a href="#simulador">Simulador</a></li>
+                <li><a href="#contacto" class="btn-cta-nav">Solicitar Ahora</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="bi bi-list"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero" id="inicio">
+        <div class="container hero-grid">
+            <div class="hero-content" data-aos="fade-right">
+                <span class="badge">Rápido • Seguro • Confiable</span>
+                <h1>Transforma tus Sueños en <span>Realidad</span></h1>
+                <p>Ofrecemos préstamos a medida con las tasas más competitivas del mercado. Sin letras pequeñas y con
+                    aprobación en tiempo récord.</p>
+                <div class="hero-btns">
+                    <a href="#simulador" class="btn-primary">Calcular Mi Préstamo</a>
+                    <a href="#beneficios" class="btn-secondary">Saber Más</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <strong>+500</strong>
+                        <span>Clientes Felices</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>2%</strong>
+                        <span>Tasa Mensual</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>24h</strong>
+                        <span>Desembolso</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image" data-aos="zoom-in">
+                <div class="image-wrapper">
+                    <img src="../hero_landing_1778793920730.png" alt="Finanzas Modernas">
+                    <div class="glass-card g-1">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Aprobado</span>
+                    </div>
+                    <div class="glass-card g-2">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Interés Bajo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Benefits Section -->
+    <section class="benefits" id="beneficios">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>¿Por qué elegir <span>Préstamos Pro</span>?</h2>
+                <p>Diseñamos soluciones financieras que se adaptan a tu ritmo de vida.</p>
+            </div>
+            <div class="benefits-grid">
+                <div class="benefit-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="icon-box blue"><i class="bi bi-lightning-charge"></i></div>
+                    <h3>Rapidez Extrema</h3>
+                    <p>Olvídate de esperar semanas. Evaluamos tu solicitud en minutos y desembolsamos en menos de 24
+                        horas.</p>
+                </div>
+                <div class="benefit-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="icon-box green"><i class="bi bi-shield-lock"></i></div>
+                    <h3>Transparencia Total</h3>
+                    <p>Sin costos ocultos ni comisiones sorpresa. Sabrás exactamente cuánto pagarás desde el primer día.
+                    </p>
+                </div>
+                <div class="benefit-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="icon-box gold"><i class="bi bi-calendar-check"></i></div>
+                    <h3>Flexibilidad Real</h3>
+                    <p>Elige tu frecuencia de pago: diaria, semanal, quincenal o mensual. Nos ajustamos a tus ingresos.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Simulator Section -->
+    <section class="simulator-section" id="simulador">
+        <div class="container">
+            <div class="simulator-wrapper" data-aos="fade-up">
+                <div class="simulator-info">
+                    <h2>Simula tu Crédito en <span>Segundos</span></h2>
+                    <p>Usa nuestra herramienta interactiva para proyectar tus pagos y elegir el plan que mejor te
+                        convenga.</p>
+                    <ul class="check-list">
+                        <li><i class="bi bi-check2"></i> Interés desde el 2% mensual</li>
+                        <li><i class="bi bi-check2"></i> Plazos flexibles</li>
+                        <li><i class="bi bi-check2"></i> Sin penalidad por pago anticipado</li>
+                    </ul>
+                </div>
+                <div class="simulator-card">
+                    <div class="form-group">
+                        <label>¿Cuánto necesitas?</label>
+                        <div class="input-with-icon">
+                            <span>$</span>
+                            <input type="text" id="amount" value="1.000.000">
+                        </div>
+                        <input type="range" id="amountRange" min="100000" max="10000000" step="100000" value="1000000">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cuotas</label>
+                            <select id="installments">
+                                <option value="1">1 Cuota</option>
+                                <option value="2">2 Cuotas</option>
+                                <option value="3">3 Cuotas</option>
+                                <option value="4">4 Cuotas</option>
+                                <option value="5">5 Cuotas</option>
+                                <option value="6" selected>6 Cuotas</option>
+                                <option value="12">12 Cuotas</option>
+                                <option value="24">24 Cuotas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Frecuencia</label>
+                            <select id="frequency">
+                                <option value="diario">Diario</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="quincenal">Quincenal</option>
+                                <option value="mensual" selected>Mensual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="results-box">
+                        <div class="result-item">
+                            <span>Cuota Estimada:</span>
+                            <h3 id="resInstallment">$ 0.00</h3>
+                        </div>
+                        <div class="result-item">
+                            <span>Total a Devolver:</span>
+                            <h4 id="resTotal">$ 0.00</h4>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary w-100" id="btnContact">Solicitar este Crédito <i
+                            class="bi bi-whatsapp"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contacto">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="#" class="logo">
+                    <i class="bi bi-rocket-takeoff-fill"></i>
+                    <span>Préstamos<span>Pro</span></span>
+                </a>
+                <p>Tu futuro no espera. Nosotros tampoco.</p>
+                <div class="social-links">
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="#"><i class="bi bi-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Enlaces</h4>
+                <ul>
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#beneficios">Beneficios</a></li>
+                    <li><a href="#simulador">Simulador</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contacto</h4>
+                <p><i class="bi bi-geo-alt"></i> Calle Principal #123, Málaga</p>
+                <p><i class="bi bi-envelope"></i> jhormanfuentes8@gmail.com</p>
+                <p><i class="bi bi-telephone"></i> +57 315 857 2338</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Préstamos Pro. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- AOS Script -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
