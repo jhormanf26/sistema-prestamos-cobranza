@@ -66,6 +66,14 @@ const pdfService = {
 
                 // Cargar Cláusulas desde BD
                 const pClausulas = await PlantillaPdfModel.obtenerPorSlug('contrato_clausulas');
+                // Corregimos el manejo de fechas para evitar desfases de zona horaria
+                const fechaInicioStr = (prestamo.fecha_inicio instanceof Date) ? prestamo.fecha_inicio.toISOString().split('T')[0] : prestamo.fecha_inicio;
+                const fechaFinStr = (prestamo.fecha_fin instanceof Date) ? prestamo.fecha_fin.toISOString().split('T')[0] : prestamo.fecha_fin;
+                
+                const fechaInicioObj = new Date(fechaInicioStr + 'T00:00:00');
+                const fechaPrimerPago = finance.sumarFecha(fechaInicioObj, prestamo.frecuencia);
+                const fechaFinObj = new Date(fechaFinStr + 'T00:00:00');
+
                 const clausulasTexto = _reemplazarVariables(pClausulas ? pClausulas.contenido : '', {
                     moneda,
                     monto: formatCurrency(prestamo.monto_prestado, 2),
@@ -73,7 +81,9 @@ const pdfService = {
                     tasa: prestamo.tasa_interes,
                     cuotas: prestamo.cuotas,
                     frecuencia: prestamo.frecuencia.toUpperCase(),
-                    fecha_inicio: new Date(prestamo.fecha_inicio).toLocaleDateString()
+                    fecha_inicio: fechaInicioObj.toLocaleDateString(),
+                    fecha_primer_pago: fechaPrimerPago.toLocaleDateString(),
+                    fecha_fin: fechaFinObj.toLocaleDateString()
                 });
 
                 doc.x = 50;

@@ -291,7 +291,7 @@ CREATE TABLE IF NOT EXISTS `prestamos` (
   `tasa_mora` decimal(5,2) DEFAULT 0.00,
   `monto_total` decimal(10,2) NOT NULL,
   `cuotas` int NOT NULL,
-  `frecuencia` enum('diario','semanal','mensual') NOT NULL,
+  `frecuencia` enum('diario','semanal','quincenal','mensual') NOT NULL,
   `estado` enum('pendiente','pagado','vencido') DEFAULT 'pendiente',
   `fecha_inicio` date NOT NULL,
   `fecha_fin` date NOT NULL,
@@ -605,7 +605,7 @@ CREATE TABLE IF NOT EXISTS `plantillas_pdf` (
 -- Volcando datos para la tabla sistema_prestamos.plantillas_pdf: ~3 rows (aproximadamente)
 DELETE FROM `plantillas_pdf`;
 INSERT INTO `plantillas_pdf` (`id`, `nombre`, `slug`, `contenido`, `descripcion`, `updated_at`) VALUES
-	(1, 'Cláusulas del Contrato', 'contrato_clausulas', 'PRIMERO (OBJETO): El ACREEDOR entrega al DEUDOR la suma de {{moneda}} {{monto}} por concepto de préstamo de libre inversión.\r\n\r\nSEGUNDO (INTERESES Y TOTAL): El DEUDOR se obliga a devolver la suma total de {{moneda}} {{total}}, la cual incluye una tasa de interés del {{tasa}}%.\r\n\r\nTERCERO (FORMA DE PAGO): La obligación será cancelada en {{cuotas}} cuotas con una frecuencia de pago {{frecuencia}}. La primera cuota vence el {{fecha_inicio}}.\r\n\r\nCUARTO (MORA): El incumplimiento en las fechas pactadas generará el reporte en las centrales de riesgo y las acciones legales pertinentes para el cobro del saldo total.', 'Cuerpo principal de las cláusulas legales del préstamo', '2026-04-23 18:46:42'),
+	(1, 'Cláusulas del Contrato', 'contrato_clausulas', 'PRIMERO (OBJETO): El ACREEDOR entrega al DEUDOR la suma de {{moneda}} {{monto}} por concepto de préstamo de libre inversión.\r\n\r\nSEGUNDO (INTERESES Y TOTAL): El DEUDOR se obliga a devolver la suma total de {{moneda}} {{total}}, la cual incluye una tasa de interés del {{tasa}}%.\r\n\r\nTERCERO (FORMA DE PAGO): La obligación será cancelada en {{cuotas}} cuotas con una frecuencia de pago {{frecuencia}}. La primera cuota vence el {{fecha_primer_pago}}.\r\n\r\nCUARTO (MORA): El incumplimiento en las fechas pactadas generará el reporte en las centrales de riesgo y las acciones legales pertinentes para el cobro del saldo total.', 'Cuerpo principal de las cláusulas legales del préstamo', '2026-04-23 18:46:42'),
 	(2, 'Pie de Página - Ticket', 'ticket_pie', 'Este comprobante certifica la recepción del dinero en efectivo o transferencia. Al firmar, el cliente acepta los términos del contrato vinculado a la operación Nro {{op}}.', 'Texto legal que aparece al final del comprobante de desembolso', '2026-04-23 18:23:44'),
 	(3, 'Pie de Página - Cronograma', 'cronograma_pie', 'Este cronograma de pagos es un documento informativo sujeto a términos y condiciones establecidos en el contrato de préstamo. Generado automáticamente por el Sistema de Préstamos el {{fecha_hoy}}.', 'Texto informativo al final del calendario de pagos', '2026-04-23 18:23:44');
 
