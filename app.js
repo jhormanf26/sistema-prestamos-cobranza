@@ -43,6 +43,9 @@ app.use((req, res, next) => {
 
 // Archivos Estáticos
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 6. Analytics API & Log (Debe ir antes que el static)
+app.use('/promocion', require('./routes/analytics'));
 app.use('/promocion', express.static(path.join(__dirname, 'landing')));
 
 
@@ -93,7 +96,7 @@ cargarRuta('/plantillas-pdf', './routes/plantillasPdf');
 cargarRuta('/reportes', './routes/reportes');
 cargarRuta('/reportes-empenos', './routes/empenosReportes');
 
-// 6. Dashboard (Al final)
+// 7. Dashboard (Al final)
 cargarRuta('/', './routes/index');
 
 // =========================================================
