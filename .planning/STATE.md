@@ -20,6 +20,7 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 14. **[HECHO]** Integrar indicadores visuales y botones de acción en el perfil del cliente para la gestión de pre-aprobados.
 15. **[HECHO]** Corregir error de truncado de datos al usar frecuencia "Quincenal" en préstamos (Actualización de ENUM en BD).
 16. **[HECHO]** Agregar variables `{{fecha_primer_pago}}` y `{{fecha_fin}}` a las plantillas de contrato PDF y corregir formato de fechas locales.
+17. **[HECHO]** Implementar nuevos gráficos de análisis de rentabilidad en el Dashboard (Capital vs Ganancias Reales).
 
 ## Decisiones de Diseño
 - Se utiliza `Intl.NumberFormat` con el locale `es-CO` para garantizar la consistencia según el estándar colombiano.

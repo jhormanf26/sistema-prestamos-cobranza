@@ -142,9 +142,36 @@ class DashboardModel {
             `;
             const [rowsCuotas] = await db.query(queryCuotas);
 
+            // 3. Análisis de Ganancias (Capital vs Interés)
+            const queryGanancias = `
+                SELECT 
+                    SUM(p.monto_prestado) as total_capital,
+                    SUM(p.monto_total - p.monto_prestado) as total_interes_proyectado,
+                    SUM(IFNULL(pagos_res.total_pagado, 0)) as total_recaudado,
+                    SUM(IFNULL(pagos_res.total_pagado, 0) * (p.monto_total - p.monto_prestado) / p.monto_total) as interes_recaudado
+                FROM prestamos p
+                LEFT JOIN (
+                    SELECT prestamo_id, SUM(monto_pagado) as total_pagado 
+                    FROM pagos 
+                    GROUP BY prestamo_id
+                ) as pagos_res ON p.id = pagos_res.prestamo_id
+                WHERE p.estado != 'anulado'
+            `;
+            const [rowsGanancias] = await db.query(queryGanancias);
+            const g = rowsGanancias[0];
+            
+            // Calculamos derivados
+            const ganancias = {
+                capitalRecuperado: (g.total_recaudado - g.interes_recaudado) || 0,
+                gananciaRealizada: g.interes_recaudado || 0,
+                capitalPendiente: (g.total_capital - (g.total_recaudado - g.interes_recaudado)) || 0,
+                gananciaPendiente: (g.total_interes_proyectado - g.interes_recaudado) || 0
+            };
+
             return { 
                 porPrestamos: rowsPrestamos, 
-                porCuotas: rowsCuotas[0] 
+                porCuotas: rowsCuotas[0],
+                ganancias: ganancias
             };
         } catch (error) { throw error; }
     }

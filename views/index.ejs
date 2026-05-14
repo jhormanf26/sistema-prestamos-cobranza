@@ -98,6 +98,26 @@
                                 </div>
                                 <div class="col-lg-7"><div class="card card-box shadow-sm border-0"><div class="card-header bg-white fw-bold border-0">Capital vs Recuperado</div><div class="card-body"><div style="height: 280px;"><canvas id="chartBalance"></canvas></div></div></div></div>
                             </div>
+                            <div class="row g-3 mt-1">
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0">
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between">
+                                            <span>Recuperación de Capital</span>
+                                            <i class="bi bi-shield-check text-success"></i>
+                                        </div>
+                                        <div class="card-body"><div style="height: 250px;"><canvas id="chartCapital"></canvas></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0">
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between">
+                                            <span>Estado de Ganancias (Intereses)</span>
+                                            <i class="bi bi-graph-up-arrow text-primary"></i>
+                                        </div>
+                                        <div class="card-body"><div style="height: 250px;"><canvas id="chartGanancias"></canvas></div></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- TAB 2: ACCION DIARIA -->
@@ -242,6 +262,7 @@
         const datosGastosDias = <%- JSON.stringify(graficos.gastosDias) %>;
         const datosFlujoCaja = <%- JSON.stringify(graficos.flujoCaja) %>;
         const datosGastosUsuario = <%- JSON.stringify(graficos.gastosUsuario) %>;
+        const datosGanancias = <%- JSON.stringify(graficos.ganancias) %>;
         const moneda = "<%= empresa.moneda %>";
         
         let chartCartera;
@@ -279,7 +300,33 @@
         // Render inicial por cuotas
         renderizarCartera('cuotas');
         
+        
         new Chart(document.getElementById('chartBalance'), { type: 'bar', data: { labels: ['Prestado', 'Recuperado'], datasets: [{ label: `Monto en ${moneda}`, data: datosBalance, backgroundColor: ['#0d6efd', '#0dcaf0'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+
+        // Nuevos Gráficos de Análisis de Ganancias
+        new Chart(document.getElementById('chartCapital'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Capital Recuperado', 'Capital en Calle'],
+                datasets: [{
+                    data: [datosGanancias.capitalRecuperado, datosGanancias.capitalPendiente],
+                    backgroundColor: ['#198754', '#e9ecef']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        new Chart(document.getElementById('chartGanancias'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Intereses Cobrados', 'Intereses por Cobrar'],
+                datasets: [{
+                    data: [datosGanancias.gananciaRealizada, datosGanancias.gananciaPendiente],
+                    backgroundColor: ['#0d6efd', '#ffc107']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
 
         if (datosGastosCat && datosGastosCat.length > 0) {
             new Chart(document.getElementById('chartGastosCat'), { type: 'doughnut', data: { labels: datosGastosCat.map(d => d.label), datasets: [{ data: datosGastosCat.map(d => d.data), backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#0dcaf0', '#6f42c1'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
