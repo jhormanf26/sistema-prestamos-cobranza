@@ -47,6 +47,7 @@ const dashboardController = {
                 graficos: {
                     estados: estados,
                     balance: [totales.totalPrestadoHistorico, totales.dineroCobrado],
+                    ganancias: resGraficos.ganancias,
                     gastosCat: gastosCategoria.map(g => ({ label: g.categoria, data: g.total })),
                     gastosDias: gastosDias.map(g => {
                         const dateObj = new Date(g.fecha);
