@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS `clientes` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `foto` varchar(255) DEFAULT NULL,
   `estado` tinyint(1) DEFAULT '1',
+  `monto_preaprobado` decimal(12,2) DEFAULT '0.00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `dni` (`dni`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -355,6 +356,7 @@ CREATE TABLE IF NOT EXISTS plantillas_correo (
     html_content MEDIUMTEXT NOT NULL,
     descripcion VARCHAR(255),
     variables_disponibles VARCHAR(255),
+    adjuntos_config JSON DEFAULT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
@@ -541,8 +543,51 @@ INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disp
 '<div style="background-color: #fefce8; padding: 20px; font-family: sans-serif;"><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);"><tr><td align="center" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 10px;">📅</div><h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">Recordatorio de Pago</h1></td></tr><tr><td style="padding: 40px 35px;"><p style="margin: 0 0 20px; font-size: 18px; color: #1e293b;">Hola <strong>{{cliente}}</strong>,</p><p style="margin: 0 0 30px; font-size: 16px; color: #475569; line-height: 1.6;">Te recordamos que tienes una cuota próxima a vencer:</p><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0;"><tr><td><div style="color: #64748b; font-size: 12px; text-transform: uppercase;">Monto de la Cuota</div><div style="color: #0f172a; font-size: 24px; font-weight: bold;">{{moneda}} {{monto}}</div></td></tr><tr><td style="padding-top: 15px;"><div style="color: #64748b; font-size: 12px; text-transform: uppercase;">Vencimiento</div><div style="color: #dc2626; font-size: 20px; font-weight: bold;">{{fecha}}</div></td></tr></table></td></tr></table></div>'),
 
 ('Recordatorio de Cadena', 'recordatorio_cadena', '🔔 Recordatorio: Tu aporte de la Cadena', 'Se envía para recordar el pago de una cuota de cadena', 'cliente, monto, cadena, ciclo, moneda', 
-'<div style="background-color: #f0f9ff; padding: 20px; font-family: sans-serif;"><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);"><tr><td align="center" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 10px;">🔔</div><h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: bold;">Recordatorio de Ahorro</h1><p style="margin: 10px 0 0; color: #ffffff; opacity: 0.9;">{{cadena}} - Ciclo #{{ciclo}}</p></td></tr><tr><td style="padding: 40px 35px;"><p style="margin: 0 0 20px; font-size: 18px; color: #1e293b;">Hola <strong>{{cliente}}</strong>,</p><p style="margin: 0 0 30px; font-size: 16px; color: #475569; line-height: 1.6;">Te escribimos para recordarte tu aporte para el ciclo actual de la cadena de ahorro.</p><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0;"><tr><td><div style="color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold;">Monto de tu Cuota</div><div style="color: #0369a1; font-size: 28px; font-weight: bold;">{{moneda}} {{monto}}</div></td></tr></table><p style="margin-top: 30px; color: #64748b; font-size: 14px; font-style: italic; text-align: center;">"El ahorro constante es el camino al éxito financiero."</p></td></tr></table></div>');
+'<div style="background-color: #f0f9ff; padding: 20px; font-family: sans-serif;"><table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);"><tr><td align="center" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 40px 20px;"><div style="font-size: 48px; margin-bottom: 10px;">🔔</div><h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: bold;">Recordatorio de Ahorro</h1><p style="margin: 10px 0 0; color: #ffffff; opacity: 0.9;">{{cadena}} - Ciclo #{{ciclo}}</p></td></tr><tr><td style="padding: 40px 35px;"><p style="margin: 0 0 20px; font-size: 18px; color: #1e293b;">Hola <strong>{{cliente}}</strong>,</p><p style="margin: 0 0 30px; font-size: 16px; color: #475569; line-height: 1.6;">Te escribimos para recordarte tu aporte para el ciclo actual de la cadena de ahorro.</p><table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0;"><tr><td><div style="color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: bold;">Monto de tu Cuota</div><div style="color: #0369a1; font-size: 28px; font-weight: bold;">{{moneda}} {{monto}}</div></td></tr></table><p style="margin-top: 30px; color: #64748b; font-size: 14px; font-style: italic; text-align: center;">"El ahorro constante es el camino al éxito financiero."</p></td></tr></table></div>'),
 
+('Crédito Pre-aprobado', 'prestamo_preaprobado', '¡Felicidades! Tienes un Crédito Pre-aprobado', 'Se envía para notificar un cupo de crédito disponible', 'nombre_cliente, monto_preaprobado, nombre_empresa, link_whatsapp', 
+'<div style="background-color: #f8fafc; padding: 40px; font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b;">
+    <table align="center" width="100%" style="max-width: 600px; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+        <tr>
+            <td align="center" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 40px 20px;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 2px;">¡Excelente Noticia!</h1>
+                <p style="color: #bfdbfe; margin-top: 10px; font-size: 16px;">Tienes una oferta especial esperándote</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px;">
+                <h2 style="font-size: 20px; margin-bottom: 20px;">Hola {{nombre_cliente}},</h2>
+                <p style="line-height: 1.6; margin-bottom: 25px;">
+                    Basado en tu excelente historial con nosotros, nos complace informarte que tienes un 
+                    <strong style="color: #2563eb;">CRÉDITO PRE-APROBADO</strong> listo para ser utilizado.
+                </p>
+                
+                <div style="background: #f1f5f9; border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 30px; border: 1px dashed #cbd5e1;">
+                    <span style="display: block; font-size: 14px; text-transform: uppercase; color: #64748b; margin-bottom: 5px;">Monto Disponible</span>
+                    <span style="display: block; font-size: 36px; font-weight: 800; color: #1e40af;">{{monto_preaprobado}}</span>
+                </div>
+
+                <p style="line-height: 1.6; margin-bottom: 30px;">
+                    Puedes solicitar este monto de forma inmediata sin trámites adicionales. 
+                    Comunícate con tu asesor o visítanos para activar tu crédito.
+                </p>
+
+                <div style="text-align: center;">
+                    <a href="{{link_whatsapp}}" style="background: #2563eb; color: #ffffff; padding: 15px 35px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block;">¡LO QUIERO YA!</a>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+                    Este mensaje fue enviado por el {{nombre_empresa}}.<br>
+                    &copy; 2026 Todos los derechos reservados.
+                </p>
+            </td>
+        </tr>
+    </table>
+</div>
+');
 
 
 -- Volcando estructura para tabla sistema_prestamos.plantillas_pdf

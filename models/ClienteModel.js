@@ -27,13 +27,13 @@ class ClienteModel {
     // 3. Crear cliente (MANTIENE FOTO)
     static async crear(datos) {
         try {
-            const { dni, nombre, apellido, telefono, direccion, email, foto } = datos;
+            const { dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado } = datos;
             // Insertamos con estado 1 (Activo) por defecto
             const query = `
-                INSERT INTO clientes (dni, nombre, apellido, telefono, direccion, email, foto, estado) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+                INSERT INTO clientes (dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado, estado) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
             `;
-            const [result] = await db.query(query, [dni, nombre, apellido, telefono, direccion, email, foto]);
+            const [result] = await db.query(query, [dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado || 0]);
             return result;
         } catch (error) {
             throw error;
@@ -105,16 +105,16 @@ class ClienteModel {
     // 9. Actualizar Cliente (MANTIENE EDICIÓN CON FOTO)
     static async actualizar(id, datos) {
         try {
-            const { dni, nombre, apellido, telefono, direccion, email, foto } = datos;
+            const { dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado } = datos;
             
             let query, params;
             
             if (foto) {
-                query = `UPDATE clientes SET dni=?, nombre=?, apellido=?, telefono=?, direccion=?, email=?, foto=? WHERE id=?`;
-                params = [dni, nombre, apellido, telefono, direccion, email, foto, id];
+                query = `UPDATE clientes SET dni=?, nombre=?, apellido=?, telefono=?, direccion=?, email=?, foto=?, monto_preaprobado=? WHERE id=?`;
+                params = [dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado, id];
             } else {
-                query = `UPDATE clientes SET dni=?, nombre=?, apellido=?, telefono=?, direccion=?, email=? WHERE id=?`;
-                params = [dni, nombre, apellido, telefono, direccion, email, id];
+                query = `UPDATE clientes SET dni=?, nombre=?, apellido=?, telefono=?, direccion=?, email=?, monto_preaprobado=? WHERE id=?`;
+                params = [dni, nombre, apellido, telefono, direccion, email, monto_preaprobado, id];
             }
 
             const [result] = await db.query(query, params);
@@ -130,6 +130,17 @@ class ClienteModel {
         try {
             const query = "UPDATE clientes SET estado = ? WHERE id = ?";
             const [result] = await db.query(query, [nuevoEstado, id]);
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // 11. Actualizar monto pre-aprobado solamente
+    static async actualizarPreaprobado(id, monto) {
+        try {
+            const query = "UPDATE clientes SET monto_preaprobado = ? WHERE id = ?";
+            const [result] = await db.query(query, [monto, id]);
             return result;
         } catch (error) {
             throw error;

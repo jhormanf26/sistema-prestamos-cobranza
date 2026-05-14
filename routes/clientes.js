@@ -22,4 +22,10 @@ router.post('/actualizar/:id', upload.single('foto'), clientesController.actuali
 // (NUEVO) Cambiar Estado
 router.get('/cambiar-estado/:id', clientesController.cambiarEstado);
 
+// (NUEVO) Enviar Correo Pre-aprobado
+router.get('/enviar-preaprobado/:id', clientesController.enviarCorreoPreaprobado);
+
+// (NUEVO) Actualizar Monto Pre-aprobado
+router.post('/actualizar-preaprobado/:id', clientesController.actualizarPreaprobado);
+
 module.exports = router;

@@ -24,8 +24,10 @@ async function renderizar(slug, datos, fallbackHtml) {
         
         // Reemplazar variables {{variable}}
         Object.keys(datos).forEach(key => {
-            const regex = new RegExp(`{{${key}}}`, 'g');
-            html = html.replace(regex, datos[key]);
+            // Soporta {{variable}} y {{ variable }}
+            // Escapamos las llaves \{ \{ para mayor seguridad en el motor de Regex
+            const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+            html = html.replace(regex, () => datos[key]);
         });
         
         return {
@@ -141,6 +143,36 @@ const emailService = {
             cadena: cadenaNombre,
             ciclo,
             moneda
+        }, fallback);
+        return res;
+    },
+
+    plantillaPreaprobado: async (cliente, monto, moneda, telefonoEmpresa) => {
+        const montoFormateado = `${moneda} ${formatCurrency(monto, 2)}`;
+        const textoMsg = encodeURIComponent(`Hola, estoy interesado en el crédito pre-aprobado por valor de ${montoFormateado}`);
+        
+        let telefonoLimpio = (telefonoEmpresa || '').replace(/\D/g, '');
+        // Si el teléfono tiene 10 dígitos (común en Colombia) y no empieza por 57, se lo agregamos
+        if (telefonoLimpio.length === 10 && !telefonoLimpio.startsWith('57')) {
+            telefonoLimpio = '57' + telefonoLimpio;
+        }
+
+        const linkWhatsapp = telefonoLimpio ? `https://wa.me/${telefonoLimpio}?text=${textoMsg}` : '#';
+        
+        const fallback = `
+            <div style="background-color: #f8fafc; padding: 20px; font-family: Arial;">
+                <table align="center" width="100%" style="max-width: 600px; background: #fff; border-radius: 15px;">
+                    <tr><td align="center" style="background: #3b82f6; padding: 30px; color: #fff;"><h1>¡Crédito Pre-aprobado!</h1></td></tr>
+                    <tr><td style="padding: 30px;">Hola ${cliente}, tienes un crédito pre-aprobado por ${moneda} ${formatCurrency(monto, 2)}.</td></tr>
+                    <tr><td align="center" style="padding: 20px;"><a href="${linkWhatsapp}" style="background: #25d366; color: #fff; padding: 15px 25px; border-radius: 5px; text-decoration: none; font-weight: bold;">¡LO QUIERO YA!</a></td></tr>
+                </table>
+            </div>
+        `;
+        const res = await renderizar('prestamo_preaprobado', {
+            cliente,
+            monto: formatCurrency(monto, 2),
+            moneda,
+            link_whatsapp: linkWhatsapp
         }, fallback);
         return res;
     }

@@ -3,6 +3,7 @@ const PrestamoModel = require('../models/PrestamoModel'); // Asegúrate de tener
 const EmpenoModel = require('../models/EmpenoModel');    // Asegúrate de tener este modelo
 const AhorroModel = require('../models/AhorroModel');    // Asegúrate de tener este modelo
 const ConfigModel = require('../models/ConfigModel');    // Asegúrate de tener este modelo
+const emailService = require('../utils/emailService');
 
 const clientesController = {
 
@@ -52,8 +53,11 @@ const clientesController = {
 
     // 3. Guardar Cliente (MANTIENE FOTO)
     guardar: async (req, res) => {
-        const { dni, nombre, apellido, telefono, direccion, email } = req.body;
+        const { dni, nombre, apellido, telefono, direccion, email, monto_preaprobado } = req.body;
         const foto = req.file ? req.file.filename : null;
+
+        // Limpiar monto_preaprobado de puntos de miles
+        const montoLimpio = monto_preaprobado ? parseFloat(monto_preaprobado.replace(/\./g, '')) : 0;
 
         if (!dni || !nombre || !apellido) {
             req.flash('mensajeError', 'CC, Nombre y Apellido son obligatorios');
@@ -67,7 +71,10 @@ const clientesController = {
                 return res.redirect('/clientes/crear');
             }
 
-            await ClienteModel.crear({ dni, nombre, apellido, telefono, direccion, email, foto });
+            await ClienteModel.crear({ 
+                dni, nombre, apellido, telefono, direccion, email, foto, 
+                monto_preaprobado: montoLimpio 
+            });
             req.flash('mensajeExito', 'Cliente registrado correctamente');
             res.redirect('/clientes');
 
@@ -137,11 +144,17 @@ const clientesController = {
     // 6. Procesar Edición (MANTIENE FOTO)
     actualizar: async (req, res) => {
         const { id } = req.params;
-        const { dni, nombre, apellido, telefono, direccion, email } = req.body;
+        const { dni, nombre, apellido, telefono, direccion, email, monto_preaprobado } = req.body;
         const foto = req.file ? req.file.filename : null;
 
+        // Limpiar monto_preaprobado de puntos de miles
+        const montoLimpio = monto_preaprobado ? parseFloat(monto_preaprobado.replace(/\./g, '')) : 0;
+
         try {
-            await ClienteModel.actualizar(id, { dni, nombre, apellido, telefono, direccion, email, foto });
+            await ClienteModel.actualizar(id, { 
+                dni, nombre, apellido, telefono, direccion, email, foto, 
+                monto_preaprobado: montoLimpio 
+            });
             req.flash('mensajeExito', 'Datos del cliente actualizados');
             res.redirect('/clientes');
         } catch (error) {
@@ -176,6 +189,55 @@ const clientesController = {
             console.error(error);
             req.flash('mensajeError', 'Error al cambiar estado.');
             res.redirect('/clientes');
+        }
+    },
+
+    // 8. Enviar Correo de Pre-aprobado
+    enviarCorreoPreaprobado: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const [cliente, config] = await Promise.all([
+                ClienteModel.obtenerPorId(id),
+                ConfigModel.obtener()
+            ]);
+
+            if (!cliente || !cliente.email) {
+                return res.json({ success: false, mensaje: 'El cliente no tiene correo registrado.' });
+            }
+
+            if (!cliente.monto_preaprobado || cliente.monto_preaprobado <= 0) {
+                return res.json({ success: false, mensaje: 'El cliente no tiene un monto pre-aprobado asignado.' });
+            }
+
+            const { asunto, html } = await emailService.plantillaPreaprobado(
+                `${cliente.nombre} ${cliente.apellido}`,
+                cliente.monto_preaprobado,
+                config ? config.moneda : '$',
+                config ? config.telefono : null
+            );
+
+            await emailService.enviarCorreo(cliente.email, asunto || '¡Tienes un crédito pre-aprobado!', html);
+            
+            res.json({ success: true });
+        } catch (error) {
+            console.error(error);
+            res.json({ success: false, mensaje: 'Error al enviar el correo.' });
+        }
+    },
+
+    // 9. Actualizar solo el monto pre-aprobado (AJAX)
+    actualizarPreaprobado: async (req, res) => {
+        const { id } = req.params;
+        const { monto } = req.body;
+        try {
+            // Limpiar monto de puntos de miles
+            const montoLimpio = monto ? parseFloat(monto.toString().replace(/\./g, '').replace(/,/g, '.')) : 0;
+            
+            await ClienteModel.actualizarPreaprobado(id, montoLimpio);
+            res.json({ success: true, nuevoMonto: montoLimpio });
+        } catch (error) {
+            console.error(error);
+            res.json({ success: false, mensaje: 'Error al actualizar el cupo.' });
         }
     }
 };
