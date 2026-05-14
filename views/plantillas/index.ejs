@@ -41,6 +41,9 @@
                                             <a href="/plantillas/editar/<%= p.slug %>" class="btn btn-primary btn-sm">
                                                 <i class="bi bi-pencil-square me-2"></i> Editar Diseño y Contenido
                                             </a>
+                                            <button onclick="probarPlantilla('<%= p.slug %>', '<%= p.nombre %>')" class="btn btn-outline-secondary btn-sm">
+                                                <i class="bi bi-send me-2"></i> Enviar Correo de Prueba
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -51,6 +54,56 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        function probarPlantilla(slug, nombre) {
+            Swal.fire({
+                title: `Probar: ${nombre}`,
+                text: 'Ingresa el correo electrónico donde deseas recibir la prueba:',
+                input: 'email',
+                inputPlaceholder: 'ejemplo@correo.com',
+                showCancelButton: true,
+                confirmButtonText: 'Enviar Prueba',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3b82f6',
+                showLoaderOnConfirm: true,
+                preConfirm: (email) => {
+                    if (!email) {
+                        Swal.showValidationMessage('El correo es obligatorio');
+                        return false;
+                    }
+                    return fetch(`/plantillas/enviar-prueba/${slug}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.mensaje || 'Error desconocido');
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error: ${error.message}`);
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Correo Enviado!',
+                        text: 'La plantilla de prueba ha sido enviada con éxito.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+    </script>
     <%- include('../partials/footer') %>
 </body>
 </html>
