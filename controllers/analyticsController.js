@@ -5,7 +5,12 @@ const analyticsController = {
     track: async (req, res) => {
         try {
             const { evento, data } = req.body;
-            let ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            
+            // Obtener IP Real detrás de Proxy
+            let ip = req.headers['x-forwarded-for'] || req.ip || req.socket.remoteAddress;
+            if (ip && ip.includes(',')) ip = ip.split(',')[0].trim();
+            
+            // Limpiar IP de localhost para pruebas
             if (ip === '::1' || ip === '127.0.0.1') ip = '8.8.8.8'; 
 
             const userAgent = req.headers['user-agent'];

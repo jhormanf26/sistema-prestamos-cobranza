@@ -23,20 +23,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Analytics Tracking
     const trackEvent = (evento, data = {}) => {
-        // Generar o recuperar ID de visitante (Rastreo por "Cookies" persistentes)
+        // Generar o recuperar ID de visitante
         let visitorId = localStorage.getItem('loan_visitor_id');
         if (!visitorId) {
             visitorId = 'vis_' + Math.random().toString(36).substr(2, 9) + Date.now();
             localStorage.setItem('loan_visitor_id', visitorId);
         }
 
+        // Detección de origen inteligente (UTM / Ref / Apps)
+        const urlParams = new URLSearchParams(window.location.search);
+        const campaignRef = urlParams.get('ref') || urlParams.get('utm_source');
+        const isWhatsApp = navigator.userAgent.includes('WhatsApp');
+
         const metadata = {
             visitorId,
-            referrer: document.referrer || 'directo',
+            referrer: campaignRef || (isWhatsApp ? 'WhatsApp App' : document.referrer) || 'Directo',
             screen: `${window.screen.width}x${window.screen.height}`,
             language: navigator.language,
             platform: navigator.platform,
-            vendor: navigator.vendor,
             ...data
         };
 
