@@ -19,9 +19,13 @@
                         <div>
                             <h2 class="h3 mb-1">Editando: <%= plantilla.nombre %></h2>
                             <span class="text-muted small d-none d-md-inline">Variables: 
-                                <% plantilla.variables_disponibles.split(',').forEach(v => { %>
-                                    <code class="bg-white border p-1 rounded mx-1 text-primary">{{<%= v.trim() %>}}</code>
-                                <% }) %>
+                                <% if (plantilla.variables_disponibles) { %>
+                                    <% plantilla.variables_disponibles.split(',').forEach(v => { %>
+                                        <code class="bg-white border p-1 rounded mx-1 text-primary">{{<%= v.trim() %>}}</code>
+                                    <% }) %>
+                                <% } else { %>
+                                    <small class="text-muted italic">No hay variables definidas.</small>
+                                <% } %>
                             </span>
                         </div>
                         <div>

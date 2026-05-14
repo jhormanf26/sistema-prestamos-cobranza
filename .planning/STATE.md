@@ -15,6 +15,9 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 9. **[HECHO]** Crear sistema de gestión de Plantillas PDF (Cláusulas y Textos legales) editables desde la UI.
 10. **[HECHO]** Vincular la fecha de inicio a la simulación de préstamos y mostrar la fecha final estimada en tiempo real.
 11. **[HECHO]** Corregir desfase de zona horaria en el cálculo de fechas de préstamos tanto en frontend como en backend.
+12. **[HECHO]** Implementar gestión de Monto Pre-aprobado en clientes (Base de Datos, Modelo y Vistas).
+13. **[HECHO]** Desarrollar sistema de notificación por correo para créditos pre-aprobados con plantilla premium editable.
+14. **[HECHO]** Integrar indicadores visuales y botones de acción en el perfil del cliente para la gestión de pre-aprobados.
 
 ## Decisiones de Diseño
 - Se utiliza `Intl.NumberFormat` con el locale `es-CO` para garantizar la consistencia según el estándar colombiano.
