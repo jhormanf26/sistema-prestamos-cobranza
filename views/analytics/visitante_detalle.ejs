@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+    <div class="container-fluid p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">🕒 Línea de Tiempo del Cliente</h2>
+                <p class="text-muted small mb-0">ID de Rastreo: <%= visitorId %></p>
+            </div>
+            <a href="/promocion/detalle?vista=visitantes" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver a Visitantes
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Información del Dispositivo</h6>
+                        <% 
+                            const primerEvento = eventos[0] || {};
+                            const dataUltimo = (typeof primerEvento.data === 'string' && primerEvento.data !== '[object Object]') ? JSON.parse(primerEvento.data) : (primerEvento.data || {});
+                        %>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2 small">
+                                <span class="text-muted d-block">IP Actual:</span>
+                                <span class="fw-bold"><%= primerEvento.ip %></span>
+                            </li>
+                            <li class="mb-2 small">
+                                <span class="text-muted d-block">Ubicación:</span>
+                                <span class="fw-bold">
+                                    <% if(dataUltimo.geo && dataUltimo.geo.ciudad) { %>
+                                        <%= dataUltimo.geo.ciudad %>, <%= dataUltimo.geo.pais %>
+                                    <% } else { %>
+                                        No detectada
+                                    <% } %>
+                                </span>
+                            </li>
+                            <li class="small">
+                                <span class="text-muted d-block">Navegador:</span>
+                                <span class="fw-bold text-wrap d-block"><%= primerEvento.user_agent %></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-4">Historial de Interacciones</h6>
+                        <div class="timeline">
+                            <% eventos.forEach(e => { 
+                                const d = (typeof e.data === 'string' && e.data !== '[object Object]') ? JSON.parse(e.data) : (e.data || {});
+                            %>
+                                <div class="timeline-item pb-4 position-relative">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content ps-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0 fw-bold">
+                                                <% if(e.evento === 'visita') { %>
+                                                    <span class="text-primary">🏠 Entró a la Landing Page</span>
+                                                <% } else if(e.evento === 'click_solicitar') { %>
+                                                    <span class="text-success">✅ Clic en "Solicitar Préstamo"</span>
+                                                <% } else if(e.evento.startsWith('scroll')) { %>
+                                                    <span class="text-info">📖 Leyó hasta el <%= e.evento.split('_')[1] %>%</span>
+                                                <% } else if(e.evento === 'tiempo_permanencia') { %>
+                                                    <span class="text-warning">⏳ Estuvo <%= d.segundos %> segundos</span>
+                                                <% } else { %>
+                                                    <span><%= e.evento %></span>
+                                                <% } %>
+                                            </h6>
+                                            <small class="text-muted"><%= new Date(e.created_at).toLocaleString() %></small>
+                                        </div>
+                                        <p class="text-muted small mb-0">
+                                            <% if(e.evento === 'click_solicitar') { %>
+                                                Se interesó en un crédito de <strong>$<%= d.principal ? d.principal.toLocaleString() : '?' %></strong> a <strong><%= d.installments %> cuotas</strong>.
+                                            <% } else if(e.evento === 'visita') { %>
+                                                Vino desde: <strong><%= d.referrer %></strong> | Pantalla: <%= d.screen %>
+                                            <% } %>
+                                        </p>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                </div> <!-- Fin container-fluid -->
+            </div> <!-- Fin col -->
+        </div> <!-- Fin row -->
+    </div> <!-- Fin container-fluid general -->
+</body>
+
+<style>
+    .timeline { border-left: 2px solid #e9ecef; margin-left: 10px; }
+    .timeline-item { position: relative; }
+    .timeline-marker {
+        position: absolute;
+        left: -6px;
+        top: 5px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+        border: 2px solid white;
+    }
+    .timeline-item:nth-child(even) .timeline-marker { background-color: #198754; }
+</style>
+
+<%- include('../partials/footer') %>
