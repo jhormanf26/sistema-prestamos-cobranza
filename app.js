@@ -43,6 +43,7 @@ app.use((req, res, next) => {
 
 // Archivos Estáticos
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/promocion', express.static(path.join(__dirname, 'landing')));
 
 
 // Inyección del Validador de Licencia Offline

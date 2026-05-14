@@ -21,6 +21,8 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 15. **[HECHO]** Corregir error de truncado de datos al usar frecuencia "Quincenal" en préstamos (Actualización de ENUM en BD).
 16. **[HECHO]** Agregar variables `{{fecha_primer_pago}}` y `{{fecha_fin}}` a las plantillas de contrato PDF y corregir formato de fechas locales.
 17. **[HECHO]** Implementar nuevos gráficos de análisis de rentabilidad en el Dashboard (Capital vs Ganancias Reales).
+18. **[HECHO]** Crear Landing Page promocional independiente en la carpeta `/landing` con diseño premium y simulador interactivo.
+19. **[HECHO]** Implementar formateo dinámico con separadores de miles en el simulador de la landing page.
 
 ## Decisiones de Diseño
 - Se utiliza `Intl.NumberFormat` con el locale `es-CO` para garantizar la consistencia según el estándar colombiano.
