@@ -8,6 +8,9 @@ const flash = require('connect-flash');
 // Inicializar App
 const app = express();
 
+// Confiar en el proxy para obtener la IP real del cliente (necesario en Dockploy/Docker/Nginx)
+app.set('trust proxy', true);
+
 // --- 1. CONFIGURACIONES ---
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
