@@ -7,5 +7,6 @@ router.post('/track', analyticsController.track);
 router.get('/detalle', protegerRuta, analyticsController.verDetalle);
 router.get('/visitante/:id', protegerRuta, analyticsController.verVisitante);
 router.get('/exportar', protegerRuta, analyticsController.exportarCSV);
+router.get('/social-proof', analyticsController.socialProof);
 
 module.exports = router;

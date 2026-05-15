@@ -790,3 +790,50 @@ footer {
 .more-bg { background: #64748b; color: white; font-size: 1.2rem; }
 .more-pill:hover { border-style: solid; border-color: var(--secondary); }
 .more-pill:hover .more-bg { background: var(--secondary); }
+/* Botón de Llamada Flotante */
+.btn-call-float {
+    position: fixed;
+    bottom: 100px;
+    left: 25px;
+    width: 60px;
+    height: 60px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+    z-index: 2999;
+    text-decoration: none;
+    transition: all 0.3s;
+    animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.btn-call-float:hover {
+    transform: scale(1.1);
+    background: #1d4ed8;
+}
+
+/* Ajuste responsivo para botones flotantes */
+@media (max-width: 768px) {
+    .btn-call-float {
+        bottom: 100px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    .social-proof {
+        left: 10px;
+        bottom: 15px;
+        max-width: 90%;
+    }
+}

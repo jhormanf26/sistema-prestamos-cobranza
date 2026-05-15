@@ -27,6 +27,23 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 21. **[HECHO]** Refactorizar la aplicación de `analyticsLimiter` para excluir rutas administrativas (`/promocion/detalle`) y evitar bloqueos al usuario.
 22. **[HECHO]** Aumentar el límite de peticiones de 50 a 100 en la ventana de 15 minutos para mayor estabilidad.
 
+## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
+
+### ¿Qué se ha implementado?
+- [x] **Prueba Social Real**: El sistema ahora muestra notificaciones dinámicas de actividades reales (simulaciones y leads) capturadas de la base de datos.
+- [x] **Botón de Llamada Directa**: Implementado botón flotante con animación de pulso para contacto inmediato.
+- [x] **Tasa de Conversión (CR)**: El dashboard ahora calcula y grafica la efectividad de la landing page (Visitas vs Leads).
+- [x] **Mapa de Calor (Scroll Depth)**: Se añadieron rastreadores al 25%, 50%, 75% y 90% para entender el comportamiento del usuario.
+
+### Decisiones técnicas:
+- Se optó por un pooling de 5 minutos para el Social Proof para no saturar el servidor, pero con rotación local de eventos.
+- La Tasa de Conversión se basa en *Visitantes Únicos* vs *Leads* para mayor precisión real.
+- El botón de llamada se configuró en el lado izquierdo para no interferir con el botón de WhatsApp (derecha).
+
+### Pendiente:
+- Monitorear la carga de la base de datos con el aumento de eventos de scroll.
+- Considerar un sistema de "Heatmap" visual (Canvas) en futuras fases.
+
 ## Decisiones de Diseño
 - Se utiliza `Intl.NumberFormat` con el locale `es-CO` para garantizar la consistencia según el estándar colombiano.
 - Se mantiene el uso de 2 decimales en la mayoría de los casos financieros para evitar errores de redondeo, pero con separador de miles de punto.

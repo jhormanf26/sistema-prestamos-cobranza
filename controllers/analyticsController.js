@@ -116,6 +116,16 @@ const analyticsController = {
             console.error('Error exportarCSV:', error);
             res.status(500).send('Error al exportar');
         }
+    },
+
+    socialProof: async (req, res) => {
+        try {
+            const eventos = await AnalyticsModel.obtenerEventosSocialProof();
+            res.json(eventos);
+        } catch (error) {
+            console.error('Error socialProof:', error);
+            res.status(500).json([]);
+        }
     }
 };
 

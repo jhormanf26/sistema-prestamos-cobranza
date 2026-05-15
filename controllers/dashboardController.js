@@ -6,7 +6,7 @@ const dashboardController = {
     mostrarDashboard: async (req, res) => {
         try {
             const diasVencimiento = parseInt(req.query.diasVencimiento) || 7;
-            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion, gastosCategoria, gastosDias, flujoCaja, gastosUsuario, analytics] = await Promise.all([
+            const [totales, resGraficos, detalleMora, proximosVencimientos, historialFinalizados, oportunidadesRenovacion, gastosCategoria, gastosDias, flujoCaja, gastosUsuario, analytics, leadsMarketing] = await Promise.all([
                 DashboardModel.obtenerTotales(),
                 DashboardModel.obtenerDatosGraficos(),
                 DashboardModel.obtenerDetalleMora(),
@@ -17,7 +17,8 @@ const dashboardController = {
                 DashboardModel.obtenerGastosUltimosDias(),
                 DashboardModel.obtenerFlujoCaja(),
                 DashboardModel.obtenerGastosPorUsuario(),
-                AnalyticsModel.obtenerResumen()
+                AnalyticsModel.obtenerResumen(),
+                AnalyticsModel.obtenerLeadsRecientes(15)
             ]);
 
             // Procesar datos para el gráfico conmutables (Préstamos vs Cuotas)
@@ -47,6 +48,7 @@ const dashboardController = {
                 historialFinalizados,
                 oportunidadesRenovacion, 
                 analytics, 
+                leadsMarketing,
                 graficos: {
                     estados: estados,
                     balance: [totales.totalPrestadoHistorico, totales.dineroCobrado],

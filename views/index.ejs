@@ -291,13 +291,20 @@
                                                         <span class="text-success small">Interesados</span>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <div class="p-3 bg-light rounded-3 text-center border h-100">
-                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Conversión</h6>
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Leads</h6>
+                                                        <h3 class="fw-bold mb-0 text-danger"><%= analytics.totalLeads %></h3>
+                                                        <span class="text-danger small">Capturados</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Conv. (CR)</h6>
                                                         <h3 class="fw-bold mb-0 text-info">
-                                                            <%= analytics.totalVisitas > 0 ? ((analytics.totalClics / analytics.totalVisitas) * 100).toFixed(1) : 0 %>%
+                                                            <%= analytics.conversionRate %>%
                                                         </h3>
-                                                        <span class="text-info small">Efectividad web</span>
+                                                        <span class="text-info small">Visitas vs Leads</span>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-2">
@@ -309,23 +316,93 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Gráfico de Tendencia -->
+                                            <!-- Gráfico de Tendencia y Mapa de Calor -->
                                             <div class="row mb-4">
-                                                <div class="col-12">
-                                                    <div class="p-3 border rounded-3 bg-white">
+                                                <div class="col-lg-8">
+                                                    <div class="p-3 border rounded-3 bg-white h-100">
                                                         <h6 class="fw-bold mb-3"><i class="bi bi-graph-up me-2 text-primary"></i>Tendencia de Actividad (Últimos 7 Días)</h6>
                                                         <div style="height: 250px;">
                                                             <canvas id="chartAnalytics"></canvas>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="col-lg-4">
+                                                    <div class="p-3 border rounded-3 bg-white h-100">
+                                                        <h6 class="fw-bold mb-3"><i class="bi bi-fire me-2 text-danger"></i>Mapa de Calor (Lectura)</h6>
+                                                        <div style="height: 250px;">
+                                                            <canvas id="chartScroll"></canvas>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             
-                                            <div class="mt-4 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 d-flex align-items-center">
+                                            <div class="mt-4 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 d-flex align-items-center mb-4">
                                                 <i class="bi bi-info-circle-fill text-primary fs-4 me-3"></i>
                                                 <p class="mb-0 small text-dark">
                                                     <strong>¿Cómo funciona?</strong> Cada vez que alguien entra a tu página de promoción o usa el simulador y hace clic en el botón de WhatsApp, el sistema lo registra aquí en tiempo real.
                                                 </p>
+                                            </div>
+
+                                            <!-- Tabla de Leads Recientes -->
+                                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                                <div class="card-header bg-dark py-3 d-flex justify-content-between align-items-center">
+                                                    <h6 class="mb-0 fw-bold text-white" style="color: white !important;"><i class="bi bi-person-lines-fill me-2"></i>Últimos Leads Capturados (Prospectos)</h6>
+                                                    <span class="badge bg-danger">VIP</span>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-hover align-middle mb-0">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th class="ps-4">Nombre</th>
+                                                                    <th>Teléfono</th>
+                                                                    <th>Simulación</th>
+                                                                    <th>Fecha</th>
+                                                                    <th class="text-end pe-4">Acción</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <% if(leadsMarketing && leadsMarketing.length > 0) { leadsMarketing.forEach(l => { %>
+                                                                    <tr>
+                                                                        <td class="ps-4">
+                                                                            <span class="fw-bold d-block"><%= l.nombre || 'Sin Nombre' %></span>
+                                                                            <small class="text-muted text-uppercase" style="font-size: 0.65rem;">ID: <%= l.visitorId ? l.visitorId.substring(0,8) : 'N/A' %></small>
+                                                                        </td>
+                                                                        <td>
+                                                                            <a href="tel:+57<%= l.telefono %>" class="text-decoration-none text-dark">
+                                                                                <i class="bi bi-telephone me-1 text-primary"></i> <%= l.telefono %>
+                                                                            </a>
+                                                                        </td>
+                                                                        <td>
+                                                                            <span class="badge bg-light text-dark border">
+                                                                                $<%= parseInt(l.monto || 0).toLocaleString() %>
+                                                                            </span>
+                                                                            <small class="text-muted d-block" style="font-size: 0.7rem;">
+                                                                                <%= l.cuotas %> cuotas <%= l.frecuencia %>
+                                                                            </small>
+                                                                        </td>
+                                                                        <td>
+                                                                            <small class="d-block"><%= new Date(l.created_at).toLocaleDateString() %></small>
+                                                                            <small class="text-muted" style="font-size: 0.7rem;"><%= new Date(l.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></small>
+                                                                        </td>
+                                                                        <td class="text-end pe-4">
+                                                                            <a href="https://wa.me/57<%= l.telefono %>" target="_blank" class="btn btn-sm btn-success rounded-pill px-3">
+                                                                                <i class="bi bi-whatsapp"></i> Chat
+                                                                            </a>
+                                                                        </td>
+                                                                    </tr>
+                                                                <% }) } else { %>
+                                                                    <tr>
+                                                                        <td colspan="5" class="text-center py-5 text-muted">
+                                                                            <i class="bi bi-emoji-smile d-block fs-1 mb-2"></i>
+                                                                            Aún no tienes leads capturados hoy.
+                                                                        </td>
+                                                                    </tr>
+                                                                <% } %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -379,6 +456,14 @@
                             backgroundColor: 'rgba(25, 135, 84, 0.1)',
                             fill: true,
                             tension: 0.4
+                        },
+                        {
+                            label: 'Leads (WhatsApp)',
+                            data: datosAnalytics.map(d => d.leads),
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
                         }
                     ]
                 },
@@ -394,6 +479,50 @@
                 }
             });
         }
+
+        // --- Gráfico de Mapa de Calor (Scroll) ---
+        const datosScroll = <%- JSON.stringify(analytics.scrollDepth) %>;
+        const totalV_scroll = <%= analytics.totalVisitas %> || 1;
+        
+        new Chart(document.getElementById('chartScroll').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Inicio (25%)', 'Medio (50%)', 'Interés (75%)', 'Final (90%)'],
+                datasets: [{
+                    label: '% de Lectura',
+                    data: [
+                        ((datosScroll.v25 / totalV_scroll) * 100).toFixed(1),
+                        ((datosScroll.v50 / totalV_scroll) * 100).toFixed(1),
+                        ((datosScroll.v75 / totalV_scroll) * 100).toFixed(1),
+                        ((datosScroll.v90 / totalV_scroll) * 100).toFixed(1)
+                    ],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.6)',
+                        'rgba(13, 110, 253, 0.6)',
+                        'rgba(255, 193, 7, 0.6)',
+                        'rgba(220, 53, 69, 0.6)'
+                    ],
+                    borderColor: ['#198754', '#0d6efd', '#ffc107', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => ` ${context.raw}% de los visitantes`
+                        }
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true, max: 100, ticks: { callback: value => value + '%' } }
+                }
+            }
+        });
 
         function renderizarCartera(modo) {
             const ctx = document.getElementById('chartEstados');
