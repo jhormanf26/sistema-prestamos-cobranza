@@ -58,14 +58,36 @@
                                                     </a>
                                                 <% } else { %>
                                                     <span class="fw-bold d-block"><%= v.visitorId ? v.visitorId.substring(0, 15) + '...' : 'ID Desconocido' %></span>
-                                                    <small class="text-muted"><%= v.ip %></small>
-                                                    <% if(v.procedencia && v.procedencia !== 'null') { %>
-                                                        <div class="mt-1">
-                                                            <span class="badge bg-light text-dark border p-1 px-2" style="font-size: 0.65rem;">
+                                                    <small class="text-muted d-block"><%= v.ip %></small>
+                                                    
+                                                    <% 
+                                                        let deviceType = "PC";
+                                                        let deviceIcon = "bi-laptop";
+                                                        let os = "";
+                                                        
+                                                        const scr = v.geo ? v.geo.screen : null; // Si no está en geo, buscamos en data
+                                                        const ua = (v.user_agent || "").toLowerCase();
+                                                        
+                                                        // Detección simple
+                                                        if (ua.includes('android')) os = "Android";
+                                                        else if (ua.includes('iphone')) os = "iPhone";
+                                                        else if (ua.includes('windows')) os = "Windows";
+
+                                                        if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+                                                            deviceType = "Móvil";
+                                                            deviceIcon = "bi-phone";
+                                                        }
+                                                    %>
+                                                    <div class="d-flex gap-2 mt-1">
+                                                        <span class="text-muted" style="font-size: 0.7rem;">
+                                                            <i class="bi <%= deviceIcon %>"></i> <%= deviceType %> <%= os %>
+                                                        </span>
+                                                        <% if(v.procedencia && v.procedencia !== 'null') { %>
+                                                            <span class="badge bg-light text-dark border p-0 px-2" style="font-size: 0.65rem;">
                                                                 <i class="bi bi-link-45deg"></i> <%= v.procedencia %>
                                                             </span>
-                                                        </div>
-                                                    <% } %>
+                                                        <% } %>
+                                                    </div>
                                                 <% } %>
                                             </div>
                                         </div>
