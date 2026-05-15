@@ -34,9 +34,12 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 - [x] **Botón de Llamada Directa**: Implementado botón flotante con animación de pulso para contacto inmediato.
 - [x] **Tasa de Conversión (CR)**: El dashboard ahora calcula y grafica la efectividad de la landing page (Visitas vs Leads).
 - [x] **Mapa de Calor (Scroll Depth)**: Se añadieron rastreadores al 25%, 50%, 75% y 90% para entender el comportamiento del usuario.
+- [x] **Lista de Leads Marketing**: Tabla de acceso rápido a prospectos con botón directo a WhatsApp.
+- [x] **Funcionalidad PWA (App Móvil)**: El sistema ahora es instalable en celulares y PCs como una aplicación nativa, con iconos personalizados y apertura a pantalla completa.
 
 ### Decisiones técnicas:
-- Se optó por un pooling de 5 minutos para el Social Proof para no saturar el servidor, pero con rotación local de eventos.
+- Se implementó un Service Worker básico para cumplir con los requisitos de instalación de Chrome/Safari.
+- Se generaron iconos de 192px y 512px con IA para una apariencia premium en el inicio del celular.
 - La Tasa de Conversión se basa en *Visitantes Únicos* vs *Leads* para mayor precisión real.
 - El botón de llamada se configuró en el lado izquierdo para no interferir con el botón de WhatsApp (derecha).
 
