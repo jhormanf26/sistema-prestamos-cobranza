@@ -99,12 +99,36 @@
                                         <% } %>
                                     </td>
                                     <td>
-                                        <small class="d-block">
-                                            <i class="bi bi-display me-1"></i> <%= d.screen || 'N/A' %>
-                                        </small>
-                                        <small class="text-muted">
-                                            <i class="bi bi-cpu me-1"></i> <%= e.user_agent ? e.user_agent.substring(0, 30) + '...' : 'N/A' %>
-                                        </small>
+                                        <% 
+                                            let deviceType = "Computador";
+                                            let deviceIcon = "bi-laptop";
+                                            let os = "Desconocido";
+                                            let osIcon = "bi-question-circle";
+
+                                            // 1. Detección por Pantalla
+                                            if (d.screen) {
+                                                const width = parseInt(d.screen.split('x')[0]);
+                                                if (width < 600) { deviceType = "Smartphone"; deviceIcon = "bi-phone"; }
+                                                else if (width < 1024) { deviceType = "Tablet"; deviceIcon = "bi-tablet"; }
+                                            }
+
+                                            // 2. Detección simplificada de SO
+                                            const ua = (e.user_agent || "").toLowerCase();
+                                            if (ua.includes('android')) { os = "Android"; osIcon = "bi-android2"; }
+                                            else if (ua.includes('iphone') || ua.includes('ipad')) { os = "iOS"; osIcon = "bi-apple"; }
+                                            else if (ua.includes('windows')) { os = "Windows"; osIcon = "bi-windows"; }
+                                            else if (ua.includes('macintosh')) { os = "macOS"; osIcon = "bi-apple"; }
+                                            else if (ua.includes('linux')) { os = "Linux"; osIcon = "bi-ubuntu"; }
+                                        %>
+                                        <div class="d-flex flex-column gap-1">
+                                            <span class="badge bg-dark bg-opacity-10 text-dark text-start border-0 p-0 d-flex align-items-center">
+                                                <i class="bi <%= deviceIcon %> me-2 text-primary"></i> <%= deviceType %> 
+                                                <small class="ms-1 text-muted">(<%= d.screen || 'N/A' %>)</small>
+                                            </span>
+                                            <span class="badge bg-light text-muted text-start border-0 p-0 d-flex align-items-center">
+                                                <i class="bi <%= osIcon %> me-2"></i> <%= os %>
+                                            </span>
+                                        </div>
                                     </td>
                                     <td>
                                         <code><%= e.ip %></code>
