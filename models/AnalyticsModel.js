@@ -8,10 +8,10 @@ class AnalyticsModel {
     }
 
     static async obtenerResumen() {
-        const [visitas] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'visita'");
+        const [visitas] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'visita' AND JSON_EXTRACT(data, '$.isBot') = false");
         const [clics] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'click_solicitar'");
-        const [hoy] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE DATE(created_at) = CURDATE()");
-        const [unicos] = await db.query("SELECT COUNT(DISTINCT JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId'))) as total FROM web_analytics");
+        const [hoy] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE DATE(created_at) = CURDATE() AND JSON_EXTRACT(data, '$.isBot') = false");
+        const [unicos] = await db.query("SELECT COUNT(DISTINCT JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId'))) as total FROM web_analytics WHERE JSON_EXTRACT(data, '$.isBot') = false");
         
         const [historial] = await db.query(`
             SELECT 
@@ -20,6 +20,7 @@ class AnalyticsModel {
                 COUNT(CASE WHEN evento = 'click_solicitar' THEN 1 END) as clics
             FROM web_analytics 
             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            AND JSON_EXTRACT(data, '$.isBot') = false
             GROUP BY DATE(created_at)
             ORDER BY fecha ASC
         `);
@@ -33,7 +34,9 @@ class AnalyticsModel {
         };
     }
 
-    static async obtenerVisitantesUnicos() {
+    static async obtenerVisitantesUnicos(incluirBots = false) {
+        const botFilter = incluirBots ? '' : "WHERE JSON_EXTRACT(data, '$.isBot') = false OR JSON_EXTRACT(data, '$.isBot') IS NULL";
+        
         const [rows] = await db.query(`
             SELECT 
                 JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId')) as visitorId,
@@ -41,10 +44,15 @@ class AnalyticsModel {
                 COUNT(*) as total_eventos,
                 ANY_VALUE(ip) as ip,
                 ANY_VALUE(user_agent) as user_agent,
-                ANY_VALUE(JSON_EXTRACT(data, '$.geo')) as geo
+                ANY_VALUE(JSON_EXTRACT(data, '$.geo')) as geo,
+                ANY_VALUE(JSON_EXTRACT(data, '$.isBot')) as isBot,
+                -- Detección de "Hot Prospect": Estuvo más de 120s o hizo clic en solicitar
+                (MAX(CASE WHEN evento = 'tiempo_permanencia' AND JSON_EXTRACT(data, '$.segundos') > 120 THEN 1 ELSE 0 END) OR 
+                 MAX(CASE WHEN evento = 'click_solicitar' THEN 1 ELSE 0 END)) as isHot
             FROM web_analytics
+            ${botFilter}
             GROUP BY visitorId
-            ORDER BY ultima_actividad DESC
+            ORDER BY isHot DESC, ultima_actividad DESC
         `);
         return rows;
     }
@@ -58,8 +66,13 @@ class AnalyticsModel {
         return rows;
     }
 
-    static async obtenerEventosRecientes(limite = 100) {
-        const [rows] = await db.query('SELECT * FROM web_analytics ORDER BY created_at DESC LIMIT ?', [limite]);
+    static async obtenerEventosRecientes(limite = 200, incluirBots = false) {
+        const botFilter = incluirBots ? '' : "WHERE JSON_EXTRACT(data, '$.isBot') = false OR JSON_EXTRACT(data, '$.isBot') IS NULL";
+        const [rows] = await db.query(`
+            SELECT * FROM web_analytics 
+            ${botFilter}
+            ORDER BY created_at DESC LIMIT ?
+        `, [limite]);
         return rows;
     }
 }

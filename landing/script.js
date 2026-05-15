@@ -6,27 +6,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         offset: 100
     });
 
-    // Capture Extended Hardware Info
+    // Capture Ultra-Extended Hardware & Context Info
     let hardwareInfo = {};
-    try {
-        const getBattery = async () => {
-            if (navigator.getBattery) {
-                const b = await navigator.getBattery();
-                return { level: Math.round(b.level * 100) + '%', charging: b.charging };
-            }
-            return 'N/A';
-        };
+    const captureHardware = async () => {
+        try {
+            const getBattery = async () => {
+                if (navigator.getBattery) {
+                    const b = await navigator.getBattery();
+                    return { level: Math.round(b.level * 100) + '%', charging: b.charging };
+                }
+                return 'N/A';
+            };
 
-        hardwareInfo = {
-            battery: await getBattery(),
-            cores: navigator.hardwareConcurrency || 'N/A',
-            memory: navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'N/A',
-            connection: navigator.connection ? navigator.connection.effectiveType : 'unknown',
-            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-        };
-    } catch (e) {
-        console.log('Hardware info error:', e);
-    }
+            return {
+                battery: await getBattery(),
+                cores: navigator.hardwareConcurrency || 'N/A',
+                memory: navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'N/A',
+                connection: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+                isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+                languages: navigator.languages.join(', '),
+                orientation: window.screen.orientation ? window.screen.orientation.type : 'N/A'
+            };
+        } catch (e) {
+            return { error: e.message };
+        }
+    };
+
+    hardwareInfo = await captureHardware();
 
     // Simulator Logic
     const amountInput = document.getElementById('amount');
@@ -75,6 +83,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Track Visit
     trackEvent('visita', { path: window.location.pathname });
 
+    // Track Tab Visibility
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            trackEvent('pestaña_oculta');
+        } else {
+            trackEvent('pestaña_activa');
+        }
+    });
+
     // Track Scroll Depth
     let scrollLogged50 = false;
     let scrollLogged90 = false;
@@ -89,6 +106,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             scrollLogged90 = true;
         }
     });
+
+    // Track Heatmap/Click tracking on Simulator
+    amountInput.addEventListener('click', () => trackEvent('click_input_monto'));
+    amountRange.addEventListener('click', () => trackEvent('click_slider_monto'));
+    installmentsSelect.addEventListener('click', () => trackEvent('click_select_cuotas'));
+    frequencySelect.addEventListener('click', () => trackEvent('click_select_frecuencia'));
 
     // Track Time on Page
     const startTime = Date.now();
@@ -116,6 +139,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const message = encodeURIComponent(`¡Hola! Vi tu página web y me interesa un crédito de $${principal.toLocaleString('es-CO')} en ${installments} cuotas ${frequency}. ¿Me podrías asesorar?`);
         
+        // Track Simulation (Debounced or on change)
+        trackEvent('simulacion', { principal, installments, frequency });
+
         btnContact.onclick = () => {
             trackEvent('click_solicitar', { principal, installments, frequency });
             window.open(`https://wa.me/573158572338?text=${message}`, '_blank');
