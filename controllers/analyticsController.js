@@ -4,7 +4,7 @@ const axios = require('axios');
 const analyticsController = {
     track: async (req, res) => {
         try {
-            const { evento, data } = req.body;
+            const { evento, data, metadata } = req.body;
             
             // 1. Obtener IP Real detrás de Proxy
             let ip = req.headers['x-forwarded-for'] || req.ip || req.socket.remoteAddress;
@@ -14,7 +14,7 @@ const analyticsController = {
             const userAgent = req.headers['user-agent'] || '';
             
             // 2. Detección de Bots (Filtro de Tráfico)
-            const botKeywords = ['googlebot', 'bingbot', 'yandexbot', 'facebookexternalhit', 'twitterbot', 'rogerbot', 'linkedinbot', 'embedly', 'quora link preview', 'showyoubot', 'outbrain', 'pinterest/0.', 'developers.google.com/+/web/snippet', 'slackbot', 'vkShare', 'W3C_Validator', 'redditbot', 'Applebot', 'WhatsApp'];
+            const botKeywords = ['googlebot', 'bingbot', 'yandexbot', 'facebookexternalhit', 'twitterbot', 'rogerbot', 'linkedinbot', 'embedly', 'quora link preview', 'showyoubot', 'outbrain', 'pinterest/0.', 'developers.google.com/+/web/snippet', 'slackbot', 'vkShare', 'W3C_Validator', 'redditbot', 'Applebot'];
             const isBot = botKeywords.some(keyword => userAgent.toLowerCase().includes(keyword.toLowerCase()));
 
             // 3. Obtener Geo-IP (Solo si no es Bot para ahorrar API)
@@ -40,7 +40,7 @@ const analyticsController = {
                 evento,
                 ip,
                 userAgent,
-                data: { ...data, geo, isBot }
+                data: { ...data, ...metadata, geo, isBot }
             });
 
             res.json({ success: true });

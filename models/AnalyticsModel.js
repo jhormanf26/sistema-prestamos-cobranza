@@ -46,6 +46,7 @@ class AnalyticsModel {
                 ANY_VALUE(user_agent) as user_agent,
                 ANY_VALUE(JSON_EXTRACT(data, '$.geo')) as geo,
                 ANY_VALUE(JSON_EXTRACT(data, '$.isBot')) as isBot,
+                ANY_VALUE(JSON_UNQUOTE(JSON_EXTRACT(data, '$.referrer'))) as procedencia,
                 -- Extraer Datos de Lead si existen
                 MAX(CASE WHEN evento = 'lead_captured' THEN JSON_UNQUOTE(JSON_EXTRACT(data, '$.name')) END) as nombre_cliente,
                 MAX(CASE WHEN evento = 'lead_captured' THEN JSON_UNQUOTE(JSON_EXTRACT(data, '$.phone')) END) as telefono_cliente,
@@ -62,7 +63,7 @@ class AnalyticsModel {
 
     static async obtenerEventosPorVisitante(visitorId) {
         const [rows] = await db.query(`
-            SELECT * FROM web_analytics 
+            SELECT *, JSON_UNQUOTE(JSON_EXTRACT(data, '$.referrer')) as procedencia FROM web_analytics 
             WHERE JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId')) = ?
             ORDER BY created_at DESC
         `, [visitorId]);
@@ -72,7 +73,7 @@ class AnalyticsModel {
     static async obtenerEventosRecientes(limite = 200, incluirBots = false) {
         const botFilter = incluirBots ? '' : "WHERE JSON_EXTRACT(data, '$.isBot') = false OR JSON_EXTRACT(data, '$.isBot') IS NULL";
         const [rows] = await db.query(`
-            SELECT * FROM web_analytics 
+            SELECT *, JSON_UNQUOTE(JSON_EXTRACT(data, '$.referrer')) as procedencia FROM web_analytics 
             ${botFilter}
             ORDER BY created_at DESC LIMIT ?
         `, [limite]);

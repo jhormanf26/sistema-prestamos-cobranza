@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             timeOnPage: Math.round((performance.now() - startTime) / 1000)
         };
 
-        fetch('/api/analytics/track', {
+        fetch('/promocion/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ evento, data, metadata })
