@@ -6,27 +6,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         offset: 100
     });
 
-    // Capture Extended Hardware Info
+    // Capture Ultra-Extended Hardware & Context Info
     let hardwareInfo = {};
-    try {
-        const getBattery = async () => {
-            if (navigator.getBattery) {
-                const b = await navigator.getBattery();
-                return { level: Math.round(b.level * 100) + '%', charging: b.charging };
-            }
-            return 'N/A';
-        };
+    const captureHardware = async () => {
+        try {
+            const getBattery = async () => {
+                if (navigator.getBattery) {
+                    const b = await navigator.getBattery();
+                    return { level: Math.round(b.level * 100) + '%', charging: b.charging };
+                }
+                return 'N/A';
+            };
 
-        hardwareInfo = {
-            battery: await getBattery(),
-            cores: navigator.hardwareConcurrency || 'N/A',
-            memory: navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'N/A',
-            connection: navigator.connection ? navigator.connection.effectiveType : 'unknown',
-            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-        };
-    } catch (e) {
-        console.log('Hardware info error:', e);
-    }
+            return {
+                battery: await getBattery(),
+                cores: navigator.hardwareConcurrency || 'N/A',
+                memory: navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'N/A',
+                connection: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+                isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+                languages: navigator.languages.join(', '),
+                orientation: window.screen.orientation ? window.screen.orientation.type : 'N/A'
+            };
+        } catch (e) {
+            return { error: e.message };
+        }
+    };
+
+    hardwareInfo = await captureHardware();
 
     // Simulator Logic
     const amountInput = document.getElementById('amount');
@@ -74,6 +82,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Track Visit
     trackEvent('visita', { path: window.location.pathname });
+
+    // Track Tab Visibility (If they leave the page and come back)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            trackEvent('pestaña_oculta');
+        } else {
+            trackEvent('pestaña_activa');
+        }
+    });
 
     // Track Scroll Depth
     let scrollLogged50 = false;
