@@ -56,12 +56,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeModal = document.querySelector('.close-modal');
     
     // Mobile Menu
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const closeMenuBtn = document.getElementById('close-menu-btn');
+    const navMenu = document.getElementById('nav-menu');
 
-    if (menuToggle) {
-        menuToggle.onclick = () => navLinks.classList.toggle('active');
+    if (mobileMenuBtn && navMenu) {
+        mobileMenuBtn.onclick = () => navMenu.classList.add('active');
     }
+    if (closeMenuBtn && navMenu) {
+        closeMenuBtn.onclick = () => navMenu.classList.remove('active');
+    }
+
+    // Cerrar menú al hacer clic en cualquier enlace (incluyendo el botón de solicitar)
+    document.querySelectorAll('.nav-links a, .btn-cta-nav').forEach(link => {
+        link.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+        });
+    });
 
     // Validación estricta de Celular (Solo 10 números)
     if (leadPhone) {
@@ -99,14 +110,47 @@ document.addEventListener('DOMContentLoaded', async () => {
             language: navigator.language,
             platform: navigator.platform,
             hardware: hardwareInfo,
-            ...data
+            timeOnPage: Math.round((performance.now() - startTime) / 1000)
         };
 
-        return fetch('/promocion/track', {
+        fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ evento, data: metadata })
-        }).catch(err => console.log('Track error:', err));
+            body: JSON.stringify({ evento, data, metadata })
+        }).then(res => {
+            if (res.status === 429) showSecurityLock(60); // 60 segundos por defecto
+        }).catch(() => {});
+    };
+
+    window.showSecurityLock = (seconds) => {
+        const modal = document.getElementById('securityModal');
+        const timerDisplay = document.getElementById('lockTimer');
+        if (!modal || !timerDisplay) return;
+
+        modal.style.display = 'flex';
+        let timeLeft = seconds;
+
+        const interval = setInterval(() => {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                modal.style.display = 'none';
+            }
+            timeLeft--;
+        }, 1000);
+    };
+
+    // Global Rate Limit Interceptor for forms
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+        const response = await originalFetch(...args);
+        if (response.status === 429) {
+            showSecurityLock(60);
+        }
+        return response;
     };
 
     // Track Performance (Load Time)
@@ -147,6 +191,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Modal Logic
     btnContact.onclick = (e) => {
         e.preventDefault();
+        
+        // Confeti al primer clic
+        confetti({
+            particleCount: 100,
+            spread: 60,
+            origin: { y: 0.8 },
+            gravity: 1.2
+        });
+
         trackEvent('click_solicitar_abrir_modal');
         leadModal.style.display = 'flex';
     };
@@ -167,15 +220,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         await trackEvent('lead_captured', { name, phone, principal, installments, frequency });
 
+        // Efecto Confeti de celebración
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#0d6efd', '#198754', '#ffc107']
+        });
+
         const message = encodeURIComponent(`¡Hola! Mi nombre es ${name}. Vi tu página web y me interesa un crédito de $${parseInt(principal).toLocaleString('es-CO')} en ${installments} cuotas ${frequency}. ¿Me podrías asesorar?`);
         
-        window.open(`https://wa.me/573158572338?text=${message}`, '_blank');
-        leadModal.style.display = 'none';
+        setTimeout(() => {
+            window.open(`https://wa.me/573158572338?text=${message}`, '_blank');
+            leadModal.style.display = 'none';
+        }, 1000);
     };
 
     // PDF Generation
     btnPdf.onclick = () => {
         trackEvent('click_ver_pdf_plan_pagos');
+
+        // Confeti suave para el PDF
+        confetti({
+            particleCount: 40,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 }
+        });
+        confetti({
+            particleCount: 40,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 }
+        });
         
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();

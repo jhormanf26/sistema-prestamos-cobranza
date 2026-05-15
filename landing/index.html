@@ -56,13 +56,18 @@
             <a href="#" class="logo">
                 <i class="bi bi-rocket-takeoff-fill"></i> Préstamos<span>Pro</span>
             </a>
-            <ul class="nav-links">
+            <div class="menu-toggle" id="mobile-menu-btn">
+                <i class="bi bi-list"></i>
+            </div>
+            <ul class="nav-links" id="nav-menu">
+                <div class="close-menu" id="close-menu-btn">
+                    <i class="bi bi-x-lg"></i>
+                </div>
                 <li><a href="#">Inicio</a></li>
                 <li><a href="#beneficios">Beneficios</a></li>
                 <li><a href="#simulador">Simulador</a></li>
                 <li><a href="#simulador" class="btn-cta-nav">Solicitar Ahora</a></li>
             </ul>
-            <div class="menu-toggle"><i class="bi bi-list"></i></div>
         </div>
     </nav>
 
@@ -94,9 +99,8 @@
                     </div>
                 </div>
                 <div class="image-wrapper" data-aos="zoom-in">
-                    <img src="https://images.unsplash.com/photo-1573164060897-425941c302f1?auto=format&fit=crop&q=80&w=800"
-                        alt="Finanzas">
-                    <div class="glass-card g-1">
+                    <img src="hero_finanzas_tech.png" alt="Finanzas Pro" class="main-hero-img">
+                    <div class="glass-card g-1" data-aos="fade-right" data-aos-delay="500">
                         <i class="bi bi-check-circle-fill"></i>
                         <div>
                             <strong>Aprobado</strong>
@@ -114,6 +118,77 @@
             </div>
         </div>
     </section>
+
+    <!-- Barra de Características Flotante -->
+    <div class="features-bar-wrapper" data-aos="fade-up" data-aos-delay="400">
+        <div class="container">
+            <div class="features-bar">
+                <div class="fb-item">
+                    <i class="bi bi-phone-vibrate"></i>
+                    <span>Proceso 100%<br>en línea</span>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-item">
+                    <i class="bi bi-calculator"></i>
+                    <span>Calcula<br>tu cuota</span>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-item">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Plazos desde<br>1 hasta 24 cuotas</span>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-item">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>Tasa y<br>cuotas fijas</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trust Logos Section -->
+    <div class="trust-logos-section">
+        <div class="container text-center">
+            <p class="trust-title">Desembolsos inmediatos a través de:</p>
+            <div class="logos-grid">
+                <!-- Nequi -->
+                <div class="logo-pill">
+                    <div class="pill-icon">
+                        <img src="nequi.png" alt="Nequi">
+                    </div>
+                    <span class="pill-text">Nequi</span>
+                </div>
+                <!-- Daviplata -->
+                <div class="logo-pill">
+                    <div class="pill-icon">
+                        <img src="daviplata.png" alt="DaviPlata">
+                    </div>
+                    <span class="pill-text">DaviPlata</span>
+                </div>
+                <!-- Bancolombia -->
+                <div class="logo-pill">
+                    <div class="pill-icon">
+                        <img src="bancolombia.png" alt="Bancolombia">
+                    </div>
+                    <span class="pill-text">Bancolombia</span>
+                </div>
+                <!-- Bre-B -->
+                <div class="logo-pill">
+                    <div class="pill-icon bre-b-special">
+                        <img src="breve.png" alt="Bre-B">
+                    </div>
+                    <span class="pill-text">Bre-B</span>
+                </div>
+                <!-- Many More Pill -->
+                <div class="logo-pill more-pill">
+                    <div class="pill-icon more-bg">
+                        <i class="bi bi-plus-lg"></i>
+                    </div>
+                    <span class="pill-text">¡Y muchos más!</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <section class="benefits" id="beneficios">
         <div class="container">
@@ -214,8 +289,87 @@
         </div>
     </div>
 
-    <!-- Modal Lead Capture -->
-    <section class="faq" id="faq">
+    <!-- Testimonials Section -->
+    <section class="testimonials py-5" id="testimonios">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2>Historias <span>Reales</span></h2>
+                <p>Miles de personas ya han solucionado sus imprevistos con nosotros.</p>
+            </div>
+            <div class="row g-4">
+                <!-- Testimonio 1 -->
+                <div class="col-md-3" data-aos="fade-up">
+                    <div class="testimonial-card">
+                        <div class="quote-icon">“</div>
+                        <div class="text-warning">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                        </div>
+                        <p>"Se me dañó el celular y trabajo con él. Me prestaron en 20 minutos y pude mandarlo a arreglar el mismo día. ¡Salvavidas total!"</p>
+                        <div class="testimonial-user">
+                            <div class="user-img" style="background: linear-gradient(135deg, #0d6efd, #00d2ff);">CR</div>
+                            <div class="user-info">
+                                <strong>Carlos R.</strong>
+                                <span>Cliente Verificado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonio 2 -->
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <div class="quote-icon">“</div>
+                        <div class="text-warning">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                        </div>
+                        <p>"Tenía el recibo de la luz vencido y no me pagaban en el trabajo. Gracias a Préstamos Pro no me la cortaron. Muy agradecida."</p>
+                        <div class="testimonial-user">
+                            <div class="user-img" style="background: linear-gradient(135deg, #198754, #20c997);">MS</div>
+                            <div class="user-info">
+                                <strong>Marta S.</strong>
+                                <span>Cliente Verificado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonio 3 -->
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-card">
+                        <div class="quote-icon">“</div>
+                        <div class="text-warning">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                        </div>
+                        <p>"No tenía lo de la inscripción del ICFES y el plazo se vencía. Pedí el préstamo y me aprobaron de una. ¡Ya estoy inscrito!"</p>
+                        <div class="testimonial-user">
+                            <div class="user-img" style="background: linear-gradient(135deg, #0dcaf0, #0aa2c0);">JP</div>
+                            <div class="user-info">
+                                <strong>Juan P.</strong>
+                                <span>Cliente Verificado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Testimonio 4 -->
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                    <div class="testimonial-card">
+                        <div class="quote-icon">“</div>
+                        <div class="text-warning">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                        </div>
+                        <p>"Se me dañaron las gafas y no tenía cómo comprarlas. Sin ellas no podía trabajar. Gracias a ellos pude conseguirlas y pagarlas en cuotas."</p>
+                        <div class="testimonial-user">
+                            <div class="user-img" style="background: linear-gradient(135deg, #6610f2, #6f42c1);">EM</div>
+                            <div class="user-info">
+                                <strong>Elena M.</strong>
+                                <span>Cliente Verificado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
         <div class="container">
             <div class="section-header" data-aos="fade-up">
                 <h2>Preguntas <span>Frecuentes</span></h2>
@@ -268,6 +422,16 @@
                         <a href="#"><i class="bi bi-instagram"></i></a>
                         <a href="#"><i class="bi bi-whatsapp"></i></a>
                     </div>
+                    <div class="security-badges mt-4 d-flex gap-3 opacity-50">
+                        <div class="badge-item text-start">
+                            <i class="bi bi-shield-lock-fill h4 mb-0"></i>
+                            <span class="d-block small" style="font-size: 0.65rem;">SSL SECURE<br>256-BIT</span>
+                        </div>
+                        <div class="badge-item text-start">
+                            <i class="bi bi-patch-check-fill h4 mb-0"></i>
+                            <span class="d-block small" style="font-size: 0.65rem;">LEY 1581<br>PROTECCIÓN DATOS</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="footer-links">
                     <h4>Enlaces</h4>
@@ -293,7 +457,25 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>
+    <!-- Modal Seguridad / Rate Limit -->
+    <div id="securityModal" class="modal-overlay" style="z-index: 9999; display: none; background: rgba(15, 23, 42, 0.9);">
+        <div class="modal-content text-center" style="max-width: 500px; padding: 50px 30px; border-top: 5px solid #ffb703;">
+            <div class="security-icon mb-4">
+                <i class="bi bi-shield-lock-fill" style="font-size: 4rem; color: #ffb703;"></i>
+            </div>
+            <h3 class="mb-3">Verificación de Seguridad</h3>
+            <p class="text-muted mb-4">
+                Hemos detectado un número inusual de peticiones desde tu conexión. Por seguridad de tus datos y para prevenir el acceso de <strong>bots</strong>, el sistema se ha bloqueado temporalmente.
+            </p>
+            <div class="timer-box p-3 mb-4" style="background: #fff8eb; border-radius: 12px; border: 1px solid #ffeeba;">
+                <span class="d-block small text-uppercase fw-bold text-warning mb-1">Podrás reintentar en:</span>
+                <span id="lockTimer" style="font-size: 2.5rem; font-weight: 800; color: #856404;">00:00</span>
+            </div>
+            <p class="small text-muted">Gracias por tu paciencia. Esto ayuda a mantener nuestro servicio seguro para todos.</p>
+        </div>
+    </div>
 </body>
 
 </html>
