@@ -46,9 +46,12 @@ class AnalyticsModel {
                 ANY_VALUE(user_agent) as user_agent,
                 ANY_VALUE(JSON_EXTRACT(data, '$.geo')) as geo,
                 ANY_VALUE(JSON_EXTRACT(data, '$.isBot')) as isBot,
-                -- Detección de "Hot Prospect": Estuvo más de 120s o hizo clic en solicitar
+                -- Extraer Datos de Lead si existen
+                MAX(CASE WHEN evento = 'lead_captured' THEN JSON_UNQUOTE(JSON_EXTRACT(data, '$.name')) END) as nombre_cliente,
+                MAX(CASE WHEN evento = 'lead_captured' THEN JSON_UNQUOTE(JSON_EXTRACT(data, '$.phone')) END) as telefono_cliente,
+                -- Detección de "Hot Prospect"
                 (MAX(CASE WHEN evento = 'tiempo_permanencia' AND JSON_EXTRACT(data, '$.segundos') > 120 THEN 1 ELSE 0 END) OR 
-                 MAX(CASE WHEN evento = 'click_solicitar' THEN 1 ELSE 0 END)) as isHot
+                 MAX(CASE WHEN evento = 'click_solicitar' OR evento = 'lead_captured' THEN 1 ELSE 0 END)) as isHot
             FROM web_analytics
             ${botFilter}
             GROUP BY visitorId
