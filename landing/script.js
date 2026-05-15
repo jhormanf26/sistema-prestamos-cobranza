@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Track Visit
     trackEvent('visita', { path: window.location.pathname });
 
-    // Track Tab Visibility (If they leave the page and come back)
+    // Track Tab Visibility
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             trackEvent('pestaña_oculta');
@@ -106,6 +106,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             scrollLogged90 = true;
         }
     });
+
+    // Track Heatmap/Click tracking on Simulator
+    amountInput.addEventListener('click', () => trackEvent('click_input_monto'));
+    amountRange.addEventListener('click', () => trackEvent('click_slider_monto'));
+    installmentsSelect.addEventListener('click', () => trackEvent('click_select_cuotas'));
+    frequencySelect.addEventListener('click', () => trackEvent('click_select_frecuencia'));
 
     // Track Time on Page
     const startTime = Date.now();
@@ -133,6 +139,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const message = encodeURIComponent(`¡Hola! Vi tu página web y me interesa un crédito de $${principal.toLocaleString('es-CO')} en ${installments} cuotas ${frequency}. ¿Me podrías asesorar?`);
         
+        // Track Simulation (Debounced or on change)
+        trackEvent('simulacion', { principal, installments, frequency });
+
         btnContact.onclick = () => {
             trackEvent('click_solicitar', { principal, installments, frequency });
             window.open(`https://wa.me/573158572338?text=${message}`, '_blank');
