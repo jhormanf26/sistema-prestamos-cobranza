@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    const startTime = performance.now();
+
     // Initialize AOS
     AOS.init({
         duration: 800,
@@ -36,15 +38,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     hardwareInfo = await captureHardware();
 
-    // Simulator Logic
+    // Elements
     const amountInput = document.getElementById('amount');
     const amountRange = document.getElementById('amountRange');
     const installmentsSelect = document.getElementById('installments');
     const frequencySelect = document.getElementById('frequency');
-    
     const resInstallment = document.getElementById('resInstallment');
     const resTotal = document.getElementById('resTotal');
     const btnContact = document.getElementById('btnContact');
+    const btnPdf = document.getElementById('btnPdf');
+    
+    // Modal Elements
+    const leadModal = document.getElementById('leadModal');
+    const formLead = document.getElementById('formLead');
+    const leadName = document.getElementById('leadName');
+    const leadPhone = document.getElementById('leadPhone');
+    const closeModal = document.querySelector('.close-modal');
+    
+    // Mobile Menu
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (menuToggle) {
+        menuToggle.onclick = () => navLinks.classList.toggle('active');
+    }
+
+    // Validación estricta de Celular (Solo 10 números)
+    if (leadPhone) {
+        leadPhone.oninput = (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 10);
+        };
+    }
+
+    // FAQ Accordion
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.onclick = () => item.classList.toggle('active');
+    });
 
     const formatAmount = (val) => {
         const num = val.toString().replace(/\D/g, '');
@@ -73,15 +102,169 @@ document.addEventListener('DOMContentLoaded', async () => {
             ...data
         };
 
-        fetch('/promocion/track', {
+        return fetch('/promocion/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ evento, data: metadata })
         }).catch(err => console.log('Track error:', err));
     };
 
+    // Track Performance (Load Time)
+    window.onload = () => {
+        const loadTime = Math.round(performance.now() - startTime);
+        trackEvent('rendimiento_carga', { milisegundos: loadTime });
+    };
+
+    // Social Proof Logic
+    const socialProof = document.getElementById('socialProof');
+    const spTitle = document.getElementById('spTitle');
+    const spSubtitle = document.getElementById('spSubtitle');
+    
+    const fakeEvents = [
+        { title: 'Préstamo solicitado por $1.500.000', sub: 'Hace 2 minutos en Bogotá' },
+        { title: 'Crédito aprobado para Carlos M.', sub: 'Hace 5 minutos en Medellín' },
+        { title: 'Nuevo desembolso realizado', sub: 'Hace 12 minutos en Cali' },
+        { title: 'Simulación exitosa por $5.000.000', sub: 'Hace un momento en Barranquilla' },
+        { title: 'Andrea G. solicitó información', sub: 'Hace 8 minutos en Bucaramanga' }
+    ];
+
+    const showSocialProof = () => {
+        const ev = fakeEvents[Math.floor(Math.random() * fakeEvents.length)];
+        spTitle.textContent = ev.title;
+        spSubtitle.textContent = ev.sub;
+        socialProof.classList.add('active');
+        setTimeout(() => socialProof.classList.remove('active'), 6000);
+    };
+
+    setTimeout(() => {
+        showSocialProof();
+        setInterval(showSocialProof, 120000);
+    }, 30000);
+
     // Track Visit
     trackEvent('visita', { path: window.location.pathname });
+
+    // Modal Logic
+    btnContact.onclick = (e) => {
+        e.preventDefault();
+        trackEvent('click_solicitar_abrir_modal');
+        leadModal.style.display = 'flex';
+    };
+
+    if(closeModal) {
+        closeModal.onclick = () => leadModal.style.display = 'none';
+    }
+    window.onclick = (e) => { if (e.target == leadModal) leadModal.style.display = 'none'; };
+
+    formLead.onsubmit = async (e) => {
+        e.preventDefault();
+        const name = leadName.value;
+        const phone = leadPhone.value;
+        
+        const principal = amountInput.value.replace(/\./g, '');
+        const installments = installmentsSelect.value;
+        const frequency = frequencySelect.value;
+
+        await trackEvent('lead_captured', { name, phone, principal, installments, frequency });
+
+        const message = encodeURIComponent(`¡Hola! Mi nombre es ${name}. Vi tu página web y me interesa un crédito de $${parseInt(principal).toLocaleString('es-CO')} en ${installments} cuotas ${frequency}. ¿Me podrías asesorar?`);
+        
+        window.open(`https://wa.me/573158572338?text=${message}`, '_blank');
+        leadModal.style.display = 'none';
+    };
+
+    // PDF Generation
+    btnPdf.onclick = () => {
+        trackEvent('click_ver_pdf_plan_pagos');
+        
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const amount = amountInput.value;
+        const installmentsNum = parseInt(installmentsSelect.value);
+        const frequency = frequencySelect.value;
+        const quotaValue = resInstallment.textContent;
+        const totalValue = resTotal.textContent;
+
+        // Estilo del PDF
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(13, 110, 253);
+        doc.text("PRÉSTAMOS PRO", 20, 20);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.setFont("helvetica", "normal");
+        doc.text("Plan de Pagos Sugerido (Informativo)", 20, 27);
+        doc.text(`Fecha de Generación: ${new Date().toLocaleString()}`, 20, 32);
+        
+        doc.line(20, 36, 190, 36);
+        
+        // Resumen
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.setFont("helvetica", "bold");
+        doc.text("RESUMEN DE TU CRÉDITO", 20, 45);
+        
+        const summaryData = [
+            ["Monto", `$ ${amount}`],
+            ["Cuotas", `${installmentsNum}`],
+            ["Frecuencia", frequency.toUpperCase()],
+            ["Valor Cuota", quotaValue],
+            ["Total a Pagar", totalValue]
+        ];
+
+        doc.autoTable({
+            startY: 48,
+            body: summaryData,
+            theme: 'plain',
+            styles: { fontSize: 10, cellPadding: 1 },
+            columnStyles: { 0: { fontStyle: 'bold', width: 40 } }
+        });
+
+        // Cronograma de Pagos
+        doc.setFont("helvetica", "bold");
+        doc.text("CRONOGRAMA DE PAGOS ESTIMADO", 20, doc.lastAutoTable.finalY + 15);
+        
+        const tableBody = [];
+        let currentDate = new Date();
+        
+        for (let i = 1; i <= installmentsNum; i++) {
+            // Calcular fecha según frecuencia
+            if (frequency === 'diario') currentDate.setDate(currentDate.getDate() + 1);
+            else if (frequency === 'semanal') currentDate.setDate(currentDate.getDate() + 7);
+            else if (frequency === 'quincenal') currentDate.setDate(currentDate.getDate() + 15);
+            else if (frequency === 'mensual') currentDate.setMonth(currentDate.getMonth() + 1);
+
+            tableBody.push([
+                i,
+                currentDate.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                quotaValue
+            ]);
+        }
+
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 20,
+            head: [['N° Cuota', 'Fecha de Pago', 'Monto de Cuota']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { fillColor: [13, 110, 253], halign: 'center' },
+            columnStyles: { 
+                0: { halign: 'center' }, 
+                1: { halign: 'center' }, 
+                2: { halign: 'right' } 
+            }
+        });
+
+        doc.setFontSize(9);
+        doc.setTextColor(150);
+        doc.text("* Este documento es una proyección automática y está sujeto a verificación crediticia.", 20, doc.lastAutoTable.finalY + 15);
+        doc.text("* Los pagos deben realizarse en los canales autorizados informados por WhatsApp.", 20, doc.lastAutoTable.finalY + 20);
+        
+        // Abrir en nueva ventana en lugar de descargar
+        const blobUrl = doc.output('bloburl');
+        window.open(blobUrl, '_blank');
+    };
 
     // Track Tab Visibility
     document.addEventListener('visibilitychange', () => {
@@ -107,16 +290,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Track Heatmap/Click tracking on Simulator
+    // Track Heatmap
     amountInput.addEventListener('click', () => trackEvent('click_input_monto'));
     amountRange.addEventListener('click', () => trackEvent('click_slider_monto'));
     installmentsSelect.addEventListener('click', () => trackEvent('click_select_cuotas'));
     frequencySelect.addEventListener('click', () => trackEvent('click_select_frecuencia'));
 
     // Track Time on Page
-    const startTime = Date.now();
     window.addEventListener('beforeunload', () => {
-        const timeSpent = Math.round((Date.now() - startTime) / 1000);
+        const timeSpent = Math.round((performance.now() - startTime) / 1000);
         const blob = new Blob([JSON.stringify({ 
             evento: 'tiempo_permanencia', 
             data: { segundos: timeSpent, visitorId: localStorage.getItem('loan_visitor_id'), hardware: hardwareInfo } 
@@ -137,15 +319,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         resInstallment.textContent = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(installmentValue);
         resTotal.textContent = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(total);
         
-        const message = encodeURIComponent(`¡Hola! Vi tu página web y me interesa un crédito de $${principal.toLocaleString('es-CO')} en ${installments} cuotas ${frequency}. ¿Me podrías asesorar?`);
-        
-        // Track Simulation (Debounced or on change)
         trackEvent('simulacion', { principal, installments, frequency });
-
-        btnContact.onclick = () => {
-            trackEvent('click_solicitar', { principal, installments, frequency });
-            window.open(`https://wa.me/573158572338?text=${message}`, '_blank');
-        };
     };
 
     // Sync Slider and Input

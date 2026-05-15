@@ -6,6 +6,15 @@ const flash = require('connect-flash');
 // const morgan = require('morgan'); // Comentado para evitar errores de instalación
 
 // Inicializar App
+const rateLimit = require('express-rate-limit');
+
+// Limitador de seguridad para la analítica (Evita spam en la base de datos)
+const analyticsLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 50, // Limita cada IP a 50 peticiones por ventana
+    message: 'Demasiadas peticiones desde esta IP, por favor intente más tarde.'
+});
+
 const app = express();
 
 // Confiar en el proxy para obtener la IP real del cliente (necesario en Dockploy/Docker/Nginx)
@@ -48,7 +57,7 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 6. Analytics API & Log (Debe ir antes que el static)
-app.use('/promocion', require('./routes/analytics'));
+app.use('/promocion', analyticsLimiter, require('./routes/analytics'));
 app.use('/promocion', express.static(path.join(__dirname, 'landing')));
 
 

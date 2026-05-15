@@ -192,13 +192,67 @@
                             <h4 id="resTotal">$ 0</h4>
                         </div>
                     </div>
-                    <button class="btn-primary w-100" id="btnContact">
-                        Solicitar Crédito Ahora <i class="bi bi-whatsapp ms-2"></i>
-                    </button>
+                    <div class="btn-group-custom">
+                        <button class="btn-primary w-100" id="btnContact">
+                            Solicitar Crédito <i class="bi bi-whatsapp ms-1"></i>
+                        </button>
+                        <button class="btn-pdf-outline" id="btnPdf" title="Ver Plan de Pagos">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Social Proof Container -->
+    <div id="socialProof" class="social-proof">
+        <div class="sp-icon"><i class="bi bi-person-check"></i></div>
+        <div class="sp-content">
+            <strong id="spTitle">Alguien acaba de solicitar un préstamo</strong>
+            <span id="spSubtitle">Hace un momento en Bogotá</span>
+        </div>
+    </div>
+
+    <!-- Modal Lead Capture -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Preguntas <span>Frecuentes</span></h2>
+                <p>Todo lo que necesitas saber antes de solicitar tu crédito.</p>
+            </div>
+            <div class="faq-grid">
+                <div class="faq-item" data-aos="fade-up">
+                    <div class="faq-question">¿Cuánto tiempo tardan en desembolsar? <i class="bi bi-chevron-down"></i></div>
+                    <div class="faq-answer">Una vez aprobada tu solicitud, el desembolso se realiza en un plazo máximo de 24 horas hábiles a tu cuenta bancaria.</div>
+                </div>
+                <div class="faq-item" data-aos="fade-up">
+                    <div class="faq-question">¿Qué requisitos mínimos piden? <i class="bi bi-chevron-down"></i></div>
+                    <div class="faq-answer">Solo necesitas ser mayor de edad, tener cédula colombiana vigente y un número de celular activo con WhatsApp.</div>
+                </div>
+                <div class="faq-item" data-aos="fade-up">
+                    <div class="faq-question">¿Puedo pagar mi crédito antes de tiempo? <i class="bi bi-chevron-down"></i></div>
+                    <div class="faq-answer">¡Claro que sí! Puedes realizar abonos a capital o liquidar tu deuda en cualquier momento sin penalizaciones adicionales.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Lead Capture -->
+    <div class="modal-overlay" id="leadModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h3>🚀 ¡Casi listo!</h3>
+                <p>Déjanos tus datos para agilizar tu desembolso en el chat.</p>
+            </div>
+            <form class="modal-form" id="formLead">
+                <input type="text" id="leadName" placeholder="Tu Nombre Completo" required>
+                <input type="tel" id="leadPhone" placeholder="Número de Celular" maxlength="10" minlength="10" pattern="\d{10}" title="Debe tener exactamente 10 números" required>
+                <button type="submit" class="btn-primary w-100">Ir al WhatsApp</button>
+            </form>
+        </div>
+    </div>
 
     <footer>
         <div class="container">
@@ -237,6 +291,8 @@
     </footer>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="script.js"></script>
 </body>
 
