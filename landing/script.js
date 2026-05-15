@@ -159,31 +159,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         trackEvent('rendimiento_carga', { milisegundos: loadTime });
     };
 
-    // Social Proof Logic
+    // Social Proof Logic (Real Data)
     const socialProof = document.getElementById('socialProof');
     const spTitle = document.getElementById('spTitle');
     const spSubtitle = document.getElementById('spSubtitle');
     
-    const fakeEvents = [
-        { title: 'Préstamo solicitado por $1.500.000', sub: 'Hace 2 minutos en Bogotá' },
-        { title: 'Crédito aprobado para Carlos M.', sub: 'Hace 5 minutos en Medellín' },
-        { title: 'Nuevo desembolso realizado', sub: 'Hace 12 minutos en Cali' },
-        { title: 'Simulación exitosa por $5.000.000', sub: 'Hace un momento en Barranquilla' },
-        { title: 'Andrea G. solicitó información', sub: 'Hace 8 minutos en Bucaramanga' }
-    ];
+    let realEvents = [];
+
+    const fetchSocialProof = async () => {
+        try {
+            const res = await fetch('/promocion/social-proof');
+            realEvents = await res.json();
+        } catch (e) {
+            console.log('Social Proof Error:', e);
+        }
+    };
 
     const showSocialProof = () => {
-        const ev = fakeEvents[Math.floor(Math.random() * fakeEvents.length)];
-        spTitle.textContent = ev.title;
-        spSubtitle.textContent = ev.sub;
+        if (!socialProof) return;
+        
+        let title, sub;
+        if (realEvents.length > 0) {
+            const ev = realEvents[Math.floor(Math.random() * realEvents.length)];
+            const location = ev.ciudad ? `en ${ev.ciudad}` : "en Colombia";
+            
+            if (ev.evento === 'lead_captured') {
+                title = "🚀 ¡Nuevo Lead Capturado!";
+                sub = `${location} • Solicitó asesoría`;
+            } else {
+                title = "💰 Simulación realizada";
+                sub = `${location} por $${parseInt(ev.monto || 0).toLocaleString()}`;
+            }
+        } else {
+            const fakes = [
+                { t: 'Préstamo solicitado por $1.500.000', s: 'Hace 2 min en Bogotá' },
+                { t: 'Crédito aprobado para Carlos M.', s: 'Hace 5 min en Medellín' },
+                { t: 'Nuevo desembolso realizado', s: 'Hace 12 min en Cali' }
+            ];
+            const ev = fakes[Math.floor(Math.random() * fakes.length)];
+            title = ev.t;
+            sub = ev.s;
+        }
+
+        spTitle.textContent = title;
+        spSubtitle.textContent = sub;
         socialProof.classList.add('active');
         setTimeout(() => socialProof.classList.remove('active'), 6000);
     };
 
+    fetchSocialProof();
+    setInterval(fetchSocialProof, 300000); // Refresh data every 5min
+
     setTimeout(() => {
         showSocialProof();
-        setInterval(showSocialProof, 120000);
-    }, 30000);
+        setInterval(showSocialProof, 20000); // Show popup every 20s
+    }, 8000);
 
     // Track Visit
     trackEvent('visita', { path: window.location.pathname });
@@ -353,13 +383,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Track Scroll Depth
+    let scrollLogged25 = false;
     let scrollLogged50 = false;
+    let scrollLogged75 = false;
     let scrollLogged90 = false;
     window.addEventListener('scroll', () => {
         const scrolled = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight;
+        if (scrolled > 0.25 && !scrollLogged25) {
+            trackEvent('scroll_25');
+            scrollLogged25 = true;
+        }
         if (scrolled > 0.5 && !scrollLogged50) {
             trackEvent('scroll_50');
             scrollLogged50 = true;
+        }
+        if (scrolled > 0.75 && !scrollLogged75) {
+            trackEvent('scroll_75');
+            scrollLogged75 = true;
         }
         if (scrolled > 0.9 && !scrollLogged90) {
             trackEvent('scroll_90');
