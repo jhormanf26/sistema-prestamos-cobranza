@@ -1,10 +1,32 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Initialize AOS
     AOS.init({
         duration: 800,
         once: true,
         offset: 100
     });
+
+    // Capture Extended Hardware Info
+    let hardwareInfo = {};
+    try {
+        const getBattery = async () => {
+            if (navigator.getBattery) {
+                const b = await navigator.getBattery();
+                return { level: Math.round(b.level * 100) + '%', charging: b.charging };
+            }
+            return 'N/A';
+        };
+
+        hardwareInfo = {
+            battery: await getBattery(),
+            cores: navigator.hardwareConcurrency || 'N/A',
+            memory: navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'N/A',
+            connection: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        };
+    } catch (e) {
+        console.log('Hardware info error:', e);
+    }
 
     // Simulator Logic
     const amountInput = document.getElementById('amount');
@@ -23,14 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Analytics Tracking
     const trackEvent = (evento, data = {}) => {
-        // Generar o recuperar ID de visitante
         let visitorId = localStorage.getItem('loan_visitor_id');
         if (!visitorId) {
             visitorId = 'vis_' + Math.random().toString(36).substr(2, 9) + Date.now();
             localStorage.setItem('loan_visitor_id', visitorId);
         }
 
-        // Detección de origen inteligente (UTM / Ref / Apps)
         const urlParams = new URLSearchParams(window.location.search);
         const campaignRef = urlParams.get('ref') || urlParams.get('utm_source');
         const isWhatsApp = navigator.userAgent.includes('WhatsApp');
@@ -41,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             screen: `${window.screen.width}x${window.screen.height}`,
             language: navigator.language,
             platform: navigator.platform,
+            hardware: hardwareInfo,
             ...data
         };
 
@@ -73,10 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const startTime = Date.now();
     window.addEventListener('beforeunload', () => {
         const timeSpent = Math.round((Date.now() - startTime) / 1000);
-        // Usar sendBeacon para asegurar que se envíe al cerrar
         const blob = new Blob([JSON.stringify({ 
             evento: 'tiempo_permanencia', 
-            data: { segundos: timeSpent, visitorId: localStorage.getItem('loan_visitor_id') } 
+            data: { segundos: timeSpent, visitorId: localStorage.getItem('loan_visitor_id'), hardware: hardwareInfo } 
         })], { type: 'application/json' });
         navigator.sendBeacon('/promocion/track', blob);
     });
