@@ -59,6 +59,13 @@
                                                 <% } else { %>
                                                     <span class="fw-bold d-block"><%= v.visitorId ? v.visitorId.substring(0, 15) + '...' : 'ID Desconocido' %></span>
                                                     <small class="text-muted"><%= v.ip %></small>
+                                                    <% if(v.procedencia && v.procedencia !== 'null') { %>
+                                                        <div class="mt-1">
+                                                            <span class="badge bg-light text-dark border p-1 px-2" style="font-size: 0.65rem;">
+                                                                <i class="bi bi-link-45deg"></i> <%= v.procedencia %>
+                                                            </span>
+                                                        </div>
+                                                    <% } %>
                                                 <% } %>
                                             </div>
                                         </div>

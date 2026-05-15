@@ -23,6 +23,9 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 17. **[HECHO]** Implementar nuevos gráficos de análisis de rentabilidad en el Dashboard (Capital vs Ganancias Reales).
 18. **[HECHO]** Crear Landing Page promocional independiente en la carpeta `/landing` con diseño premium y simulador interactivo.
 19. **[HECHO]** Implementar formateo dinámico con separadores de miles en el simulador de la landing page.
+20. **[HECHO]** Implementar página de error 429 (Rate Limit) premium con diseño Glassmorphism y contador de tiempo real.
+21. **[HECHO]** Refactorizar la aplicación de `analyticsLimiter` para excluir rutas administrativas (`/promocion/detalle`) y evitar bloqueos al usuario.
+22. **[HECHO]** Aumentar el límite de peticiones de 50 a 100 en la ventana de 15 minutos para mayor estabilidad.
 
 ## Decisiones de Diseño
 - Se utiliza `Intl.NumberFormat` con el locale `es-CO` para garantizar la consistencia según el estándar colombiano.

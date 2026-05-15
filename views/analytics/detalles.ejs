@@ -30,6 +30,7 @@
                             <tr>
                                 <th class="ps-4">Fecha / Hora</th>
                                 <th>Evento</th>
+                                <th>Procedencia</th>
                                 <th>Ubicación (Ciudad/País)</th>
                                 <th>Dispositivo / Conexión</th>
                                 <th>IP</th>
@@ -67,6 +68,25 @@
                                             <span class="badge bg-warning bg-opacity-10 text-warning text-dark">Duro <%= d.segundos %>s</span>
                                         <% } else { %>
                                             <span class="badge bg-secondary"><%= e.evento %></span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if(e.procedencia && e.procedencia !== 'null') { %>
+                                            <% if(e.procedencia.toLowerCase().includes('whatsapp')) { %>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                                                    <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                                                </span>
+                                            <% } else if(e.procedencia.toLowerCase().includes('facebook')) { %>
+                                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                                                    <i class="bi bi-facebook me-1"></i> Facebook
+                                                </span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary border">
+                                                    <i class="bi bi-link-45deg me-1"></i> <%= e.procedencia %>
+                                                </span>
+                                            <% } %>
+                                        <% } else { %>
+                                            <span class="text-muted small">Directo</span>
                                         <% } %>
                                     </td>
                                     <td>
