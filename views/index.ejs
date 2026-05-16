@@ -149,9 +149,9 @@
                                         <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
                                             <span>📅 Vencimientos (<%= diasVencimiento %> días)</span>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="/?diasVencimiento=7" class="btn btn-outline-warning text-dark <%= diasVencimiento == 7 ? 'active' : '' %>">7d</a>
-                                                <a href="/?diasVencimiento=15" class="btn btn-outline-warning text-dark <%= diasVencimiento == 15 ? 'active' : '' %>">15d</a>
-                                                <a href="/?diasVencimiento=30" class="btn btn-outline-warning text-dark <%= diasVencimiento == 30 ? 'active' : '' %>">30d</a>
+                                                <button onclick="cambiarPeriodo('diasVencimiento', 7)" class="btn btn-outline-warning text-dark <%= diasVencimiento == 7 ? 'active' : '' %>">7d</button>
+                                                <button onclick="cambiarPeriodo('diasVencimiento', 15)" class="btn btn-outline-warning text-dark <%= diasVencimiento == 15 ? 'active' : '' %>">15d</button>
+                                                <button onclick="cambiarPeriodo('diasVencimiento', 30)" class="btn btn-outline-warning text-dark <%= diasVencimiento == 30 ? 'active' : '' %>">30d</button>
                                             </div>
                                         </div>
                                         <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
@@ -185,13 +185,42 @@
                                 <div class="col-lg-5">
                                     <div class="card card-box shadow-sm border-0 h-100">
                                         <div class="card-header bg-white fw-bold border-0">Distribución de Gastos</div>
-                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartGastosCat"></canvas></div></div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                <% if(graficos.gastosCat && graficos.gastosCat.length > 0) { %>
+                                                    <canvas id="chartGastosCat"></canvas>
+                                                <% } else { %>
+                                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                                                        <i class="bi bi-pie-chart fs-1 mb-2"></i>
+                                                        <p class="small fw-bold">No hay gastos por categoría</p>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
                                     <div class="card card-box shadow-sm border-0 h-100">
-                                        <div class="card-header bg-white fw-bold border-0">Evolución de Gastos (Últimos 7 días)</div>
-                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartGastosDias"></canvas></div></div>
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between align-items-center">
+                                            <span>Evolución de Gastos (Últimos <%= diasGastos %> días)</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <button onclick="cambiarPeriodo('diasGastos', 7)" class="btn btn-outline-danger <%= diasGastos == 7 ? 'active' : '' %>">7d</button>
+                                                <button onclick="cambiarPeriodo('diasGastos', 15)" class="btn btn-outline-danger <%= diasGastos == 15 ? 'active' : '' %>">15d</button>
+                                                <button onclick="cambiarPeriodo('diasGastos', 30)" class="btn btn-outline-danger <%= diasGastos == 30 ? 'active' : '' %>">30d</button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                <% if(graficos.gastosDias && graficos.gastosDias.length > 0) { %>
+                                                    <canvas id="chartGastosDias"></canvas>
+                                                <% } else { %>
+                                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                                                        <i class="bi bi-graph-up fs-1 mb-2"></i>
+                                                        <p class="small fw-bold">No hay registros para este periodo</p>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -199,13 +228,35 @@
                                 <div class="col-lg-8">
                                     <div class="card card-box shadow-sm border-0 h-100">
                                         <div class="card-header bg-white fw-bold border-0">Flujo de Caja: Ingresos vs Gastos (Últimos 6 meses)</div>
-                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartFlujoCaja"></canvas></div></div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                <% if(graficos.flujoCaja && graficos.flujoCaja.length > 0) { %>
+                                                    <canvas id="chartFlujoCaja"></canvas>
+                                                <% } else { %>
+                                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                                                        <i class="bi bi-arrow-left-right fs-1 mb-2"></i>
+                                                        <p class="small fw-bold">Sin movimientos de caja</p>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
                                     <div class="card card-box shadow-sm border-0 h-100">
                                         <div class="card-header bg-white fw-bold border-0">Gastos por Registrador</div>
-                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartGastosUsuario"></canvas></div></div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                <% if(graficos.gastosUsuario && graficos.gastosUsuario.length > 0) { %>
+                                                    <canvas id="chartGastosUsuario"></canvas>
+                                                <% } else { %>
+                                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                                                        <i class="bi bi-people fs-1 mb-2"></i>
+                                                        <p class="small fw-bold">No hay gastos por usuario</p>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -320,9 +371,23 @@
                                             <div class="row mb-4">
                                                 <div class="col-lg-8">
                                                     <div class="p-3 border rounded-3 bg-white h-100">
-                                                        <h6 class="fw-bold mb-3"><i class="bi bi-graph-up me-2 text-primary"></i>Tendencia de Actividad (Últimos 7 Días)</h6>
+                                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                                            <h6 class="fw-bold mb-0"><i class="bi bi-graph-up me-2 text-primary"></i>Tendencia de Actividad (Últimos <%= diasMarketing %> Días)</h6>
+                                                            <div class="btn-group btn-group-sm">
+                                                                <button onclick="cambiarPeriodo('diasMarketing', 7)" class="btn btn-outline-primary <%= diasMarketing == 7 ? 'active' : '' %>">7d</button>
+                                                                <button onclick="cambiarPeriodo('diasMarketing', 15)" class="btn btn-outline-primary <%= diasMarketing == 15 ? 'active' : '' %>">15d</button>
+                                                                <button onclick="cambiarPeriodo('diasMarketing', 30)" class="btn btn-outline-primary <%= diasMarketing == 30 ? 'active' : '' %>">30d</button>
+                                                            </div>
+                                                        </div>
                                                         <div style="height: 250px;">
-                                                            <canvas id="chartAnalytics"></canvas>
+                                                            <% if(analytics.historial && analytics.historial.length > 0) { %>
+                                                                <canvas id="chartAnalytics"></canvas>
+                                                            <% } else { %>
+                                                                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                                                                    <i class="bi bi-activity fs-1 mb-2"></i>
+                                                                    <p class="small fw-bold">Aún no hay actividad registrada</p>
+                                                                </div>
+                                                            <% } %>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -652,5 +717,42 @@
             if (clockEl) clockEl.innerText = timeStr;
         }
         setInterval(actualizarReloj, 60000);
+
+        function cambiarPeriodo(param, valor) {
+            const url = new URL(window.location.href);
+            url.searchParams.set(param, valor);
+            
+            // Persistir la pestaña activa
+            const activeBtn = document.querySelector('.btn-dash.active');
+            if (activeBtn) {
+                const target = activeBtn.getAttribute('data-bs-target');
+                url.searchParams.set('tab', target);
+            }
+            
+            window.location.href = url.toString();
+        }
+
+        // Restaurar pestaña activa al cargar
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const tabTarget = params.get('tab');
+            if (tabTarget) {
+                const tabBtn = document.querySelector(`[data-bs-target="${tabTarget}"]`);
+                if (tabBtn) {
+                    const tabTrigger = new bootstrap.Tab(tabBtn);
+                    tabTrigger.show();
+                }
+            }
+
+            // Escuchar cambios de pestaña para actualizar la URL sin recargar
+            document.querySelectorAll('.btn-dash').forEach(btn => {
+                btn.addEventListener('shown.bs.tab', (e) => {
+                    const target = e.target.getAttribute('data-bs-target');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', target);
+                    window.history.replaceState({}, '', url.toString());
+                });
+            });
+        });
     </script>
 <%- include('partials/footer') %>

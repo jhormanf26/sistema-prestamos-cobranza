@@ -7,52 +7,60 @@ class AnalyticsModel {
         return await db.query(query, [evento, ip, userAgent, JSON.stringify(data)]);
     }
 
-    static async obtenerResumen() {
-        const [visitas] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'visita' AND JSON_EXTRACT(data, '$.isBot') = false");
-        const [clics] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'click_solicitar'");
-        const [leads] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'lead_captured'");
-        const [hoy] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE DATE(created_at) = CURDATE() AND JSON_EXTRACT(data, '$.isBot') = false");
-        const [unicos] = await db.query("SELECT COUNT(DISTINCT JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId'))) as total FROM web_analytics WHERE JSON_EXTRACT(data, '$.isBot') = false");
-        
-        const [historial] = await db.query(`
-            SELECT 
-                DATE(created_at) as fecha,
-                COUNT(CASE WHEN evento = 'visita' THEN 1 END) as visitas,
-                COUNT(CASE WHEN evento = 'click_solicitar' THEN 1 END) as clics,
-                COUNT(CASE WHEN evento = 'lead_captured' THEN 1 END) as leads
-            FROM web_analytics 
-            WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-            AND JSON_EXTRACT(data, '$.isBot') = false
-            GROUP BY DATE(created_at)
-            ORDER BY fecha ASC
-        `);
+    static async obtenerResumen(dias = 7) {
+        try {
+            console.log(`[Analytics] Obteniendo resumen para ${dias} días...`);
+            const [
+                [visitas], [clics], [leads], [hoy], [unicos], [historial], [scroll25], [scroll50], [scroll75], [scroll90]
+            ] = await Promise.all([
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'visita' AND JSON_EXTRACT(data, '$.isBot') = false"),
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'click_solicitar'"),
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'lead_captured'"),
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE DATE(created_at) = CURDATE() AND JSON_EXTRACT(data, '$.isBot') = false"),
+                db.query("SELECT COUNT(DISTINCT JSON_UNQUOTE(JSON_EXTRACT(data, '$.visitorId'))) as total FROM web_analytics WHERE JSON_EXTRACT(data, '$.isBot') = false"),
+                db.query(`
+                    SELECT 
+                        DATE(created_at) as fecha,
+                        COUNT(CASE WHEN evento = 'visita' THEN 1 END) as visitas,
+                        COUNT(CASE WHEN evento = 'click_solicitar' THEN 1 END) as clics,
+                        COUNT(CASE WHEN evento = 'lead_captured' THEN 1 END) as leads
+                    FROM web_analytics 
+                    WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+                    AND JSON_EXTRACT(data, '$.isBot') = false
+                    GROUP BY DATE(created_at)
+                    ORDER BY fecha ASC
+                `, [dias]),
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_25'"),
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_50'"),
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_75'"),
+                db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_90'")
+            ]);
 
-        // Calcular Conversion Rate (Leads / Visitas Únicas)
-        const totalV = unicos[0].total || 1;
-        const totalL = leads[0].total || 0;
-        const cr = ((totalL / totalV) * 100).toFixed(2);
+            const totalV = (unicos && unicos.length > 0) ? (unicos[0].total || 1) : 1;
+            const totalL = (leads && leads.length > 0) ? (leads[0].total || 0) : 0;
+            const cr = ((totalL / totalV) * 100).toFixed(2);
 
-        // Mapa de Calor (Scroll Depth)
-        const [scroll25] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_25'");
-        const [scroll50] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_50'");
-        const [scroll75] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_75'");
-        const [scroll90] = await db.query("SELECT COUNT(*) as total FROM web_analytics WHERE evento = 'scroll_90'");
+            console.log(`[Analytics] Resumen procesado. Conversion Rate: ${cr}%`);
 
-        return {
-            totalVisitas: visitas[0].total || 0,
-            totalClics: clics[0].total || 0,
-            totalLeads: totalL,
-            conversionRate: cr,
-            eventosHoy: hoy[0].total || 0,
-            visitantesUnicos: unicos[0].total || 0,
-            historial: historial || [],
-            scrollDepth: {
-                v25: scroll25[0].total || 0,
-                v50: scroll50[0].total || 0,
-                v75: scroll75[0].total || 0,
-                v90: scroll90[0].total || 0
-            }
-        };
+            return {
+                totalVisitas: (visitas && visitas.length > 0) ? (visitas[0].total || 0) : 0,
+                totalClics: (clics && clics.length > 0) ? (clics[0].total || 0) : 0,
+                totalLeads: totalL,
+                conversionRate: cr,
+                eventosHoy: (hoy && hoy.length > 0) ? (hoy[0].total || 0) : 0,
+                visitantesUnicos: (unicos && unicos.length > 0) ? (unicos[0].total || 0) : 0,
+                historial: historial || [],
+                scrollDepth: {
+                    v25: (scroll25 && scroll25.length > 0) ? (scroll25[0].total || 0) : 0,
+                    v50: (scroll50 && scroll50.length > 0) ? (scroll50[0].total || 0) : 0,
+                    v75: (scroll75 && scroll75.length > 0) ? (scroll75[0].total || 0) : 0,
+                    v90: (scroll90 && scroll90.length > 0) ? (scroll90[0].total || 0) : 0
+                }
+            };
+        } catch (error) {
+            console.error("[Analytics] Error en obtenerResumen:", error);
+            throw error;
+        }
     }
 
     static async obtenerEventosSocialProof() {
