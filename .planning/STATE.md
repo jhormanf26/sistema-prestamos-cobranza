@@ -26,6 +26,9 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 20. **[HECHO]** Implementar página de error 429 (Rate Limit) premium con diseño Glassmorphism y contador de tiempo real.
 21. **[HECHO]** Refactorizar la aplicación de `analyticsLimiter` para excluir rutas administrativas (`/promocion/detalle`) y evitar bloqueos al usuario.
 22. **[HECHO]** Aumentar el límite de peticiones de 50 a 100 en la ventana de 15 minutos para mayor estabilidad.
+23. **[HECHO]** Implementar selectores de periodo (7, 15, 30 días) en el gráfico de "Evolución de Gastos" y mejorar la persistencia de filtros en el dashboard.
+24. **[HECHO]** Implementar "Empty States" visuales (iconos y mensajes) en todos los gráficos del dashboard para evitar espacios en blanco cuando no hay datos.
+25. **[HECHO]** Implementar selectores de periodo (7, 15, 30 días) en el gráfico de "Tendencia de Actividad" (Marketing).
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 

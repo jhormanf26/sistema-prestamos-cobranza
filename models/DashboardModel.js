@@ -13,11 +13,11 @@ class DashboardModel {
         } catch (error) { throw error; }
     }
 
-    // 8. Gastos últimos 7 días
-    static async obtenerGastosUltimosDias() {
+    // 8. Gastos últimos N días
+    static async obtenerGastosUltimosDias(dias = 7) {
         try {
-            const query = "SELECT DATE(fecha_gasto) as fecha, SUM(monto) as total FROM gastos WHERE fecha_gasto >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(fecha_gasto) ORDER BY fecha ASC";
-            const [rows] = await db.query(query);
+            const query = "SELECT DATE(fecha_gasto) as fecha, SUM(monto) as total FROM gastos WHERE fecha_gasto >= DATE_SUB(CURDATE(), INTERVAL ? DAY) GROUP BY DATE(fecha_gasto) ORDER BY fecha ASC";
+            const [rows] = await db.query(query, [dias]);
             return rows;
         } catch (error) { throw error; }
     }
