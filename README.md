@@ -14,8 +14,12 @@
 ## 📸 Interfaz Visual
 
 <div align="center">
+  <div style="flex: 1;">
+      <h3>Login</h3>
+      <img width="1917" height="956" alt="image" src="https://github.com/user-attachments/assets/eeecba52-72b2-40ee-b40e-1aa5557ba396" />
+    </div>
   <h3>Panel de Control Principal</h3>
-  <img src="dashboard_mockup_1778958017653.png" width="800" alt="Dashboard Principal">
+  <img width="1919" height="958" alt="image" src="https://github.com/user-attachments/assets/8141d8c4-f73c-49b5-87f1-6d82b0625b83" />
   <p><i>Dashboard interactivo con métricas financieras y estados de cartera en tiempo real.</i></p>
 
   <br>
@@ -23,14 +27,14 @@
   <div style="display: flex; gap: 10px; justify-content: center;">
     <div style="flex: 1;">
       <h3>Analítica de Marketing</h3>
-      <img src="marketing_analytics_mockup_1778958031417.png" width="400" alt="Analítica">
+      <img width="1527" height="885" alt="image" src="https://github.com/user-attachments/assets/92cbd4d6-c051-4d4d-9e12-ca1394e76486" />
     </div>
     <div style="flex: 1;">
       <h3>Landing Page Optimizada</h3>
-      <img src="landing_page_mockup_1778958044864.png" width="400" alt="Landing Page">
+      <img width="1918" height="945" alt="image" src="https://github.com/user-attachments/assets/a767628b-803f-4c80-857e-2ac2f6265873" />
     </div>
   </div>
-  <p><i>Seguimiento del embudo de conversión y experiencia de usuario optimizada para ventas.</i></p>
+  <p><i>Seguimiento del embudo de conversión y experiencia de usuario optimizada para ventas. url: https://prestamos.desarollo.site/promocion/ </i></p>
 </div>
 
 ---
