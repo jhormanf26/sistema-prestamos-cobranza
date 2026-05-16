@@ -11,6 +11,30 @@
 
 ---
 
+## 📸 Interfaz Visual
+
+<div align="center">
+  <h3>Panel de Control Principal</h3>
+  <img src="dashboard_mockup_1778958017653.png" width="800" alt="Dashboard Principal">
+  <p><i>Dashboard interactivo con métricas financieras y estados de cartera en tiempo real.</i></p>
+
+  <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Analítica de Marketing</h3>
+      <img src="marketing_analytics_mockup_1778958031417.png" width="400" alt="Analítica">
+    </div>
+    <div style="flex: 1;">
+      <h3>Landing Page Optimizada</h3>
+      <img src="landing_page_mockup_1778958044864.png" width="400" alt="Landing Page">
+    </div>
+  </div>
+  <p><i>Seguimiento del embudo de conversión y experiencia de usuario optimizada para ventas.</i></p>
+</div>
+
+---
+
 ## 🚀 Módulos y Funcionalidades
 
 ### 1. 🏦 Gestión de Préstamos y Cobros
