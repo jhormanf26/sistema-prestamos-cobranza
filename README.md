@@ -87,6 +87,11 @@ El sistema está optimizado para funcionar como una aplicación nativa:
     DB_USER=root
     DB_PASS=tu_clave
     DB_NAME=sistema_prestamos
+    
+    EMAIL_USER=tu_correo@gmail.com
+    EMAIL_PASS=tu_password_de_aplicacion
+    EMAIL_HOST=smtp.gmail.com
+    EMAIL_PORT=465
     ```
 4.  **Base de Datos**:
     Importar `bk_basededatos.sql` en MySQL.
