@@ -75,6 +75,8 @@
                                                                     <option value="semanal">Semanal</option>
                                                                     <option value="quincenal">Quincenal</option>
                                                                     <option value="mensual" selected>Mensual</option>
+                                                                    <option value="bimensual">Bimensual</option>
+                                                                    <option value="trimensual">Trimensual</option>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -221,6 +223,8 @@
                         else if (f === 'semanal') factor = 7/30;
                         else if (f === 'quincenal') factor = 0.5;
                         else if (f === 'mensual') factor = 1;
+                        else if (f === 'bimensual') factor = 2;
+                        else if (f === 'trimensual') factor = 3;
 
                         const tasaTotal = i * (c * factor);
                         const interesGanado = m * (tasaTotal / 100);
@@ -253,6 +257,8 @@
                             else if (f === 'semanal') fechaF.setDate(fechaF.getDate() + (c * 7));
                             else if (f === 'quincenal') fechaF.setDate(fechaF.getDate() + (c * 15));
                             else if (f === 'mensual') fechaF.setMonth(fechaF.getMonth() + c);
+                            else if (f === 'bimensual') fechaF.setMonth(fechaF.getMonth() + (c * 2));
+                            else if (f === 'trimensual') fechaF.setMonth(fechaF.getMonth() + (c * 3));
 
                             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
                             simFechaFin.innerText = fechaF.toLocaleDateString('es-CO', opciones);

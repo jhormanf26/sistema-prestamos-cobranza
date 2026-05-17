@@ -342,6 +342,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             else if (frequency === 'semanal') currentDate.setDate(currentDate.getDate() + 7);
             else if (frequency === 'quincenal') currentDate.setDate(currentDate.getDate() + 15);
             else if (frequency === 'mensual') currentDate.setMonth(currentDate.getMonth() + 1);
+            else if (frequency === 'bimensual') currentDate.setMonth(currentDate.getMonth() + 2);
+            else if (frequency === 'trimensual') currentDate.setMonth(currentDate.getMonth() + 3);
 
             tableBody.push([
                 i,
@@ -429,7 +431,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const frequency = frequencySelect.value;
         
         let monthlyRate = 0.02;
-        const totalInterest = principal * monthlyRate * (installments / (frequency === 'mensual' ? 1 : 4)); 
+        let factor = 1;
+        if (frequency === 'diario') factor = 1/30;
+        else if (frequency === 'semanal') factor = 7/30;
+        else if (frequency === 'quincenal') factor = 0.5;
+        else if (frequency === 'mensual') factor = 1;
+        else if (frequency === 'bimensual') factor = 2;
+        else if (frequency === 'trimensual') factor = 3;
+        
+        const totalInterest = principal * monthlyRate * (installments * factor); 
         const total = principal + totalInterest;
         const installmentValue = total / installments;
 
