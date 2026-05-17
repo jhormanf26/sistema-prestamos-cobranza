@@ -2,7 +2,6 @@ const express = require('express');
 require('dotenv').config(); // Cargar variables de entorno al inicio
 const path = require('path');
 const session = require('express-session');
-const expressLayouts = require('express-ejs-layouts');
 const flash = require('connect-flash');
 const { initCronJobs } = require('./cron/jobs');
 // const morgan = require('morgan'); // Comentado para evitar errores de instalación
