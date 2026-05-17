@@ -91,6 +91,8 @@ const prestamosController = {
             else if (frecuencia === 'semanal') fechaFin.setDate(fechaFin.getDate() + (numCuotas * 7));
             else if (frecuencia === 'quincenal') fechaFin.setDate(fechaFin.getDate() + (numCuotas * 15));
             else if (frecuencia === 'mensual') fechaFin.setMonth(fechaFin.getMonth() + numCuotas);
+            else if (frecuencia === 'bimensual') fechaFin.setMonth(fechaFin.getMonth() + (numCuotas * 2));
+            else if (frecuencia === 'trimensual') fechaFin.setMonth(fechaFin.getMonth() + (numCuotas * 3));
 
             const result = await PrestamoModel.crear({
                 cliente_id, monto_prestado: montoPrestado, tasa_interes: tasaMensual, tasa_mora: tasaMoraMensual,

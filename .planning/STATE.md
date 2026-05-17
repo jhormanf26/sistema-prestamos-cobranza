@@ -29,6 +29,7 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 23. **[HECHO]** Implementar selectores de periodo (7, 15, 30 días) en el gráfico de "Evolución de Gastos" y mejorar la persistencia de filtros en el dashboard.
 24. **[HECHO]** Implementar "Empty States" visuales (iconos y mensajes) en todos los gráficos del dashboard para evitar espacios en blanco cuando no hay datos.
 25. **[HECHO]** Implementar selectores de periodo (7, 15, 30 días) en el gráfico de "Tendencia de Actividad" (Marketing).
+26. **[HECHO]** Implementar nuevas frecuencias "Bimensual" y "Trimensual" para los préstamos (Actualización de ENUM en BD, lógica financiera y Vistas UI).
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 

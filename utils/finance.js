@@ -12,6 +12,10 @@ const finance = {
             nuevaFecha.setDate(nuevaFecha.getDate() + 15);
         } else if (frecuencia === 'mensual') {
             nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
+        } else if (frecuencia === 'bimensual') {
+            nuevaFecha.setMonth(nuevaFecha.getMonth() + 2);
+        } else if (frecuencia === 'trimensual') {
+            nuevaFecha.setMonth(nuevaFecha.getMonth() + 3);
         }
         return nuevaFecha;
     },
@@ -23,6 +27,8 @@ const finance = {
         else if (frecuencia === 'semanal') factor = 7/30;
         else if (frecuencia === 'quincenal') factor = 0.5;
         else if (frecuencia === 'mensual') factor = 1;
+        else if (frecuencia === 'bimensual') factor = 2;
+        else if (frecuencia === 'trimensual') factor = 3;
         
         return tasaMensual * (cuotas * factor);
     },
