@@ -20,7 +20,28 @@ const upload = multer({ storage: storage });
 
 router.use(protegerRuta);
 
-// 2. Mostrar formulario (GET /config/)
+// 2. Mostrar dispositivos
+router.get('/dispositivos', async (req, res) => {
+    try {
+        const db = require('../config/db');
+        const [dispositivos] = await db.query(`
+            SELECT p.id, p.endpoint, p.device_info, p.nombre_dispositivo, p.created_at, p.ultima_conexion, u.nombre_completo 
+            FROM push_subscriptions p 
+            LEFT JOIN usuarios u ON p.usuario_id = u.id 
+            ORDER BY p.ultima_conexion DESC
+        `);
+        res.render('config/dispositivos', {
+            title: 'Dispositivos Registrados',
+            dispositivos,
+            usuario: req.session.usuario
+        });
+    } catch (e) {
+        console.error(e);
+        res.redirect('/config');
+    }
+});
+
+// 3. Mostrar formulario (GET /config/)
 router.get('/', async (req, res) => {
     try {
         const config = await ConfigModel.obtener();
