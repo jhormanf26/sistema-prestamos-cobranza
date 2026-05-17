@@ -671,7 +671,10 @@ CREATE TABLE IF NOT EXISTS `push_subscriptions` (
   `endpoint` text COLLATE utf8mb4_general_ci NOT NULL,
   `p256dh` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `auth` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `device_info` json DEFAULT NULL,
+  `nombre_dispositivo` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ultima_conexion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
