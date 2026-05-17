@@ -102,6 +102,72 @@
                                                             </div>
                                                         </div>
 
+                                                        <% 
+                                                            let mod = {clientes:true, prestamos:true, simulador:true, gastos:true, reportes:true, empenos:true, ahorros:true, cadenas:true, promocion:true};
+                                                            if (config.modulos_activos) {
+                                                                try {
+                                                                    mod = typeof config.modulos_activos === 'string' ? JSON.parse(config.modulos_activos) : config.modulos_activos;
+                                                                } catch(e) {}
+                                                            }
+                                                        %>
+                                                        <h5 class="text-secondary mb-3 mt-4"><i class="bi bi-ui-checks"></i> Módulos Visibles (Menú Lateral)</h5>
+                                                        <div class="row g-3 mb-4">
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_clientes" id="mod_clientes" <%= mod.clientes !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_clientes">Clientes</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_prestamos" id="mod_prestamos" <%= mod.prestamos !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_prestamos">Préstamos</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_simulador" id="mod_simulador" <%= mod.simulador !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_simulador">Calculadora</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_gastos" id="mod_gastos" <%= mod.gastos !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_gastos">Gastos</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_reportes" id="mod_reportes" <%= mod.reportes !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_reportes">Reportes Excel</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_empenos" id="mod_empenos" <%= mod.empenos !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_empenos">Empeños</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_ahorros" id="mod_ahorros" <%= mod.ahorros !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_ahorros">Ahorros</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_cadenas" id="mod_cadenas" <%= mod.cadenas !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_cadenas">Cadenas</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_promocion" id="mod_promocion" <%= mod.promocion !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_promocion">Web Promocional</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
                                                         <hr>
                                                         <div class="d-flex justify-content-end">
                                                             <button type="submit" class="btn btn-primary btn-lg">
