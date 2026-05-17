@@ -121,13 +121,14 @@ CREATE TABLE IF NOT EXISTS `configuracion` (
   `logo` varchar(255) DEFAULT NULL,
   `moneda` varchar(5) DEFAULT '$',
   `interes_global` decimal(10,2) DEFAULT '0.00',
+  `modulos_activos` json DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla sistema_prestamos.configuracion: ~1 rows (aproximadamente)
 DELETE FROM `configuracion`;
-INSERT INTO `configuracion` (`id`, `nombre_empresa`, `ruc`, `direccion`, `telefono`, `email_contacto`, `logo`, `moneda`, `interes_global`) VALUES
-	(1, 'Préstamos Pro', '00000000000', 'Calle Principal 123', '555-0000', 'contacto@empresa.com', 'logo-1775114231208-217650330.png', 'S/', 0.00);
+INSERT INTO `configuracion` (`id`, `nombre_empresa`, `ruc`, `direccion`, `telefono`, `email_contacto`, `logo`, `moneda`, `interes_global`, `modulos_activos`) VALUES
+	(1, 'Préstamos Pro', '00000000000', 'Calle Principal 123', '555-0000', 'contacto@empresa.com', 'logo-1775114231208-217650330.png', 'S/', 0.00, '{"clientes":true, "prestamos":true, "simulador":true, "gastos":true, "reportes":true, "empenos":true, "ahorros":true, "cadenas":true, "promocion":true}');
 
 -- Volcando estructura para tabla sistema_prestamos.cuentas_ahorro
 CREATE TABLE IF NOT EXISTS `cuentas_ahorro` (
@@ -662,6 +663,16 @@ CREATE TABLE IF NOT EXISTS `web_analytics` (
   PRIMARY KEY (`id`),
   KEY `idx_evento` (`evento`),
   KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `push_subscriptions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `usuario_id` int DEFAULT NULL,
+  `endpoint` text COLLATE utf8mb4_general_ci NOT NULL,
+  `p256dh` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `auth` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;

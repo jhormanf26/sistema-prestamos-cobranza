@@ -102,6 +102,72 @@
                                                             </div>
                                                         </div>
 
+                                                        <% 
+                                                            let mod = {clientes:true, prestamos:true, simulador:true, gastos:true, reportes:true, empenos:true, ahorros:true, cadenas:true, promocion:true};
+                                                            if (config.modulos_activos) {
+                                                                try {
+                                                                    mod = typeof config.modulos_activos === 'string' ? JSON.parse(config.modulos_activos) : config.modulos_activos;
+                                                                } catch(e) {}
+                                                            }
+                                                        %>
+                                                        <h5 class="text-secondary mb-3 mt-4"><i class="bi bi-ui-checks"></i> Módulos Visibles (Menú Lateral)</h5>
+                                                        <div class="row g-3 mb-4">
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_clientes" id="mod_clientes" <%= mod.clientes !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_clientes">Clientes</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_prestamos" id="mod_prestamos" <%= mod.prestamos !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_prestamos">Préstamos</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_simulador" id="mod_simulador" <%= mod.simulador !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_simulador">Calculadora</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_gastos" id="mod_gastos" <%= mod.gastos !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_gastos">Gastos</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_reportes" id="mod_reportes" <%= mod.reportes !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_reportes">Reportes Excel</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_empenos" id="mod_empenos" <%= mod.empenos !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_empenos">Empeños</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_ahorros" id="mod_ahorros" <%= mod.ahorros !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_ahorros">Ahorros</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_cadenas" id="mod_cadenas" <%= mod.cadenas !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_cadenas">Cadenas</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_promocion" id="mod_promocion" <%= mod.promocion !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_promocion">Web Promocional</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
                                                         <hr>
                                                         <div class="d-flex justify-content-end">
                                                             <button type="submit" class="btn btn-primary btn-lg">
@@ -110,6 +176,18 @@
                                                         </div>
                                                     </div>
                                                 </form>
+
+                                                <div class="card card-box border-info mb-4">
+                                                    <div class="card-header bg-info text-white fw-bold">
+                                                        <i class="bi bi-bell-fill"></i> Notificaciones Push (Aplicación Móvil)
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="card-text text-muted">Habilita las notificaciones en este dispositivo para recibir alertas automáticas cuando un préstamo esté por vencer o cuando un cliente ingrese/simule en tu web promocional.</p>
+                                                        <button type="button" id="btnHabilitarPush" class="btn btn-info text-white">
+                                                            <i class="bi bi-phone-vibrate"></i> Habilitar Notificaciones
+                                                        </button>
+                                                    </div>
+                                                </div>
 
                                                 <div class="card card-box border-warning">
                                                     <div class="card-header bg-warning-subtle fw-bold text-dark">
@@ -135,4 +213,64 @@
                     </div>
             </div>
         </div>
-        <%- include('../partials/footer') %>
+        
+<script>
+document.getElementById('btnHabilitarPush')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnHabilitarPush');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Configurando...';
+    btn.disabled = true;
+
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            alert("Permiso de notificaciones denegado. Habilita las notificaciones en tu navegador.");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            return;
+        }
+
+        const response = await fetch('/push/public-key');
+        const vapidData = await response.json();
+        const publicKey = vapidData.publicKey;
+
+        const urlBase64ToUint8Array = (base64String) => {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        };
+
+        const convertedVapidKey = urlBase64ToUint8Array(publicKey);
+
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedVapidKey
+        });
+
+        await fetch('/push/subscribe', {
+            method: 'POST',
+            body: JSON.stringify({ subscription }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        alert("¡Notificaciones habilitadas con éxito en este dispositivo!");
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Notificaciones Activas';
+        btn.classList.remove('btn-info');
+        btn.classList.add('btn-success');
+    } catch (e) {
+        console.error("Error al habilitar push:", e);
+        alert("Ocurrió un error al intentar habilitar las notificaciones.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+</script>
+
+<%- include('../partials/footer') %>

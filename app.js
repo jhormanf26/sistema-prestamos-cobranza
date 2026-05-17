@@ -2,7 +2,9 @@ const express = require('express');
 require('dotenv').config(); // Cargar variables de entorno al inicio
 const path = require('path');
 const session = require('express-session');
+const expressLayouts = require('express-ejs-layouts');
 const flash = require('connect-flash');
+const { initCronJobs } = require('./cron/jobs');
 // const morgan = require('morgan'); // Comentado para evitar errores de instalación
 
 // Inicializar App
@@ -94,6 +96,8 @@ cargarRuta('/clientes', './routes/clientes');
 cargarRuta('/prestamos', './routes/prestamos');
 cargarRuta('/pagos', './routes/pagos');
 cargarRuta('/gastos', './routes/gastos');
+cargarRuta('/estadisticas', './routes/estadisticas');
+cargarRuta('/push', './routes/push');
 
 // 3. Servicios (AQUÍ ESTABA EL ERROR, FALTABA SIMULADOR)
 cargarRuta('/simulador', './routes/simulador'); 
@@ -121,6 +125,8 @@ cargarRuta('/', './routes/index');
 // =========================================================
 // 4. INICIAR SERVIDOR
 // =========================================================
+initCronJobs();
+
 app.listen(app.get('port'), () => {
     console.log(`✅ Servidor ONLINE en puerto ${app.get('port')}`);
     console.log(`💻 Entrar: http://localhost:${app.get('port')}`);

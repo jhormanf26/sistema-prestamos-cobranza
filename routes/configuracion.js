@@ -45,6 +45,18 @@ router.post('/actualizar', upload.single('logo'), async (req, res) => {
         // Si subió foto, capturamos el nombre. Si no, es null.
         const logoNombre = req.file ? req.file.filename : null;
 
+        const modulos_activos = {
+            clientes: req.body.mod_clientes === 'on',
+            prestamos: req.body.mod_prestamos === 'on',
+            simulador: req.body.mod_simulador === 'on',
+            gastos: req.body.mod_gastos === 'on',
+            reportes: req.body.mod_reportes === 'on',
+            empenos: req.body.mod_empenos === 'on',
+            ahorros: req.body.mod_ahorros === 'on',
+            cadenas: req.body.mod_cadenas === 'on',
+            promocion: req.body.mod_promocion === 'on'
+        };
+
         const datos = {
             nombre_empresa,
             ruc,
@@ -53,7 +65,8 @@ router.post('/actualizar', upload.single('logo'), async (req, res) => {
             moneda: moneda || 'S/',
             interes_global: parseFloat(interes_global) || 0,
             logo: logoNombre,
-            email_contacto
+            email_contacto,
+            modulos_activos: JSON.stringify(modulos_activos)
         };
 
         // Guardar en BD
