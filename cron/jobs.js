@@ -1,16 +1,33 @@
 const cron = require('node-cron');
 const db = require('../config/db');
-const { sendPushToAll } = require('../utils/pushService');
+const { sendPushToAll, sendPushToUser } = require('../utils/pushService');
 const { calcularCronograma } = require('../utils/finance');
 const emailService = require('../utils/emailService');
 const { formatCurrency } = require('../utils/formatters');
 const ConfigModel = require('../models/ConfigModel');
 
+function formatPushTemplate(template, data) {
+    if (!template) return '';
+    return template
+        .replace(/\{\{cliente\}\}/g, data.cliente)
+        .replace(/\{\{numero\}\}/g, data.numero)
+        .replace(/\{\{moneda\}\}/g, data.moneda)
+        .replace(/\{\{monto\}\}/g, data.monto);
+}
+
 function initCronJobs() {
-    // Todos los días a las 8:00 AM (0 8 * * *)
-    cron.schedule('0 8 * * *', async () => {
+    // Se ejecuta cada hora para validar la hora de alerta configurada (0 * * * *)
+    cron.schedule('0 * * * *', async () => {
         try {
-            console.log("CRON: Ejecutando tareas programadas diarias...");
+            const config = await ConfigModel.obtener();
+            const currentHour = new Date().getHours();
+            const targetHour = config && config.alerta_hora !== undefined ? parseInt(config.alerta_hora) : 8;
+
+            if (currentHour !== targetHour) {
+                return; // Solo se ejecuta a la hora de alerta configurada
+            }
+
+            console.log(`CRON: Ejecutando tareas programadas diarias a las ${currentHour}:00...`);
             
             // 1. Notificaciones PUSH para Administradores (Cuotas a vencer de la tabla prestamos (fecha final))
             const query = `
@@ -84,12 +101,51 @@ function initCronJobs() {
                     const diffTime = fechaCuota - hoy;
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
-                    // Si faltan exactamente 3 días
-                    if (diffDays === 3) {
-                        const config = await ConfigModel.obtener();
-                        const moneda = config ? config.moneda : '$';
-                        const nombreEmpresa = config ? config.nombre_empresa : 'SISTEMA DE PRÉSTAMOS';
+                    const config = await ConfigModel.obtener();
+                    const moneda = config ? config.moneda : '$';
+                    const nombreEmpresa = config ? config.nombre_empresa : 'SISTEMA DE PRÉSTAMOS';
 
+                    // A. Notificación Push Dirigida al Cliente (3 días antes, 1 día antes, o el mismo día)
+                    if (diffDays === 3 || diffDays === 1 || diffDays === 0) {
+                        let pushTitle = '';
+                        let pushBody = '';
+                        
+                        const templateData = {
+                            cliente: prestamo.nombre,
+                            numero: proximaCuota.numero,
+                            moneda: moneda,
+                            monto: formatCurrency(proximaCuota.monto, 2)
+                        };
+
+                        if (diffDays === 3) {
+                            pushTitle = '⏰ Recordatorio de Cuota';
+                            const template = config && config.push_texto_3d ? config.push_texto_3d : 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.';
+                            pushBody = formatPushTemplate(template, templateData);
+                        } else if (diffDays === 1) {
+                            pushTitle = '⚠️ Cuota vence mañana';
+                            const template = config && config.push_texto_1d ? config.push_texto_1d : 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.';
+                            pushBody = formatPushTemplate(template, templateData);
+                        } else if (diffDays === 0) {
+                            pushTitle = '🚨 Cuota vence hoy';
+                            const template = config && config.push_texto_0d ? config.push_texto_0d : 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.';
+                            pushBody = formatPushTemplate(template, templateData);
+                        }
+
+                        try {
+                            await sendPushToUser(prestamo.cliente_id, {
+                                title: pushTitle,
+                                body: pushBody,
+                                icon: '/img/logo.png',
+                                url: '/portal-cliente'
+                            });
+                            console.log(`CRON: Notificación push enviada al cliente ${prestamo.nombre} (ID: ${prestamo.cliente_id}) para diffDays = ${diffDays}`);
+                        } catch (error) {
+                            console.error(`CRON: Error enviando push al cliente ID ${prestamo.cliente_id}:`, error);
+                        }
+                    }
+
+                    // B. Notificación por CORREO al Cliente (3 días antes)
+                    if (diffDays === 3) {
                         const html = `
                             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
                                 <div style="background-color: #f59e0b; padding: 20px; text-align: center; color: white;">
@@ -98,12 +154,12 @@ function initCronJobs() {
                                 <div style="padding: 30px; background-color: #ffffff;">
                                     <p style="font-size: 16px; color: #334155;">Hola <strong>${prestamo.nombre}</strong>,</p>
                                     <p style="font-size: 16px; color: #334155;">Te recordamos que tu cuota <strong>#${proximaCuota.numero}</strong> del préstamo #${prestamo.id} vence en <strong>3 días</strong>.</p>
-                                    
+                                     
                                     <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
                                         <p style="margin: 0; font-size: 18px;"><strong>Fecha de Vencimiento:</strong> ${fechaCuota.toLocaleDateString()}</p>
                                         <p style="margin: 10px 0 0 0; font-size: 18px;"><strong>Monto a Pagar:</strong> ${moneda} ${formatCurrency(proximaCuota.monto, 2)}</p>
                                     </div>
-                                    
+                                     
                                     <p style="font-size: 14px; color: #64748b;">Evita cargos adicionales por mora realizando tu pago a tiempo. Si ya realizaste el pago en las últimas horas, ignora este mensaje.</p>
                                     <div style="text-align: center; margin-top: 30px;">
                                         <a href="${config && config.url_sistema ? config.url_sistema : 'http://localhost:3000'}/portal-cliente/login" style="background-color: #10b981; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; display: inline-block;">Ver Mi Portal</a>
