@@ -2,6 +2,7 @@
 <html lang="es">
 <%- include('../partials/head') %>
 <body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="container-fluid">
         <div class="row flex-nowrap">
             <%- include('partials/sidebar') %>
@@ -116,10 +117,23 @@
             const sidebar = document.getElementById("sidebarMenu");
             const openBtn = document.getElementById("openSidebarBtn");
             const closeBtn = document.getElementById("closeSidebarBtn");
+            const overlay = document.getElementById("sidebarOverlay");
 
             if(openBtn && closeBtn && sidebar) {
-                openBtn.addEventListener("click", () => sidebar.classList.add("show"));
-                closeBtn.addEventListener("click", () => sidebar.classList.remove("show"));
+                openBtn.addEventListener("click", () => {
+                    sidebar.classList.add("sidebar-open");
+                    if(overlay) overlay.classList.add("active");
+                });
+                closeBtn.addEventListener("click", () => {
+                    sidebar.classList.remove("sidebar-open");
+                    if(overlay) overlay.classList.remove("active");
+                });
+            }
+            if(overlay) {
+                overlay.addEventListener("click", () => {
+                    sidebar.classList.remove("sidebar-open");
+                    overlay.classList.remove("active");
+                });
             }
         });
     </script>
