@@ -277,6 +277,21 @@
             // Notificaciones Push Cliente
             const btnPush = document.getElementById('btnHabilitarPushCliente');
             if(btnPush) {
+                // Verificar si ya está suscrito al cargar la página
+                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                    navigator.serviceWorker.ready.then(async (registration) => {
+                        try {
+                            const subscription = await registration.pushManager.getSubscription();
+                            if (subscription) {
+                                btnPush.innerHTML = '<i class="bi bi-check-circle"></i> Activas';
+                                btnPush.classList.replace('btn-info', 'btn-success');
+                            }
+                        } catch (e) {
+                            console.error("Error al chequear suscripción push:", e);
+                        }
+                    }).catch(err => console.error("SW no listo:", err));
+                }
+
                 btnPush.addEventListener('click', async () => {
                     const originalText = btnPush.innerHTML;
                     btnPush.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
