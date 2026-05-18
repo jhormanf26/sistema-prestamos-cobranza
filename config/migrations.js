@@ -74,6 +74,36 @@ async function runMigrations() {
         }
     }
 
+
+    // 7. Agregar columnas de configuración de notificaciones automáticas a la tabla configuracion
+    try {
+        await db.query("ALTER TABLE configuracion ADD COLUMN alerta_hora INT DEFAULT 8;");
+        console.log('✅ Columna [alerta_hora] agregada a la tabla [configuracion]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [alerta_hora]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE configuracion ADD COLUMN push_texto_3d VARCHAR(255) DEFAULT 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.';");
+        console.log('✅ Columna [push_texto_3d] agregada a la tabla [configuracion]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [push_texto_3d]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE configuracion ADD COLUMN push_texto_1d VARCHAR(255) DEFAULT 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.';");
+        console.log('✅ Columna [push_texto_1d] agregada a la tabla [configuracion]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [push_texto_1d]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE configuracion ADD COLUMN push_texto_0d VARCHAR(255) DEFAULT 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.';");
+        console.log('✅ Columna [push_texto_0d] agregada a la tabla [configuracion]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [push_texto_0d]:', e.message);
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 
