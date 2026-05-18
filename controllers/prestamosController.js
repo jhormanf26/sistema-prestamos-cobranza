@@ -186,7 +186,7 @@ const prestamosController = {
             const { id } = req.params;
             const buffer = await pdfService.generarCronogramaBuffer(id);
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=Cronograma_Prestamo_${id}.pdf`);
+            res.setHeader('Content-Disposition', `inline; filename=Cronograma_Prestamo_${id}.pdf`);
             res.send(buffer);
         } catch (error) {
             console.error(error);
@@ -199,7 +199,7 @@ const prestamosController = {
             const { id } = req.params;
             const buffer = await pdfService.generarContratoBuffer(id);
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=Contrato_Prestamo_${id}.pdf`);
+            res.setHeader('Content-Disposition', `inline; filename=Contrato_Prestamo_${id}.pdf`);
             res.send(buffer);
         } catch (error) {
             console.error(error);
@@ -212,7 +212,7 @@ const prestamosController = {
             const { id } = req.params;
             const buffer = await pdfService.generarTicketDesembolsoBuffer(id);
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=Ticket_Prestamo_${id}.pdf`);
+            res.setHeader('Content-Disposition', `inline; filename=Ticket_Prestamo_${id}.pdf`);
             res.send(buffer);
         } catch (error) {
             console.error(error);

@@ -51,6 +51,7 @@
                                         <th>Cliente</th>
                                         <th>Contacto</th>
                                         <th class="text-center">Estado</th>
+                                        <th class="text-center">Último Acceso</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -81,6 +82,17 @@
                                                         <span class="badge bg-success bg-opacity-75 rounded-pill">Activo</span>
                                                     <% } else { %>
                                                         <span class="badge bg-secondary rounded-pill">Inactivo</span>
+                                                    <% } %>
+                                                    <% if(cliente.app_instalada) { %>
+                                                        <span class="badge bg-primary bg-opacity-75 rounded-pill mt-1 d-block"><i class="bi bi-phone"></i> App</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-center">
+                                                    <% if(cliente.ultimo_login) { %>
+                                                        <span class="small text-muted d-block"><i class="bi bi-clock-history me-1"></i><%= new Date(cliente.ultimo_login).toLocaleDateString() %></span>
+                                                        <span class="small text-muted"><%= new Date(cliente.ultimo_login).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %></span>
+                                                    <% } else { %>
+                                                        <span class="small text-muted fst-italic">Nunca</span>
                                                     <% } %>
                                                 </td>
                                                 <td>

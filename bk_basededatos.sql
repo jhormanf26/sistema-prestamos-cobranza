@@ -91,6 +91,8 @@ CREATE TABLE IF NOT EXISTS `clientes` (
   `foto` varchar(255) DEFAULT NULL,
   `estado` tinyint(1) DEFAULT '1',
   `monto_preaprobado` decimal(12,2) DEFAULT '0.00',
+  `ultimo_login` datetime DEFAULT NULL,
+  `app_instalada` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `dni` (`dni`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -668,13 +670,14 @@ CREATE TABLE IF NOT EXISTS `web_analytics` (
 CREATE TABLE IF NOT EXISTS `push_subscriptions` (
   `id` int NOT NULL AUTO_INCREMENT,
   `usuario_id` int DEFAULT NULL,
+  `cliente_id` int DEFAULT NULL,
   `endpoint` text COLLATE utf8mb4_general_ci NOT NULL,
   `p256dh` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `auth` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `device_info` json DEFAULT NULL,
   `nombre_dispositivo` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ` ` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ultima_conexion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

@@ -59,17 +59,24 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
-                                            <%= disp.nombre_completo ? disp.nombre_completo.charAt(0).toUpperCase() : '?' %>
+                                        <% let esCliente = disp.cliente_nombre ? true : false; %>
+                                        <div class="<%= esCliente ? 'bg-success' : 'bg-primary' %> text-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
+                                            <%= esCliente ? disp.cliente_nombre.charAt(0).toUpperCase() : (disp.nombre_completo ? disp.nombre_completo.charAt(0).toUpperCase() : '?') %>
                                         </div>
                                         <div>
                                             <div class="fw-bold d-flex align-items-center gap-2">
-                                                <span id="name-<%= disp.id %>"><%= disp.nombre_dispositivo || disp.nombre_completo || 'Dispositivo Sin Nombre' %></span>
+                                                <span id="name-<%= disp.id %>"><%= disp.nombre_dispositivo || (esCliente ? disp.cliente_nombre + ' ' + disp.cliente_apellido : disp.nombre_completo) || 'Dispositivo Sin Nombre' %></span>
                                                 <button onclick="editarNombre(<%= disp.id %>)" class="btn btn-sm btn-link text-primary p-0 m-0" title="Editar Nombre">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
                                             </div>
-                                            <small class="text-muted"><%= disp.nombre_completo ? 'Registrado por: ' + disp.nombre_completo : 'Usuario Anónimo' %> (ID: <%= disp.id %>)</small>
+                                            <small class="text-muted">
+                                                <% if(esCliente) { %>
+                                                    <span class="badge bg-success bg-opacity-75">Cliente</span> <%= disp.cliente_nombre + ' ' + disp.cliente_apellido %> (ID: <%= disp.id %>)
+                                                <% } else { %>
+                                                    <span class="badge bg-primary bg-opacity-75">Administrador</span> <%= disp.nombre_completo || 'Usuario Anónimo' %> (ID: <%= disp.id %>)
+                                                <% } %>
+                                            </small>
                                         </div>
                                     </div>
                                 </td>

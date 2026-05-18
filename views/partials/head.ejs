@@ -16,8 +16,8 @@
     <link rel="stylesheet" href="/css/style.css">
     
     <!-- PWA Settings -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0d6efd">
+    <link rel="manifest" href="<%= typeof manifestPath !== 'undefined' ? manifestPath : '/manifest.json' %>">
+    <meta name="theme-color" content="<%= typeof themeColor !== 'undefined' ? themeColor : '#0d6efd' %>">
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

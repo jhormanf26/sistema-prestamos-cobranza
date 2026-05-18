@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Sistema de Préstamos Pro</title>
+    <title>Portal de Cliente - Iniciar Sesión</title>
 
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,11 +15,27 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest-cliente.json">
+    <meta name="theme-color" content="#10b981">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => {
+                        console.log('PWA: Service Worker registrado');
+                        reg.update();
+                    })
+                    .catch(err => console.log('PWA: Error al registrar SW', err));
+            });
+        }
+    </script>
+
     <style>
         :root {
-            --primary-color: #2563eb;
+            --primary-color: #10b981; /* Green color to differentiate from Admin login */
             --secondary-color: #1e293b;
-            --accent-color: #3b82f6;
+            --accent-color: #059669;
         }
 
         body {
@@ -53,7 +69,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.4) 0%, rgba(30, 41, 59, 0.8) 100%);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(30, 41, 59, 0.8) 100%);
         }
 
         .login-image-content {
@@ -88,7 +104,6 @@
             justify-content: center;
             padding: 40px;
             background-color: #f1f5f9;
-            /* Azul grisáceo muy suave y profesional */
             box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
             z-index: 10;
         }
@@ -111,7 +126,7 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 25px;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
         }
 
         .brand-logo i {
@@ -153,7 +168,7 @@
         .form-control:focus {
             background-color: white;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         }
 
         .btn-login {
@@ -171,7 +186,7 @@
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
         }
 
         .btn-login:active {
@@ -201,8 +216,8 @@
         <!-- Parte Visual (Izquierda) -->
         <div class="login-image">
             <div class="login-image-content">
-                <h1>Simplifica tu Gestión de Préstamos</h1>
-                <p>La herramienta profesional para el control total de capital, interés y cobranzas eficientes.</p>
+                <h1>Tu Portal de Cliente</h1>
+                <p>Revisa tus préstamos, pagos y perfil en un solo lugar y de forma segura.</p>
             </div>
         </div>
 
@@ -211,12 +226,12 @@
             <div class="login-card">
 
                 <div class="brand-logo">
-                    <i class="bi bi-bank"></i>
+                    <i class="bi bi-person-badge"></i>
                 </div>
 
                 <div class="login-header">
                     <h2>Bienvenido</h2>
-                    <p>Ingresa tus credenciales para acceder al panel de control.</p>
+                    <p>Ingresa tu DNI y contraseña para acceder.</p>
                 </div>
 
                 <% if(mensajeError && mensajeError.length> 0) { %>
@@ -226,44 +241,38 @@
                             <%= mensajeError %>
                         </div>
                     </div>
-                    <% } %>
+                <% } %>
 
-                        <form action="/auth/login" method="POST">
-                            <div class="mb-3">
-                                <label class="form-label" for="email">Correo Electrónico</label>
-                                <div class="input-group">
-                                    <input type="email" id="email" name="email" class="form-control"
-                                        placeholder="nombre@sistema.com" required>
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label" for="password">Contraseña</label>
-                                <div class="input-group">
-                                    <input type="password" id="password" name="password" class="form-control"
-                                        placeholder="••••••••" required>
-                                </div>
-                            </div>
-
-                            <div class="d-grid mb-4">
-                                <button type="submit" class="btn btn-login shadow">
-                                    Iniciar Sesión <i class="bi bi-arrow-right-short ms-2"></i>
-                                </button>
-                            </div>
-                        </form>
-
-                        <div class="text-center mt-5">
-                            <a href="/portal-cliente/login" class="text-decoration-none d-block mb-2 fw-bold text-success">
-                                <i class="bi bi-person-badge me-1"></i> Soy Cliente
-                            </a>
-                            <a href="/promocion" class="text-decoration-none d-block mb-3 small fw-bold text-primary">
-                                <i class="bi bi-globe2 me-1"></i> Visitar sitio web público
-                            </a>
-                            <small class="text-muted d-block mb-2">Desarrollado por <strong>Jhorman Fuentes &copy; <%= new Date().getFullYear() %></strong></small>
-                            <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 border border-primary border-opacity-10" style="font-size: 0.7rem; letter-spacing: 1px; font-weight: 700;">
-                                SISTEMA V<%= version %>
-                            </span>
+                <form action="/portal-cliente/login" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label" for="dni">Número de Documento (DNI)</label>
+                        <div class="input-group">
+                            <input type="text" id="dni" name="dni" class="form-control"
+                                placeholder="Ingresa tu DNI" required>
                         </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label" for="password">Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" id="password" name="password" class="form-control"
+                                placeholder="••••••••" required>
+                        </div>
+                        <small class="text-muted mt-2 d-block">¿Primera vez? Tu contraseña es tu DNI.</small>
+                    </div>
+
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-login shadow">
+                            Ingresar a mi Portal <i class="bi bi-arrow-right-short ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <a href="/auth/login" class="text-decoration-none text-muted small">
+                        <i class="bi bi-shield-lock me-1"></i> Soy Administrador
+                    </a>
+                </div>
 
             </div>
         </div>

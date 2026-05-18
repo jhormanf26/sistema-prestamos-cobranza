@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('partials/sidebar') %>
+
+            <div class="col py-0 py-md-3 main-content-wrapper" style="background-color: #f8fafc; min-height: 100vh;">
+                <!-- Mobile Header Simple -->
+                <div class="d-md-none bg-white p-3 shadow-sm d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-badge text-success fs-3 me-2"></i>
+                        <h5 class="mb-0 fw-bold">Mi Portal</h5>
+                    </div>
+                    <button class="btn btn-outline-secondary" id="openSidebarBtn">
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
+                </div>
+
+                <div class="container-fluid px-4 py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="fw-bold text-dark my-0 fs-4">Hola, <%= cliente.nombre %> 👋</h2>
+                            <p class="text-muted small mb-0">Resumen de tus préstamos</p>
+                        </div>
+                        <div class="d-none d-sm-block">
+                            <span class="badge bg-white text-dark border p-2 fw-normal shadow-sm">
+                                <i class="bi bi-calendar3 text-success me-1"></i> <%= new Date().toLocaleDateString() %>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Notificaciones Push -->
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-info bg-opacity-10">
+                        <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2">
+                            <div>
+                                <h6 class="mb-1 text-info fw-bold"><i class="bi bi-bell-fill"></i> Alertas y Recordatorios</h6>
+                                <small class="text-muted">Activa las notificaciones en este dispositivo para recibir alertas automáticas cuando tengas una cuota próxima a vencer.</small>
+                            </div>
+                            <button id="btnHabilitarPushCliente" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm text-nowrap">
+                                <i class="bi bi-phone-vibrate"></i> Activar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Préstamos Activos -->
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-activity text-success me-2"></i> Préstamos Activos</h5>
+                    <div class="row g-3 mb-5">
+                        <% if(prestamosActivos && prestamosActivos.length > 0) { %>
+                            <% prestamosActivos.forEach(p => { %>
+                                <div class="col-12 col-xl-6">
+                                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                                <div>
+                                                    <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-bold">
+                                                        Préstamo #<%= p.id %>
+                                                    </span>
+                                                    <small class="text-muted d-block mt-2">Iniciado: <%= new Date(p.fecha_inicio).toLocaleDateString() %></small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <% if(p.estado === 'vencido') { %>
+                                                        <span class="badge bg-danger">Vencido</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-success">Al Día</span>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-3">
+                                                <div class="col-6">
+                                                    <p class="text-muted small mb-1">Monto Total</p>
+                                                    <h5 class="fw-bold">$<%= parseFloat(p.monto_total).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h5>
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                    <p class="text-muted small mb-1">Pagado</p>
+                                                    <h5 class="fw-bold text-success">$<%= parseFloat(p.total_pagado || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h5>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-3">
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span class="small text-muted">Progreso</span>
+                                                    <span class="small fw-bold text-success"><%= ((p.total_pagado / p.monto_total) * 100).toFixed(0) %>%</span>
+                                                </div>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" style="width: <%= (p.total_pagado / p.monto_total) * 100 %>%"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                                                <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-outline-dark btn-sm flex-fill">
+                                                    <i class="bi bi-file-earmark-pdf text-danger"></i> Cronograma
+                                                </a>
+                                                <a href="/prestamos/pdf-contrato/<%= p.id %>" target="_blank" class="btn btn-outline-dark btn-sm flex-fill">
+                                                    <i class="bi bi-file-text text-primary"></i> Contrato
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="col-12">
+                                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                                    <div>No tienes préstamos activos en este momento.</div>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Cuentas de Ahorro -->
+                    <% if(cuentaAhorro) { %>
+                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-piggy-bank text-warning me-2"></i> Mi Cuenta de Ahorro</h5>
+                        <div class="row g-3 mb-5">
+                            <div class="col-12 col-xl-6">
+                                <div class="card border-0 shadow-sm rounded-4 h-100 bg-warning bg-opacity-10">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <h6 class="fw-bold text-warning mb-1">Saldo Disponible</h6>
+                                                <h3 class="fw-bold mb-0">$<%= parseFloat(cuentaAhorro.saldo_actual).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h3>
+                                            </div>
+                                            <div class="text-end">
+                                                <i class="bi bi-wallet2 text-warning opacity-50" style="font-size: 3rem;"></i>
+                                            </div>
+                                        </div>
+                                        <% if(cuentaAhorro.meta_nombre && cuentaAhorro.meta_monto) { %>
+                                            <div class="mt-4 pt-3 border-top border-warning border-opacity-25">
+                                                <p class="text-muted small mb-1">Meta: <%= cuentaAhorro.meta_nombre %></p>
+                                                <div class="d-flex justify-content-between mb-1">
+                                                    <span class="small text-muted">Progreso</span>
+                                                    <span class="small fw-bold text-warning"><%= ((cuentaAhorro.saldo_actual / cuentaAhorro.meta_monto) * 100).toFixed(0) %>%</span>
+                                                </div>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-warning" style="width: <%= (cuentaAhorro.saldo_actual / cuentaAhorro.meta_monto) * 100 %>%"></div>
+                                                </div>
+                                                <p class="text-end text-muted small mt-1">Objetivo: $<%= parseFloat(cuentaAhorro.meta_monto).toLocaleString('en-US', {minimumFractionDigits: 2}) %></p>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <!-- Empeños -->
+                    <% if(empenos && empenos.length > 0) { %>
+                        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-gem text-info me-2"></i> Mis Empeños</h5>
+                        <div class="row g-3 mb-5">
+                            <% empenos.forEach(e => { %>
+                                <div class="col-12 col-xl-6">
+                                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                                <div>
+                                                    <span class="badge bg-info-subtle text-info border rounded-pill px-3 py-1 fw-bold">
+                                                        Empeño #<%= e.id %>
+                                                    </span>
+                                                    <h6 class="fw-bold mt-2 mb-0"><%= e.articulo %></h6>
+                                                </div>
+                                                <div class="text-end">
+                                                    <% if(e.estado === 'activo') { %>
+                                                        <span class="badge bg-success">Activo</span>
+                                                    <% } else if(e.estado === 'vencido') { %>
+                                                        <span class="badge bg-danger">Vencido</span>
+                                                    <% } else if(e.estado === 'retirado') { %>
+                                                        <span class="badge bg-secondary">Retirado</span>
+                                                    <% } else if(e.estado === 'rematado') { %>
+                                                        <span class="badge bg-dark">Rematado</span>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-3">
+                                                <div class="col-6">
+                                                    <p class="text-muted small mb-1">Préstamo Base</p>
+                                                    <h5 class="fw-bold text-dark">$<%= parseFloat(e.monto_prestamo).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h5>
+                                                </div>
+                                                <div class="col-6 text-end">
+                                                    <p class="text-muted small mb-1">Fecha Límite</p>
+                                                    <h6 class="fw-bold text-danger"><%= new Date(e.fecha_vencimiento).toLocaleDateString() %></h6>
+                                                </div>
+                                            </div>
+                                            <% if(e.descripcion) { %>
+                                                <p class="text-muted small mt-2 mb-0 text-truncate"><i class="bi bi-info-circle me-1"></i><%= e.descripcion %></p>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } %>
+
+                    <!-- Préstamos Históricos -->
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-secondary me-2"></i> Historial (Pagados)</h5>
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">ID</th>
+                                            <th>Fecha Fin</th>
+                                            <th>Monto</th>
+                                            <th class="text-end pe-4">Documentos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if(prestamosPagados && prestamosPagados.length > 0) { %>
+                                            <% prestamosPagados.forEach(p => { %>
+                                                <tr>
+                                                    <td class="ps-4 fw-bold">#<%= p.id %></td>
+                                                    <td><%= p.fecha_fin ? new Date(p.fecha_fin).toLocaleDateString() : 'N/A' %></td>
+                                                    <td class="fw-bold text-success">$<%= parseFloat(p.monto_total).toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
+                                                    <td class="text-end pe-4">
+                                                        <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Historial de Pagos">
+                                                            <i class="bi bi-file-earmark-pdf"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">Sin historial de préstamos cancelados.</td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Esenciales -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Manejo del sidebar en móviles
+            const sidebar = document.getElementById("sidebarMenu");
+            const openBtn = document.getElementById("openSidebarBtn");
+            const closeBtn = document.getElementById("closeSidebarBtn");
+
+            if(openBtn && closeBtn && sidebar) {
+                openBtn.addEventListener("click", () => sidebar.classList.add("show"));
+                closeBtn.addEventListener("click", () => sidebar.classList.remove("show"));
+            }
+
+            // Detectar si la App está instalada (PWA standalone mode)
+            if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+                fetch('/portal-cliente/registrar-instalacion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).catch(e => console.error('Error registrando app:', e));
+            }
+            
+            // Notificaciones Push Cliente
+            const btnPush = document.getElementById('btnHabilitarPushCliente');
+            if(btnPush) {
+                btnPush.addEventListener('click', async () => {
+                    const originalText = btnPush.innerHTML;
+                    btnPush.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    btnPush.disabled = true;
+
+                    try {
+                        const permission = await Notification.requestPermission();
+                        if (permission !== 'granted') {
+                            alert("Permiso denegado. Habilita las notificaciones en tu navegador.");
+                            btnPush.innerHTML = originalText;
+                            btnPush.disabled = false;
+                            return;
+                        }
+
+                        const response = await fetch('/push/public-key');
+                        const vapidData = await response.json();
+                        
+                        const urlBase64ToUint8Array = (base64String) => {
+                            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                            const rawData = window.atob(base64);
+                            const outputArray = new Uint8Array(rawData.length);
+                            for (let i = 0; i < rawData.length; ++i) {
+                                outputArray[i] = rawData.charCodeAt(i);
+                            }
+                            return outputArray;
+                        };
+
+                        const registration = await navigator.serviceWorker.register('/sw.js');
+                        const subscription = await registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidData.publicKey)
+                        });
+
+                        const deviceInfo = {
+                            userAgent: navigator.userAgent,
+                            language: navigator.language,
+                            platform: navigator.platform || 'unknown',
+                            connection: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+                            battery: 'unknown',
+                            isCharging: 'unknown'
+                        };
+
+                        if ('getBattery' in navigator) {
+                            try {
+                                const battery = await navigator.getBattery();
+                                deviceInfo.battery = Math.round(battery.level * 100) + '%';
+                                deviceInfo.isCharging = battery.charging ? 'Sí' : 'No';
+                            } catch (e) {}
+                        }
+
+                        await fetch('/push/subscribe', {
+                            method: 'POST',
+                            body: JSON.stringify({ subscription, deviceInfo }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+
+                        alert("¡Notificaciones habilitadas con éxito!");
+                        btnPush.innerHTML = '<i class="bi bi-check-circle"></i> Activas';
+                        btnPush.classList.replace('btn-info', 'btn-success');
+                    } catch (e) {
+                        console.error("Error:", e);
+                        alert("Ocurrió un error al intentar habilitar las notificaciones.");
+                        btnPush.innerHTML = originalText;
+                        btnPush.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -4,7 +4,10 @@ const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
 const { initCronJobs } = require('./cron/jobs');
-// const morgan = require('morgan'); // Comentado para evitar errores de instalación
+const { runMigrations } = require('./config/migrations');
+
+// Ejecutar migraciones automáticas al inicio de la aplicación
+runMigrations().catch(err => console.error('Error en migraciones automáticas:', err));
 
 // Inicializar App
 const rateLimit = require('express-rate-limit');
@@ -113,6 +116,9 @@ cargarRuta('/perfil', './routes/perfil');
 cargarRuta('/mi-licencia', './routes/mi-licencia');
 cargarRuta('/plantillas', './routes/plantillas');
 cargarRuta('/plantillas-pdf', './routes/plantillasPdf');
+
+// Portal de Clientes
+cargarRuta('/portal-cliente', './routes/portalCliente');
 
 // 5. Reportes
 cargarRuta('/reportes', './routes/reportes');

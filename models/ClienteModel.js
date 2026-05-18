@@ -29,11 +29,14 @@ class ClienteModel {
         try {
             const { dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado } = datos;
             // Insertamos con estado 1 (Activo) por defecto
+            const bcrypt = require('bcryptjs');
+            const salt = await bcrypt.genSalt(10);
+            const password = await bcrypt.hash(dni, salt);
             const query = `
-                INSERT INTO clientes (dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado, estado) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                INSERT INTO clientes (dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado, estado, password) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
             `;
-            const [result] = await db.query(query, [dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado || 0]);
+            const [result] = await db.query(query, [dni, nombre, apellido, telefono, direccion, email, foto, monto_preaprobado || 0, password]);
             return result;
         } catch (error) {
             throw error;
@@ -102,6 +105,29 @@ class ClienteModel {
         }
     }
 
+    // 8.5. Actualizar Password Cliente
+    static async actualizarPassword(id, password) {
+        try {
+            const query = 'UPDATE clientes SET password = ? WHERE id = ?';
+            const [result] = await db.query(query, [password, id]);
+            return result;
+        } catch (error) {
+            console.error("Error en ClienteModel.actualizarPassword:", error);
+            throw error;
+        }
+    }
+
+    static async actualizarUltimoLogin(id) {
+        try {
+            const query = 'UPDATE clientes SET ultimo_login = NOW() WHERE id = ?';
+            const [result] = await db.query(query, [id]);
+            return result;
+        } catch (error) {
+            console.error("Error en ClienteModel.actualizarUltimoLogin:", error);
+            throw error;
+        }
+    }
+
     // 9. Actualizar Cliente (MANTIENE EDICIÓN CON FOTO)
     static async actualizar(id, datos) {
         try {
@@ -143,6 +169,17 @@ class ClienteModel {
             const [result] = await db.query(query, [monto, id]);
             return result;
         } catch (error) {
+            throw error;
+        }
+    }
+
+    static async registrarAppInstalada(id) {
+        try {
+            const query = "UPDATE clientes SET app_instalada = 1 WHERE id = ?";
+            const [result] = await db.query(query, [id]);
+            return result;
+        } catch (error) {
+            console.error("Error en ClienteModel.registrarAppInstalada:", error);
             throw error;
         }
     }
