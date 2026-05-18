@@ -106,7 +106,7 @@ const prestamosController = {
             if (cliente && cliente.email) {
                 try {
                     const config = await ConfigModel.obtener();
-                    const { asunto, html, adjuntos_config } = await emailService.plantillaPrestamo(`${cliente.nombre} ${cliente.apellido}`, montoPrestado, numCuotas, montoTotal, config ? config.moneda : '$');
+                    const { asunto, html, adjuntos_config } = await emailService.plantillaPrestamo(`${cliente.nombre} ${cliente.apellido}`, montoPrestado, numCuotas, montoTotal, config ? config.moneda : '$', cliente.dni);
                     
                     const attachments = [];
                     

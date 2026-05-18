@@ -366,7 +366,7 @@ CREATE TABLE IF NOT EXISTS plantillas_correo (
 -- 2. Insertar plantillas base (con el diseño premium que hicimos)
 -- IMPORTANTE: He puesto {{cliente}}, {{monto}}, etc. como etiquetas para que el código las reemplace dinámicamente.
 INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disponibles, html_content) VALUES 
-('Préstamo Aprobado', 'prestamo_aprobado', '¡Préstamo Aprobado! - Documentos Adjuntos', 'Se envía cuando se registra un nuevo préstamo', 'cliente, monto, cuotas, total, moneda', 
+('Préstamo Aprobado', 'prestamo_aprobado', '¡Préstamo Aprobado! - Documentos Adjuntos', 'Se envía cuando se registra un nuevo préstamo', 'cliente, monto, cuotas, total, moneda, dni, usuario, contrasena, portal_url', 
 '<div style="background-color: #6fbff047; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
     <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
         <tr>
@@ -409,7 +409,25 @@ INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disp
                         </td>
                     </tr>
                 </table>
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 30px; background-color: #fffbeb; border-radius: 10px;">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 30px; background-color: #f0fdf4; border-radius: 12px; border: 1px solid #bbf7d0;">
+                    <tr>
+                        <td style="padding: 25px;">
+                            <h3 style="margin: 0 0 10px; color: #166534; font-size: 16px;">🌐 ¡Accede a tu Portal de Clientes!</h3>
+                            <p style="margin: 0 0 20px; color: #1e3a1e; font-size: 14px; line-height: 1.5;">
+                                Ahora puedes consultar el estado de tu crédito, ver tu cronograma de pagos, descargar tu contrato y activar recordatorios en la aplicación desde tu portal personal:
+                            </p>
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <a href="https://prestamos.desarollo.site/portal-cliente/login" style="background: #166534; color: #ffffff; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 14px;">Ingresar al Portal</a>
+                            </div>
+                            <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #dcfce7; font-size: 13px; color: #14532d;">
+                                🔑 <strong>Credenciales de acceso:</strong><br>
+                                • <strong>Usuario:</strong> Tu número de documento ({{dni}})<br>
+                                • <strong>Contraseña:</strong> Tu número de documento ({{dni}})
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 20px; background-color: #fffbeb; border-radius: 10px;">
                     <tr>
                         <td style="padding: 15px; border-left: 5px solid #f59e0b;">
                             <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.4;">

@@ -59,12 +59,25 @@ const emailService = {
     },
 
     // Convertidas a ASYNC para leer de la base de datos
-    plantillaPrestamo: async (cliente, monto, cuotas, total, moneda) => {
+    plantillaPrestamo: async (cliente, monto, cuotas, total, moneda, dni = '') => {
         const fallback = `
             <div style="background-color: #f4f7f9; padding: 20px; font-family: Arial;">
                 <table align="center" width="100%" style="max-width: 600px; background: #fff; border-radius: 15px;">
                     <tr><td align="center" style="background: #1e3c72; padding: 30px; color: #fff;"><h1>¡Préstamo Aprobado!</h1></td></tr>
-                    <tr><td style="padding: 30px;">Hola ${cliente}, tu préstamo de ${moneda} ${formatCurrency(monto, 2)} ha sido aprobado.</td></tr>
+                    <tr><td style="padding: 30px;">
+                        <p>Hola ${cliente}, tu préstamo de ${moneda} ${formatCurrency(monto, 2)} ha sido aprobado.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p><strong>🌐 ¡Accede a tu Portal de Clientes!</strong></p>
+                        <p>Ahora puedes consultar el cronograma de tus cuotas, tu contrato y registrar el pago de tus cuotas desde nuestra plataforma web:</p>
+                        <p align="center" style="margin: 25px 0;">
+                            <a href="https://prestamos.desarollo.site/portal-cliente/login" style="background: #005bff; color: #fff; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">Ingresar al Portal</a>
+                        </p>
+                        <p style="background: #f8fafc; padding: 15px; border-radius: 8px; font-size: 14px; border: 1px solid #e2e8f0; color: #334155;">
+                            🔑 <strong>Credenciales de acceso por defecto:</strong><br>
+                            • <strong>Usuario:</strong> Tu número de documento (${dni || 'DNI'})<br>
+                            • <strong>Contraseña:</strong> Tu número de documento (${dni || 'DNI'})
+                        </p>
+                    </td></tr>
                 </table>
             </div>
         `;
@@ -73,7 +86,11 @@ const emailService = {
             monto: formatCurrency(monto, 2), 
             cuotas, 
             total: formatCurrency(total, 2), 
-            moneda
+            moneda,
+            dni,
+            usuario: dni,
+            contrasena: dni,
+            portal_url: 'https://prestamos.desarollo.site/portal-cliente/login'
         }, fallback);
         return res; // Retorna {asunto, html}
     },

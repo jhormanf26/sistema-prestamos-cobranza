@@ -94,7 +94,7 @@ const plantillasController = {
 
             switch (slug) {
                 case 'prestamo_aprobado':
-                    result = await emailService.plantillaPrestamo('Cliente de Prueba', 1000000, 12, 1200000, moneda);
+                    result = await emailService.plantillaPrestamo('Cliente de Prueba', 1000000, 12, 1200000, moneda, '12345678');
                     break;
                 case 'pago_recibido':
                     result = await emailService.plantillaPago('Cliente de Prueba', 100000, new Date(), 900000, moneda);
