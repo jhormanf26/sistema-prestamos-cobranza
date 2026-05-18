@@ -124,13 +124,17 @@ CREATE TABLE IF NOT EXISTS `configuracion` (
   `moneda` varchar(5) DEFAULT '$',
   `interes_global` decimal(10,2) DEFAULT '0.00',
   `modulos_activos` json DEFAULT NULL,
+  `alerta_hora` int DEFAULT '8',
+  `push_texto_3d` varchar(255) DEFAULT 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.',
+  `push_texto_1d` varchar(255) DEFAULT 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.',
+  `push_texto_0d` varchar(255) DEFAULT 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla sistema_prestamos.configuracion: ~1 rows (aproximadamente)
 DELETE FROM `configuracion`;
-INSERT INTO `configuracion` (`id`, `nombre_empresa`, `ruc`, `direccion`, `telefono`, `email_contacto`, `logo`, `moneda`, `interes_global`, `modulos_activos`) VALUES
-	(1, 'Préstamos Pro', '00000000000', 'Calle Principal 123', '555-0000', 'contacto@empresa.com', 'logo-1775114231208-217650330.png', 'S/', 0.00, '{"clientes":true, "prestamos":true, "simulador":true, "gastos":true, "reportes":true, "empenos":true, "ahorros":true, "cadenas":true, "promocion":true}');
+INSERT INTO `configuracion` (`id`, `nombre_empresa`, `ruc`, `direccion`, `telefono`, `email_contacto`, `logo`, `moneda`, `interes_global`, `modulos_activos`, `alerta_hora`, `push_texto_3d`, `push_texto_1d`, `push_texto_0d`) VALUES
+	(1, 'Préstamos Pro', '00000000000', 'Calle Principal 123', '555-0000', 'contacto@empresa.com', 'logo-1775114231208-217650330.png', 'S/', 0.00, '{"clientes":true, "prestamos":true, "simulador":true, "gastos":true, "reportes":true, "empenos":true, "ahorros":true, "cadenas":true, "promocion":true}', 8, 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.', 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.', 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.');
 
 -- Volcando estructura para tabla sistema_prestamos.cuentas_ahorro
 CREATE TABLE IF NOT EXISTS `cuentas_ahorro` (

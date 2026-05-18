@@ -168,6 +168,37 @@
                                                             </div>
                                                         </div>
 
+                                                        <h5 class="text-secondary mb-3 mt-4"><i class="bi bi-bell-fill"></i> Alertas de Cobro Automáticas (Push)</h5>
+                                                        <div class="row g-3 mb-4">
+                                                            <div class="col-md-12 mb-2">
+                                                                <label class="form-label fw-bold">Hora de Envío Diario</label>
+                                                                <select name="alerta_hora" class="form-select" style="max-width: 250px;">
+                                                                    <% for (let h = 0; h < 24; h++) { %>
+                                                                        <% let labelHora = h.toString().padStart(2, '0') + ':00 ' + (h >= 12 ? 'PM' : 'AM'); %>
+                                                                        <option value="<%= h %>" <%= config.alerta_hora === h ? 'selected' : (config.alerta_hora === undefined && h === 8 ? 'selected' : '') %>><%= labelHora %></option>
+                                                                    <% } %>
+                                                                </select>
+                                                                <div class="form-text text-muted small">Hora en la que el cobrador robótico del servidor disparará los correos y notificaciones push diariamente.</div>
+                                                            </div>
+                                                            <div class="col-md-12">
+                                                                <label class="form-label fw-bold">Notificación Push (3 Días Antes del Vencimiento)</label>
+                                                                <input type="text" name="push_texto_3d" class="form-control" value="<%= config.push_texto_3d || 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.' %>">
+                                                            </div>
+                                                            <div class="col-md-12">
+                                                                <label class="form-label fw-bold">Notificación Push (1 Día Antes del Vencimiento)</label>
+                                                                <input type="text" name="push_texto_1d" class="form-control" value="<%= config.push_texto_1d || 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.' %>">
+                                                            </div>
+                                                            <div class="col-md-12">
+                                                                <label class="form-label fw-bold">Notificación Push (El Mismo Día del Vencimiento)</label>
+                                                                <input type="text" name="push_texto_0d" class="form-control" value="<%= config.push_texto_0d || 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.' %>">
+                                                            </div>
+                                                            <div class="col-12 mt-2">
+                                                                <div class="alert alert-info py-2 px-3 small border-0 bg-info-subtle text-info-emphasis mb-0">
+                                                                    💡 <strong>Variables disponibles:</strong> Puedes usar <code>{{cliente}}</code>, <code>{{numero}}</code>, <code>{{moneda}}</code> y <code>{{monto}}</code> para que los mensajes se autocompleten de forma dinámica.
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
                                                         <hr>
                                                         <div class="d-flex justify-content-end">
                                                             <button type="submit" class="btn btn-primary btn-lg">
