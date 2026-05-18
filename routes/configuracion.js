@@ -25,9 +25,10 @@ router.get('/dispositivos', async (req, res) => {
     try {
         const db = require('../config/db');
         const [dispositivos] = await db.query(`
-            SELECT p.id, p.endpoint, p.device_info, p.nombre_dispositivo, p.created_at, p.ultima_conexion, u.nombre_completo 
+            SELECT p.id, p.endpoint, p.device_info, p.nombre_dispositivo, p.created_at, p.ultima_conexion, u.nombre_completo, c.nombre as cliente_nombre, c.apellido as cliente_apellido
             FROM push_subscriptions p 
             LEFT JOIN usuarios u ON p.usuario_id = u.id 
+            LEFT JOIN clientes c ON p.cliente_id = c.id
             ORDER BY p.ultima_conexion DESC
         `);
         res.render('config/dispositivos', {

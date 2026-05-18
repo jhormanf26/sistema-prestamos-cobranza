@@ -1,0 +1,50 @@
+<div class="col-auto col-md-3 col-xl-2 px-0 sidebar" id="sidebarMenu">
+    <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100 position-relative">
+
+        <!-- Botón de Cerrar (Solo Móvil) -->
+        <button class="btn btn-link text-white d-md-none position-absolute top-0 end-0 mt-2 me-2" id="closeSidebarBtn">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <a href="/portal-cliente" class="d-flex flex-column align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none brand w-100 mt-4 mt-md-0">
+            <div class="bg-success rounded-circle p-2 mb-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 55px; height: 55px;">
+                <i class="bi bi-person-badge fs-4 text-white"></i>
+            </div>
+            <span class="d-inline small text-center text-truncate w-100 fw-bold">
+                Mi Portal
+            </span>
+        </a>
+
+        <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100 mt-3" id="menu">
+            <li class="nav-item w-100">
+                <a href="/portal-cliente" class="nav-link align-middle px-0 text-white">
+                    <i class="bi bi-house-door-fill text-success"></i> <span class="ms-1 d-inline">Inicio</span>
+                </a>
+            </li>
+            
+            <li class="nav-item w-100 mt-2">
+                <a href="/portal-cliente/perfil" class="nav-link align-middle px-0 text-white">
+                    <i class="bi bi-person-circle text-success"></i> <span class="ms-1 d-inline">Mi Perfil</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="w-100 border-top border-secondary pt-3 pb-4 mt-auto">
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle p-2 rounded hover-effect" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255,255,255,0.05);">
+                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold me-2" style="width: 32px; height: 32px;">
+                        <%= (typeof cliente !== 'undefined' && cliente.nombre) ? cliente.nombre.charAt(0).toUpperCase() : 'C' %>
+                    </div>
+                    <span class="d-inline mx-1 small text-truncate" style="max-width: 100px;">
+                        <strong><%= (typeof cliente !== 'undefined' && cliente.nombre) ? cliente.nombre : 'Cliente' %></strong>
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                    <li><a class="dropdown-item" href="/portal-cliente/perfil">Mi Perfil</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="/portal-cliente/logout"><i class="bi bi-box-arrow-right"></i> Salir</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

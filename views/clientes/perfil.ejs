@@ -48,6 +48,15 @@
                                                     class="bi bi-envelope-fill text-primary"></i>
                                                 <%= cliente.email || 'Sin email' %>
                                             </span>
+                                            <span class="badge bg-light text-dark border" title="Última vez que el cliente ingresó a su portal">
+                                                <i class="bi bi-person-badge-fill text-info"></i>
+                                                Último acceso: <%= cliente.ultimo_login ? new Date(cliente.ultimo_login).toLocaleString() : 'Nunca' %>
+                                            </span>
+                                            <% if (cliente.app_instalada) { %>
+                                                <span class="badge bg-primary text-white border border-primary shadow-sm" title="El cliente ha instalado la aplicación">
+                                                    <i class="bi bi-phone-fill text-white"></i> APP INSTALADA
+                                                </span>
+                                            <% } %>
                                             <% if (cliente.monto_preaprobado > 0) { %>
                                                 <span class="badge bg-warning text-dark border border-warning shadow-sm" title="Cupo disponible para nuevos créditos">
                                                     <i class="bi bi-star-fill text-primary"></i> PRE-APROBADO: <%= empresa.moneda %> <%= formatCurrency(cliente.monto_preaprobado, 0) %>

@@ -17,16 +17,17 @@ router.post('/subscribe', async (req, res) => {
         
         const { endpoint, keys } = subscription;
         const usuario_id = req.session.usuario ? req.session.usuario.id : null;
+        const cliente_id = req.session.cliente ? req.session.cliente.id : null;
         
         // Verifica si ya existe en la BD
         const [exists] = await db.query("SELECT id FROM push_subscriptions WHERE endpoint = ?", [endpoint]);
         if (exists.length === 0) {
-            await db.query("INSERT INTO push_subscriptions (usuario_id, endpoint, p256dh, auth, device_info) VALUES (?, ?, ?, ?, ?)", 
-            [usuario_id, endpoint, keys.p256dh, keys.auth, JSON.stringify(deviceInfo || {})]);
+            await db.query("INSERT INTO push_subscriptions (usuario_id, cliente_id, endpoint, p256dh, auth, device_info) VALUES (?, ?, ?, ?, ?, ?)", 
+            [usuario_id, cliente_id, endpoint, keys.p256dh, keys.auth, JSON.stringify(deviceInfo || {})]);
         } else {
             // Si ya existe, actualizamos la info del dispositivo por si acaso
-            await db.query("UPDATE push_subscriptions SET device_info = ?, usuario_id = ? WHERE endpoint = ?", 
-            [JSON.stringify(deviceInfo || {}), usuario_id, endpoint]);
+            await db.query("UPDATE push_subscriptions SET device_info = ?, usuario_id = IFNULL(usuario_id, ?), cliente_id = IFNULL(cliente_id, ?) WHERE endpoint = ?", 
+            [JSON.stringify(deviceInfo || {}), usuario_id, cliente_id, endpoint]);
         }
         res.status(201).json({ success: true });
     } catch (e) {
