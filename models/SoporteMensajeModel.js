@@ -10,18 +10,19 @@ class SoporteMensajeModel {
      * @param {number} datos.cliente_id ID del cliente asociado al chat.
      * @param {number} [datos.usuario_id] ID del usuario administrador que envía el mensaje (NULL si es del cliente).
      * @param {string} datos.remitente Quién envía el mensaje ('cliente', 'administrador').
-     * @param {string} datos.mensaje Contenido del mensaje de texto.
+     * @param {string} datos.mensaje Contenido del mensaje de texto o ruta del archivo de audio.
+     * @param {string} [datos.tipo] Tipo del mensaje ('texto', 'audio'). Por defecto 'texto'.
      * @returns {Promise<Object>} Resultado de la consulta de inserción.
      * @throws {Error} Si hay un error en la base de datos.
      */
     static async enviarMensaje(datos) {
         try {
-            const { cliente_id, usuario_id, remitente, mensaje } = datos;
+            const { cliente_id, usuario_id, remitente, mensaje, tipo = 'texto' } = datos;
             const query = `
-                INSERT INTO soporte_mensajes (cliente_id, usuario_id, remitente, mensaje, leido) 
-                VALUES (?, ?, ?, ?, 0)
+                INSERT INTO soporte_mensajes (cliente_id, usuario_id, remitente, mensaje, tipo, leido) 
+                VALUES (?, ?, ?, ?, ?, 0)
             `;
-            const [result] = await db.query(query, [cliente_id, usuario_id || null, remitente, mensaje]);
+            const [result] = await db.query(query, [cliente_id, usuario_id || null, remitente, mensaje, tipo]);
             return result;
         } catch (error) {
             console.error("Error en SoporteMensajeModel.enviarMensaje:", error);
@@ -61,6 +62,17 @@ class SoporteMensajeModel {
      */
     static async obtenerChatsActivos() {
         try {
+            // Marcar automáticamente todos los mensajes pendientes de clientes como entregados al consultar la bandeja
+            try {
+                await db.query(`
+                    UPDATE soporte_mensajes 
+                    SET fecha_entregado = IFNULL(fecha_entregado, CURRENT_TIMESTAMP) 
+                    WHERE remitente = 'cliente' AND fecha_entregado IS NULL
+                `);
+            } catch (e) {
+                console.error("Error al auto-marcar entregados en obtenerChatsActivos:", e.message);
+            }
+
             const query = `
                 SELECT 
                     c.id as cliente_id, 
@@ -84,7 +96,7 @@ class SoporteMensajeModel {
     }
 
     /**
-     * Marca como leídos los mensajes de un remitente específico para un cliente.
+     * Marca como leídos los mensajes de un remitente específico para un cliente, registrando el timestamp del visto.
      * @param {number} clienteId ID del cliente.
      * @param {string} remitente Quién envió los mensajes que queremos marcar como leídos ('cliente', 'administrador').
      * @returns {Promise<Object>} Resultado de la actualización de MySQL.
@@ -94,13 +106,37 @@ class SoporteMensajeModel {
         try {
             const query = `
                 UPDATE soporte_mensajes 
-                SET leido = 1 
+                SET leido = 1,
+                    fecha_visto = IFNULL(fecha_visto, CURRENT_TIMESTAMP),
+                    fecha_entregado = IFNULL(fecha_entregado, CURRENT_TIMESTAMP)
                 WHERE cliente_id = ? AND remitente = ? AND leido = 0
             `;
             const [result] = await db.query(query, [clienteId, remitente]);
             return result;
         } catch (error) {
             console.error("Error en SoporteMensajeModel.marcarComoLeido:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Marca como entregados los mensajes de un remitente específico para un cliente, registrando la fecha de entrega.
+     * @param {number} clienteId ID del cliente.
+     * @param {string} remitente Quién envió los mensajes que queremos marcar como entregados ('cliente', 'administrador').
+     * @returns {Promise<Object>} Resultado de la actualización de MySQL.
+     * @throws {Error} Si hay un error en la base de datos.
+     */
+    static async marcarComoEntregado(clienteId, remitente) {
+        try {
+            const query = `
+                UPDATE soporte_mensajes 
+                SET fecha_entregado = IFNULL(fecha_entregado, CURRENT_TIMESTAMP) 
+                WHERE cliente_id = ? AND remitente = ? AND fecha_entregado IS NULL
+            `;
+            const [result] = await db.query(query, [clienteId, remitente]);
+            return result;
+        } catch (error) {
+            console.error("Error en SoporteMensajeModel.marcarComoEntregado:", error);
             throw error;
         }
     }

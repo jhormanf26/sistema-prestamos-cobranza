@@ -74,9 +74,38 @@
                                                     <!-- Burbuja Cliente (Derecha) -->
                                                     <div class="d-flex flex-column align-items-end mb-2">
                                                         <div class="px-3.5 py-2.5 text-white shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 18px 18px 0px 18px; max-width: 75%; word-break: break-word;">
-                                                            <p class="mb-0 small" style="line-height: 1.4;"><%= m.mensaje %></p>
+                                                            <% if (m.tipo === 'audio') { %>
+                                                                <!-- Reproductor Audio Premium Cliente -->
+                                                                <div class="audio-player-wrapper p-2 bg-light bg-opacity-25 rounded-3 d-flex align-items-center gap-2" style="min-width: 220px;">
+                                                                    <button type="button" class="btn btn-sm btn-light rounded-circle play-audio-btn shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" data-src="<%= m.mensaje %>">
+                                                                        <i class="bi bi-play-fill fs-5 text-success"></i>
+                                                                    </button>
+                                                                    <div class="flex-grow-1">
+                                                                        <div class="progress position-relative cursor-pointer audio-progress" style="height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px;">
+                                                                            <div class="progress-bar bg-white progress-bar-indicator" style="width: 0%; height: 100%; border-radius: 3px;"></div>
+                                                                        </div>
+                                                                        <div class="d-flex justify-content-between text-white-50 mt-1" style="font-size: 0.55rem; font-weight: 500;">
+                                                                            <span class="current-time">0:00</span>
+                                                                            <span class="total-duration">--:--</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <audio src="<%= m.mensaje %>" class="d-none audio-element" preload="metadata"></audio>
+                                                                </div>
+                                                            <% } else if (m.tipo === 'imagen') { %>
+                                                                <!-- Imagen Premium Cliente -->
+                                                                <div class="chat-image-container position-relative overflow-hidden rounded-3" style="max-width: 250px; cursor: pointer;">
+                                                                    <img src="<%= m.mensaje %>" alt="Imagen enviada" class="img-fluid rounded-3 chat-lightbox-trigger shadow-sm" style="max-height: 180px; width: 100%; object-fit: cover; transition: transform 0.25s ease;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                                                                </div>
+                                                            <% } else { %>
+                                                                <p class="mb-0 small" style="line-height: 1.4;"><%= m.mensaje %></p>
+                                                            <% } %>
                                                         </div>
-                                                        <span class="text-muted mt-1" style="font-size: 0.65rem;">
+                                                        <span class="text-muted mt-1 msg-time d-flex align-items-center gap-1" 
+                                                              data-time="<%= m.fecha_envio ? (m.fecha_envio instanceof Date ? m.fecha_envio.toISOString() : new Date(m.fecha_envio).toISOString()) : '' %>" 
+                                                              data-remitente="<%= m.remitente %>" 
+                                                              data-entregado="<%= m.fecha_entregado ? (m.fecha_entregado instanceof Date ? m.fecha_entregado.toISOString() : new Date(m.fecha_entregado).toISOString()) : '' %>" 
+                                                              data-visto="<%= m.fecha_visto ? (m.fecha_visto instanceof Date ? m.fecha_visto.toISOString() : new Date(m.fecha_visto).toISOString()) : '' %>" 
+                                                              style="font-size: 0.65rem;">
                                                             <%= new Date(m.fecha_envio).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) %>
                                                         </span>
                                                     </div>
@@ -87,9 +116,36 @@
                                                             <div class="d-flex align-items-center mb-1 text-primary" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px;">
                                                                 <i class="bi bi-shield-check me-1"></i> ASESOR
                                                             </div>
-                                                            <p class="mb-0 small" style="line-height: 1.4;"><%= m.mensaje %></p>
+                                                            <% if (m.tipo === 'audio') { %>
+                                                                <!-- Reproductor Audio Premium Administrador -->
+                                                                <div class="audio-player-wrapper p-2 bg-light rounded-3 d-flex align-items-center gap-2" style="min-width: 220px; border: 1px solid #e2e8f0;">
+                                                                    <button type="button" class="btn btn-sm btn-success rounded-circle play-audio-btn shadow-sm d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" data-src="<%= m.mensaje %>">
+                                                                        <i class="bi bi-play-fill fs-5 text-white"></i>
+                                                                    </button>
+                                                                    <div class="flex-grow-1">
+                                                                        <div class="progress position-relative cursor-pointer audio-progress" style="height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px;">
+                                                                            <div class="progress-bar bg-success progress-bar-indicator" style="width: 0%; height: 100%; border-radius: 3px;"></div>
+                                                                        </div>
+                                                                        <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.55rem; font-weight: 500;">
+                                                                            <span class="current-time">0:00</span>
+                                                                            <span class="total-duration">--:--</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <audio src="<%= m.mensaje %>" class="d-none audio-element" preload="metadata"></audio>
+                                                                </div>
+                                                            <% } else if (m.tipo === 'imagen') { %>
+                                                                <!-- Imagen Premium Administrador -->
+                                                                <div class="chat-image-container position-relative overflow-hidden rounded-3 shadow-sm" style="max-width: 250px; cursor: pointer;">
+                                                                    <img src="<%= m.mensaje %>" alt="Imagen del asesor" class="img-fluid rounded-3 chat-lightbox-trigger" style="max-height: 180px; width: 100%; object-fit: cover; transition: transform 0.25s ease;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                                                                </div>
+                                                            <% } else { %>
+                                                                <p class="mb-0 small" style="line-height: 1.4;"><%= m.mensaje %></p>
+                                                            <% } %>
                                                         </div>
-                                                        <span class="text-muted mt-1 ms-1" style="font-size: 0.65rem;">
+                                                        <span class="text-muted mt-1 ms-1 msg-time d-flex align-items-center gap-1" 
+                                                              data-time="<%= m.fecha_envio ? (m.fecha_envio instanceof Date ? m.fecha_envio.toISOString() : new Date(m.fecha_envio).toISOString()) : '' %>" 
+                                                              data-remitente="<%= m.remitente %>" 
+                                                              style="font-size: 0.65rem;">
                                                             <%= new Date(m.fecha_envio).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) %>
                                                         </span>
                                                     </div>
@@ -101,11 +157,42 @@
                                 </div>
 
                                 <!-- Input y envío de mensajes -->
-                                <div class="card-footer bg-white border-top p-3">
-                                    <form id="chatForm" action="/portal-cliente/chat/enviar" method="POST" class="d-flex gap-2">
-                                        <div class="input-group">
+                                <div class="card-footer bg-white border-top p-3 position-relative">
+                                    <!-- Panel visual de grabación (Oculto por defecto) -->
+                                    <div id="recordingPanel" class="d-none w-100 d-flex align-items-center justify-content-between px-3 py-2 bg-danger bg-opacity-10 rounded-pill border border-danger border-opacity-25" style="height: 46px; animation: slideIn 0.2s ease-out;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="animate-pulse-red rounded-circle bg-danger" style="width: 10px; height: 10px; display: inline-block;"></span>
+                                            <span class="text-danger fw-semibold small" style="font-size: 0.85rem;">Grabando audio... <span id="recordingTimer">0:00</span></span>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" id="cancelRecordBtn" class="btn btn-sm btn-outline-danger rounded-pill px-3" style="font-size: 0.75rem;">
+                                                <i class="bi bi-trash3-fill me-1"></i> Cancelar
+                                            </button>
+                                            <button type="button" id="stopAndSendRecordBtn" class="btn btn-sm btn-danger rounded-pill px-3" style="font-size: 0.75rem;">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Enviar
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <form id="chatForm" action="/portal-cliente/chat/enviar" method="POST" class="d-flex gap-2 align-items-center w-100">
+                                        <div class="input-group align-items-center flex-nowrap w-100">
+                                            <!-- Input Oculto de Imagen -->
+                                            <input type="file" id="chatImageInput" accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" class="d-none">
+
+                                            <!-- Botón Adjuntar Imagen -->
+                                            <button type="button" id="attachImageBtn" class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center p-0 me-1" style="width: 46px; height: 46px; min-width: 46px; border-color: #cbd5e1; color: #64748b; transition: all 0.2s ease;" title="Adjuntar imagen">
+                                                <i class="bi bi-image fs-5"></i>
+                                            </button>
+
                                             <input type="text" name="mensaje" id="chatInput" class="form-control rounded-pill px-4" placeholder="Escribe tu mensaje aquí..." autocomplete="off" maxlength="1000" style="border-color: #e2e8f0;" required>
-                                            <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center p-0 ms-2" style="width: 46px; height: 46px; min-width: 46px; transition: all 0.2s ease;">
+                                            
+                                            <!-- Botón Micrófono -->
+                                            <button type="button" id="recordAudioBtn" class="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center p-0 ms-2" style="width: 46px; height: 46px; min-width: 46px; transition: all 0.2s ease;" title="Grabar nota de voz">
+                                                <i class="bi bi-mic-fill fs-5"></i>
+                                            </button>
+
+                                            <!-- Botón Enviar -->
+                                            <button type="submit" id="sendMessageBtn" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center p-0 ms-2" style="width: 46px; height: 46px; min-width: 46px; transition: all 0.2s ease;">
                                                 <i class="bi bi-send-fill fs-5 text-white" style="margin-left: 2px;"></i>
                                             </button>
                                         </div>
@@ -140,6 +227,42 @@
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
             }
+        }
+        .animate-pulse-red {
+            animation: pulse-red 1.5s infinite;
+        }
+        @keyframes pulse-red {
+            0% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+            }
+            100% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .audio-player-wrapper {
+            transition: all 0.2s ease;
+        }
+        .audio-player-wrapper:hover {
+            transform: translateY(-1px);
         }
         .px-3\.5 {
             padding-left: 0.85rem !important;
@@ -184,12 +307,30 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const chatContainer = document.getElementById("chatContainer");
             const chatForm = document.getElementById("chatForm");
             const chatInput = document.getElementById("chatInput");
             const messagesList = document.getElementById("messagesList");
+
+            // Elementos de audio
+            const recordAudioBtn = document.getElementById("recordAudioBtn");
+            const recordingPanel = document.getElementById("recordingPanel");
+            const cancelRecordBtn = document.getElementById("cancelRecordBtn");
+            const stopAndSendRecordBtn = document.getElementById("stopAndSendRecordBtn");
+            const recordingTimer = document.getElementById("recordingTimer");
+
+            // Elementos de imagen
+            const attachImageBtn = document.getElementById("attachImageBtn");
+            const chatImageInput = document.getElementById("chatImageInput");
+
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let recordTimerInterval = null;
+            let recordDuration = 0;
+            let isCancelled = false;
+            let isAudioPlaying = false; // Flag para pausar el polling cuando hay reproducción
 
             // Función para hacer scroll hacia abajo en el contenedor del chat
             function scrollToBottom() {
@@ -263,8 +404,277 @@
                 }
             });
 
+            // --- FORMATEO LOCAL DE HORAS Y TICKS DE ESTADO (VISTO) ---
+            function formatChatTimesAndStatus() {
+                document.querySelectorAll('.msg-time').forEach(el => {
+                    const timeStr = el.getAttribute('data-time');
+                    if (!timeStr) return;
+                    
+                    const date = new Date(timeStr);
+                    const localTime = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const remitente = el.getAttribute('data-remitente');
+                    const entregadoStr = el.getAttribute('data-entregado');
+                    const vistoStr = el.getAttribute('data-visto');
+                    
+                    let htmlContent = localTime;
+                    
+                    if (remitente === 'cliente') {
+                        let ticks = '';
+                        if (vistoStr) {
+                            const vistoDate = new Date(vistoStr);
+                            const vistoTime = vistoDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                            ticks = `<i class="bi bi-check2-all" style="font-size: 0.85rem; color: #10b981; margin-left: 2px;" title="Leído a las ${vistoTime}"></i>`;
+                        } else if (entregadoStr) {
+                            const entregadoDate = new Date(entregadoStr);
+                            const entregadoTime = entregadoDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                            ticks = `<i class="bi bi-check2-all text-muted" style="font-size: 0.85rem; margin-left: 2px;" title="Entregado a las ${entregadoTime}"></i>`;
+                        } else {
+                            ticks = `<i class="bi bi-check2 text-muted" style="font-size: 0.85rem; margin-left: 2px;" title="Enviado"></i>`;
+                        }
+                        htmlContent += ` ${ticks}`;
+                    }
+                    
+                    el.innerHTML = htmlContent;
+                });
+            }
+
+            // --- REPRODUCTOR DE AUDIO PREMIUM INTERACTIVO ---
+            let currentPlayingAudio = null;
+            let currentPlayingButton = null;
+
+            function initAudioPlayers() {
+                document.querySelectorAll('.audio-player-wrapper').forEach(wrapper => {
+                    const audio = wrapper.querySelector('.audio-element');
+                    const playBtn = wrapper.querySelector('.play-audio-btn');
+                    const icon = playBtn.querySelector('i');
+                    const progress = wrapper.querySelector('.audio-progress');
+                    const progressBar = wrapper.querySelector('.progress-bar-indicator');
+                    const currentTimeSpan = wrapper.querySelector('.current-time');
+                    const totalDurationSpan = wrapper.querySelector('.total-duration');
+
+                    // Cargar metadatos si ya están disponibles o al cargarse
+                    const displayDuration = () => {
+                        if (audio.duration && !isNaN(audio.duration)) {
+                            totalDurationSpan.textContent = formatTime(audio.duration);
+                        }
+                    };
+
+                    displayDuration();
+                    audio.addEventListener('loadedmetadata', displayDuration);
+                    audio.addEventListener('durationchange', displayDuration);
+
+                    // Formatear tiempo en MM:SS
+                    function formatTime(seconds) {
+                        const m = Math.floor(seconds / 60);
+                        const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+                        return `${m}:${s}`;
+                    }
+
+                    // Event listener para actualizar el progreso
+                    audio.addEventListener('timeupdate', () => {
+                        if (audio.duration) {
+                            const pct = (audio.currentTime / audio.duration) * 100;
+                            progressBar.style.width = `${pct}%`;
+                            currentTimeSpan.textContent = formatTime(audio.currentTime);
+                        }
+                    });
+
+                    // Event listener cuando finaliza el audio
+                    audio.addEventListener('ended', () => {
+                        icon.className = playBtn.classList.contains('btn-light') ? 'bi bi-play-fill fs-5 text-success' : 'bi bi-play-fill fs-5 text-white';
+                        progressBar.style.width = '0%';
+                        currentTimeSpan.textContent = '0:00';
+                        isAudioPlaying = checkIfAnyAudioPlaying();
+                        currentPlayingAudio = null;
+                        currentPlayingButton = null;
+                    });
+
+                    // Control de reproducción
+                    playBtn.onclick = (e) => {
+                        e.preventDefault();
+
+                        if (currentPlayingAudio && currentPlayingAudio !== audio) {
+                            currentPlayingAudio.pause();
+                            if (currentPlayingButton) {
+                                const oldIcon = currentPlayingButton.querySelector('i');
+                                oldIcon.className = currentPlayingButton.classList.contains('btn-light') ? 'bi bi-play-fill fs-5 text-success' : 'bi bi-play-fill fs-5 text-white';
+                            }
+                        }
+
+                        if (audio.paused) {
+                            audio.play().then(() => {
+                                icon.className = playBtn.classList.contains('btn-light') ? 'bi bi-pause-fill fs-5 text-success' : 'bi bi-pause-fill fs-5 text-white';
+                                currentPlayingAudio = audio;
+                                currentPlayingButton = playBtn;
+                                isAudioPlaying = true;
+                            }).catch(err => console.error("Error al reproducir audio:", err));
+                        } else {
+                            audio.pause();
+                            icon.className = playBtn.classList.contains('btn-light') ? 'bi bi-play-fill fs-5 text-success' : 'bi bi-play-fill fs-5 text-white';
+                            isAudioPlaying = checkIfAnyAudioPlaying();
+                            currentPlayingAudio = null;
+                            currentPlayingButton = null;
+                        }
+                    };
+
+                    // Permitir buscar/adelantar haciendo click en la barra de progreso
+                    progress.onclick = (e) => {
+                        e.preventDefault();
+                        const rect = progress.getBoundingClientRect();
+                        const clickX = e.clientX - rect.left;
+                        const pct = clickX / rect.width;
+                        if (audio.duration) {
+                            audio.currentTime = pct * audio.duration;
+                        }
+                    };
+                });
+            }
+
+            function checkIfAnyAudioPlaying() {
+                let playing = false;
+                document.querySelectorAll('.audio-element').forEach(audio => {
+                    if (!audio.paused) playing = true;
+                });
+                return playing;
+            }
+
+            // --- GRABACIÓN DE AUDIO ---
+            if (recordAudioBtn) {
+                recordAudioBtn.addEventListener("click", async function (e) {
+                    e.preventDefault();
+                    isCancelled = false;
+                    audioChunks = [];
+                    recordDuration = 0;
+
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        alert("Tu navegador no soporta la grabación de audio de forma nativa.");
+                        return;
+                    }
+
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        
+                        mediaRecorder = new MediaRecorder(stream);
+                        
+                        mediaRecorder.ondataavailable = event => {
+                            if (event.data.size > 0) {
+                                audioChunks.push(event.data);
+                            }
+                        };
+
+                        mediaRecorder.onstop = async () => {
+                            // Apagar micrófono física y lógicamente
+                            stream.getTracks().forEach(track => track.stop());
+
+                            clearInterval(recordTimerInterval);
+
+                            if (isCancelled) {
+                                return;
+                            }
+
+                            if (audioChunks.length === 0) {
+                                alert("No se capturó ningún sonido.");
+                                resetRecordingUI();
+                                return;
+                            }
+
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            await enviarAudioBlob(audioBlob);
+                        };
+
+                        // Mostrar interfaz de grabación y ocultar chatInput
+                        chatForm.classList.add("d-none");
+                        recordingPanel.classList.remove("d-none");
+
+                        mediaRecorder.start(100); // Guardar chunks cada 100ms
+                        
+                        // Iniciar temporizador visual
+                        recordingTimer.textContent = "0:00";
+                        recordTimerInterval = setInterval(() => {
+                            recordDuration++;
+                            const mins = Math.floor(recordDuration / 60);
+                            const secs = (recordDuration % 60).toString().padStart(2, '0');
+                            recordingTimer.textContent = `${mins}:${secs}`;
+                            
+                            // Límite de seguridad de 3 minutos
+                            if (recordDuration >= 180) {
+                                stopAndSendRecordBtn.click();
+                            }
+                        }, 1000);
+
+                    } catch (err) {
+                        console.error("Error al acceder al micrófono:", err);
+                        alert("Por favor, permite el acceso al micrófono para grabar notas de voz.");
+                    }
+                });
+            }
+
+            function resetRecordingUI() {
+                clearInterval(recordTimerInterval);
+                recordingPanel.classList.add("d-none");
+                chatForm.classList.remove("d-none");
+                chatInput.focus();
+            }
+
+            if (cancelRecordBtn) {
+                cancelRecordBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    isCancelled = true;
+                    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                        mediaRecorder.stop();
+                    }
+                    resetRecordingUI();
+                });
+            }
+
+            if (stopAndSendRecordBtn) {
+                stopAndSendRecordBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    isCancelled = false;
+                    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                        mediaRecorder.stop();
+                    }
+                    resetRecordingUI();
+                });
+            }
+
+            async function enviarAudioBlob(blob) {
+                const formData = new FormData();
+                formData.append('audio', blob, 'grabacion.webm');
+
+                try {
+                    const response = await fetch('/portal-cliente/chat/enviar-audio', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            await cargarMensajesSilencioso();
+                        } else {
+                            alert("Error al enviar el audio: " + (data.error || "Desconocido"));
+                        }
+                    } else {
+                        alert("Error en el servidor al enviar audio.");
+                    }
+                } catch (err) {
+                    console.error("Error enviando el archivo binario de audio:", err);
+                    alert("Error de conexión al enviar el audio.");
+                }
+            }
+
             // --- CARGA Y ACTUALIZACIÓN SILENCIOSA DE MENSAJES (POLLING) ---
             async function cargarMensajesSilencioso() {
+                // Si el usuario está escuchando un audio actualmente, NO actualizamos para no romper la reproducción
+                if (isAudioPlaying) {
+                    return;
+                }
+
                 try {
                     const response = await fetch("/portal-cliente/chat", {
                         headers: {
@@ -283,6 +693,8 @@
                         // Comparar si cambió antes de re-inyectar y hacer scroll
                         if (messagesList.innerHTML !== nuevosMensajesHTML) {
                             messagesList.innerHTML = nuevosMensajesHTML;
+                            formatChatTimesAndStatus();
+                            initAudioPlayers();
                             scrollToBottom();
                         }
                     }
@@ -290,6 +702,123 @@
                     console.error("Error al refrescar mensajes:", err);
                 }
             }
+
+            // --- GESTIÓN DE SUBIDA DE IMÁGENES ---
+            if (attachImageBtn && chatImageInput) {
+                attachImageBtn.addEventListener("click", () => {
+                    chatImageInput.click();
+                });
+
+                chatImageInput.addEventListener("change", async function () {
+                    const file = this.files[0];
+                    if (!file) return;
+
+                    // Validación del lado del cliente
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg'];
+                    if (!allowedTypes.includes(file.type)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Formato no válido',
+                            text: 'Por favor, selecciona una imagen en formato JPG, JPEG, PNG, WEBP o GIF.',
+                            confirmButtonColor: '#10b981'
+                        });
+                        this.value = '';
+                        return;
+                    }
+
+                    // Límite de 10MB
+                    if (file.size > 10 * 1024 * 1024) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Imagen muy grande',
+                            text: 'El tamaño máximo de imagen permitido es de 10 MB.',
+                            confirmButtonColor: '#10b981'
+                        });
+                        this.value = '';
+                        return;
+                    }
+
+                    // Mostrar loader premium
+                    Swal.fire({
+                        title: 'Enviando imagen...',
+                        text: 'Estamos procesando y subiendo tu archivo.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const formData = new FormData();
+                    formData.append('imagen', file);
+
+                    try {
+                        const response = await fetch('/portal-cliente/chat/enviar-imagen', {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success) {
+                                Swal.close();
+                                await cargarMensajesSilencioso();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error de envío',
+                                    text: data.error || 'No se pudo subir la imagen.',
+                                    confirmButtonColor: '#10b981'
+                                });
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error del servidor',
+                                text: 'Ocurrió un error en el servidor al intentar subir la imagen.',
+                                confirmButtonColor: '#10b981'
+                            });
+                        }
+                    } catch (err) {
+                        console.error('Error al subir imagen:', err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de conexión',
+                            text: 'No se pudo conectar con el servidor para subir la imagen.',
+                            confirmButtonColor: '#10b981'
+                        });
+                    } finally {
+                        this.value = ''; // Limpiar input para permitir re-selección
+                    }
+                });
+            }
+
+            // --- DELEGACIÓN DE EVENTOS PARA LIGHTBOX DE IMÁGENES ---
+            if (messagesList) {
+                messagesList.addEventListener("click", function (e) {
+                    const trigger = e.target.closest(".chat-lightbox-trigger");
+                    if (trigger) {
+                        const src = trigger.getAttribute("src");
+                        Swal.fire({
+                            imageUrl: src,
+                            imageAlt: 'Visualización de Imagen',
+                            showConfirmButton: false,
+                            showCloseButton: true,
+                            background: '#ffffff',
+                            backdrop: 'rgba(15, 23, 42, 0.85)',
+                            customClass: {
+                                popup: 'border-0 rounded-4 shadow-lg p-2 max-vw-100 max-vh-100 overflow-hidden',
+                                image: 'img-fluid rounded-3 m-0 object-fit-contain',
+                                closeButton: 'btn-close shadow-none focus-none'
+                            }
+                        });
+                    }
+                });
+            }
+            formatChatTimesAndStatus();
+            initAudioPlayers();
 
             // Polling de actualización cada 4 segundos
             setInterval(cargarMensajesSilencioso, 4000);

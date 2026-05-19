@@ -40,7 +40,8 @@ const soporteController = {
 
             const mensajes = await SoporteMensajeModel.obtenerChatCompleto(clienteId);
 
-            // Marcar mensajes enviados por el cliente como leídos por el administrador
+            // Marcar mensajes enviados por el cliente como entregados y leídos por el administrador
+            await SoporteMensajeModel.marcarComoEntregado(clienteId, 'cliente');
             await SoporteMensajeModel.marcarComoLeido(clienteId, 'cliente');
 
             res.json({
@@ -106,6 +107,108 @@ const soporteController = {
         } catch (error) {
             console.error("Error en soporteController.enviarMensaje:", error);
             res.status(500).json({ success: false, error: 'Error al guardar respuesta' });
+        }
+    },
+
+    /**
+     * Procesa la respuesta de audio de un administrador, la almacena y dispara una notificación push al cliente.
+     * @param {Object} req Objeto de petición de Express.
+     * @param {Object} res Objeto de respuesta de Express.
+     */
+    enviarAudioChat: async (req, res) => {
+        const { clienteId } = req.params;
+        const usuarioId = req.session.usuario ? req.session.usuario.id : null;
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No se recibió ningún archivo de audio válido' });
+        }
+
+        try {
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+            if (!cliente) {
+                return res.status(404).json({ success: false, error: 'Cliente no encontrado' });
+            }
+
+            const rutaAudio = '/uploads/soporte/' + req.file.filename;
+
+            // Registrar el mensaje del administrador en la base de datos
+            await SoporteMensajeModel.enviarMensaje({
+                cliente_id: clienteId,
+                usuario_id: usuarioId,
+                remitente: 'administrador',
+                mensaje: rutaAudio,
+                tipo: 'audio'
+            });
+
+            // Disparar Notificación Push nativa al dispositivo del cliente
+            const payload = {
+                title: 'Soporte - Mensaje de Voz',
+                body: 'El asesor te ha enviado una nota de voz',
+                icon: '/img/clientes.png',
+                url: '/portal-cliente/chat'
+            };
+            
+            try {
+                await pushService.sendPushToUser(clienteId, payload);
+            } catch (e) {
+                console.error("Error al enviar notificación push al cliente:", e);
+            }
+
+            res.json({ success: true, ruta: rutaAudio });
+        } catch (error) {
+            console.error("Error en soporteController.enviarAudioChat:", error);
+            res.status(500).json({ success: false, error: 'Error al procesar el mensaje de audio' });
+        }
+    },
+
+    /**
+     * Procesa la respuesta de imagen de un administrador, la almacena y dispara una notificación push al cliente.
+     * @param {Object} req Objeto de petición de Express.
+     * @param {Object} res Objeto de respuesta de Express.
+     */
+    enviarImagenChat: async (req, res) => {
+        const { clienteId } = req.params;
+        const usuarioId = req.session.usuario ? req.session.usuario.id : null;
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No se recibió ninguna imagen válida' });
+        }
+
+        try {
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+            if (!cliente) {
+                return res.status(404).json({ success: false, error: 'Cliente no encontrado' });
+            }
+
+            const rutaImagen = '/uploads/soporte/' + req.file.filename;
+
+            // Registrar el mensaje del administrador en la base de datos
+            await SoporteMensajeModel.enviarMensaje({
+                cliente_id: clienteId,
+                usuario_id: usuarioId,
+                remitente: 'administrador',
+                mensaje: rutaImagen,
+                tipo: 'imagen'
+            });
+
+            // Disparar Notificación Push nativa al dispositivo del cliente
+            const payload = {
+                title: 'Soporte - Nueva Imagen',
+                body: 'El asesor te ha enviado una imagen',
+                icon: '/img/clientes.png',
+                url: '/portal-cliente/chat'
+            };
+            
+            try {
+                await pushService.sendPushToUser(clienteId, payload);
+            } catch (e) {
+                console.error("Error al enviar notificación push al cliente:", e);
+            }
+
+            res.json({ success: true, ruta: rutaImagen });
+        } catch (error) {
+            console.error("Error en soporteController.enviarImagenChat:", error);
+            res.status(500).json({ success: false, error: 'Error al procesar la imagen' });
         }
     }
 };

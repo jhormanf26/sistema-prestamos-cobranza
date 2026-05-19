@@ -60,7 +60,7 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 - [x] **Mapa de Calor (Scroll Depth)**: Se añadieron rastreadores al 25%, 50%, 75% y 90% para entender el comportamiento del usuario.
 - [x] **Lista de Leads Marketing**: Tabla de acceso rápido a prospectos con botón directo a WhatsApp.
 - [x] **Funcionalidad PWA (App Móvil)**: El sistema ahora es instalable en celulares y PCs como una aplicación nativa, con iconos personalizados y apertura a pantalla completa.
-- [x] **Mejoras del Portal del Cliente**: Implementados los módulos de Gestión de Pagos con corrección administrativa, Loyalty con simulador y Chat de Soporte bidireccional neobanco.
+- [x] **Mejoras del Portal del Cliente**: Implementados los módulos de Gestión de Pagos con corrección administrativa, Loyalty con simulador y Chat de Soporte bidireccional neobanco con soporte de imágenes y visor Lightbox.
 
 ### Decisiones técnicas:
 - Se implementó un Service Worker básico para cumplir con los requisitos de instalación de Chrome/Safari.
@@ -70,6 +70,7 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 - Para el chat de soporte se optó por un enfoque XHR silencioso ("HTML-over-wire") utilizando `DOMParser()` para procesar la lista de mensajes sin endpoints JSON dedicados duplicados, optimizando la latencia y la coherencia visual.
 - El abono corregido por el administrador impacta directamente la caja del sistema y actualiza el saldo del préstamo de forma transaccional precisa.
 - La suite de pruebas TDD se diseñó con un enfoque autolimpiable dinámico, autodetectando datos existentes de clientes, préstamos y usuarios administradores en base de datos para no violar restricciones de integridad referencial.
+- Se implementó la subida de imágenes (JPEG, PNG, WEBP, GIF) en el chat de soporte bidireccional, permitiendo adjuntar capturas, fotos y recibos de forma interactiva y visualizarlos mediante un Lightbox premium con zoom a pantalla completa.
 
 ### Pendiente:
 - Monitorear la carga de la base de datos con el aumento de eventos de scroll.
@@ -93,3 +94,4 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 - Se implementaron indicadores visuales dinámicos (badges de Bootstrap 5 con la clase de animación `animate-pulse` de Tailwind incorporada como estilo local) en el sidebar del administrador y en el Portal del Cliente. Los contadores se calculan en tiempo real mediante un middleware global asíncrono y ultra-eficiente en `app.js` que consulta la base de datos de soporte sólo si hay una sesión activa, garantizando alta escalabilidad e impacto visual inmediato.
 - Se corrigió un bug en la Bandeja de Soporte administrativa donde se intentaba evaluar `c.no_leidos` en lugar de `c.sin_leer` devuelto por la consulta SQL, logrando que los badges de mensajes no leídos se muestren de forma fiable en la lista de chats activos.
 - Para alertar de manera inmersiva al cliente sobre respuestas de soporte técnico, se inyectaron estilos de animación global `.animate-pulse` con transiciones de opacidad en `head.ejs` para evitar interferir con layouts CSS de Bootstrap. Se instalaron bolitas rojas animadas flotantes sobre el menú hamburguesa móvil (`#openSidebarBtn`) en el Dashboard, Perfil y Chat del Portal del Cliente. Adicionalmente, se diseñó un banner premium de alerta estilo Glassmorphism en la zona de resúmenes del Dashboard de escritorio y móvil, enlazando directamente al chat interno y 100% verificado por pruebas TDD.
+- **Lightbox de Zoom Premium en Chat**: Para la visualización de imágenes interactivas enviadas en soporte, se implementó un Lightbox estilizado con SweetAlert2. Su estructura utiliza delegación de eventos nativos en los contenedores de mensajes, evitando que el polling silencioso periódico rompa la interactividad al actualizar el DOM y garantizando una experiencia ultra fluida e inmersiva.
