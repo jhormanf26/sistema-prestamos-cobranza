@@ -45,7 +45,7 @@ const analyticsController = {
 
             // 5. Enviar Notificación Push si es evento valioso
             if (!isBot && (evento === 'page_view' || evento === 'simulacion' || evento === 'solicitud_prestamo')) {
-                const { sendPushToAll } = require('../utils/pushService');
+                const { sendPushToAdmins } = require('../utils/pushService');
                 let titulo = 'Nuevo Evento en Web Promocional';
                 let msj = `Se registró un nuevo evento: ${evento}`;
                 
@@ -60,8 +60,8 @@ const analyticsController = {
                     msj = `Alguien hizo clic en solicitar préstamo.`;
                 }
 
-                // Enviar la notificación en background sin bloquear la respuesta
-                sendPushToAll({
+                // Enviar la notificación en background solo a administradores
+                sendPushToAdmins({
                     title: titulo,
                     body: msj,
                     icon: '/img/logo.png',

@@ -73,6 +73,9 @@
                                                 <i class="bi bi-envelope-check-fill me-2"></i> Notificar Pre-aprobado
                                             </button>
                                         <% } %>
+                                        <button onclick="iniciarChat(<%= cliente.id %>)" class="btn btn-success shadow-sm px-4 fw-bold rounded-pill">
+                                            <i class="bi bi-chat-dots-fill me-2"></i> Mensaje Directo
+                                        </button>
                                         <a href="/reportes/estado-cuenta/<%= cliente.id %>" target="_blank"
                                             class="btn btn-dark shadow-sm px-4 fw-bold rounded-pill">
                                             <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Estado de Cuenta
@@ -303,6 +306,53 @@
                                 btn.disabled = false;
                                 btn.innerHTML = originalHtml;
                             });
+                    }
+                });
+            }
+
+            function iniciarChat(clienteId) {
+                Swal.fire({
+                    title: 'Enviar Mensaje Directo',
+                    input: 'textarea',
+                    inputLabel: 'Escribe el mensaje para iniciar o continuar la conversación',
+                    inputPlaceholder: 'Hola, te escribimos para...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Enviar Mensaje',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#10b981',
+                    inputValidator: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return '¡Debes escribir un mensaje!';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Enviando...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        fetch(`/admin/soporte/chat/${clienteId}/responder`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mensaje: result.value })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('¡Enviado!', 'El mensaje fue enviado correctamente. Redirigiendo al chat...', 'success').then(() => {
+                                    window.location.href = '/admin/soporte'; // Redirigir a soporte
+                                });
+                            } else {
+                                Swal.fire('Error', data.error || 'No se pudo enviar el mensaje.', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Ocurrió un error en la conexión.', 'error');
+                        });
                     }
                 });
             }

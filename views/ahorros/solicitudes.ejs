@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper" style="background-color: #f8fafc; min-height: 100vh;">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-4 py-4">
+                    <!-- Cabecera Premium -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2.5 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-piggy-bank-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold text-dark my-0 fs-3">Solicitudes de Ahorro</h2>
+                            <p class="text-muted small mb-0">Tramita los aportes y retiros reportados por tus clientes desde su portal.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pestañas Premium -->
+                    <ul class="nav nav-pills mb-4 gap-2" id="solicitudesTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 tab-aportes" id="aportes-tab" data-bs-toggle="pill" data-bs-target="#aportes" type="button" role="tab">
+                                <i class="bi bi-box-arrow-in-down"></i> Aportes
+                                <span class="badge bg-white text-success rounded-pill ms-1" style="font-size: 0.7rem;"><%= reportes ? reportes.length : 0 %></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 tab-retiros" id="retiros-tab" data-bs-toggle="pill" data-bs-target="#retiros" type="button" role="tab">
+                                <i class="bi bi-box-arrow-up"></i> Retiros
+                                <span class="badge bg-dark text-white rounded-pill ms-1" style="font-size: 0.7rem;"><%= retiros ? retiros.length : 0 %></span>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="solicitudesTabContent">
+                        
+                        <!-- ═══════════ TAB: APORTES PENDIENTES ═══════════ -->
+                        <div class="tab-pane fade show active" id="aportes" role="tabpanel" aria-labelledby="aportes-tab">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                <div class="card-header bg-white border-bottom p-3">
+                                    <h6 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                                        <i class="bi bi-shield-check text-success me-2"></i> 
+                                        Aportes en Espera de Validación
+                                        <span class="badge bg-success rounded-pill ms-2 fw-normal" style="font-size: 0.75rem;" id="aportesCounter"><%= reportes ? reportes.length : 0 %> Pendientes</span>
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <% if (!reportes || reportes.length === 0) { %>
+                                        <div class="text-center py-5 px-3">
+                                            <div class="bg-light text-success rounded-circle p-4 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                <i class="bi bi-check2-circle fs-1"></i>
+                                            </div>
+                                            <h5 class="fw-bold text-dark">¡Todo al día!</h5>
+                                            <p class="text-muted small">No hay aportes de ahorro pendientes de verificación en este momento.</p>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="ps-4">ID</th>
+                                                        <th>Cliente</th>
+                                                        <th>Monto Reportado</th>
+                                                        <th>Fecha Reporte</th>
+                                                        <th class="text-end pe-4">Acción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbodyAportes">
+                                                    <% reportes.forEach(reporte => { %>
+                                                        <tr id="row-aporte-<%= reporte.id %>">
+                                                            <td class="ps-4 fw-bold text-warning">#<%= reporte.id %></td>
+                                                            <td>
+                                                                <div class="fw-bold text-dark"><%= reporte.nombre %> <%= reporte.apellido %></div>
+                                                                <small class="text-muted"><%= reporte.dni %></small>
+                                                            </td>
+                                                            <td>
+                                                                <h6 class="fw-bold text-dark mb-0 font-monospace">
+                                                                    $<%= parseFloat(reporte.monto).toLocaleString('es-CO') %>
+                                                                </h6>
+                                                            </td>
+                                                            <td>
+                                                                <small class="text-muted d-block">
+                                                                    <%= new Date(reporte.fecha_reporte).toLocaleDateString() %>
+                                                                </small>
+                                                                <small class="text-muted" style="font-size: 0.75rem;">
+                                                                    <%= new Date(reporte.fecha_reporte).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                                                                </small>
+                                                            </td>
+                                                            <td class="text-end pe-4">
+                                                                <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold btn-verificar-aporte" 
+                                                                        data-id="<%= reporte.id %>" 
+                                                                        data-cliente="<%= reporte.nombre %> <%= reporte.apellido %>"
+                                                                        data-dni="<%= reporte.dni %>"
+                                                                        data-monto="<%= Math.round(reporte.monto) %>"
+                                                                        data-comprobante-url="<%= reporte.comprobante_url %>"
+                                                                        data-observaciones="<%= reporte.observaciones || '' %>">
+                                                                    <i class="bi bi-eye-fill me-1"></i> Verificar
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ═══════════ TAB: RETIROS PENDIENTES ═══════════ -->
+                        <div class="tab-pane fade" id="retiros" role="tabpanel" aria-labelledby="retiros-tab">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                <div class="card-header bg-white border-bottom p-3">
+                                    <h6 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                                        <i class="bi bi-cash-stack text-dark me-2"></i> 
+                                        Solicitudes de Retiro Pendientes
+                                        <span class="badge bg-dark rounded-pill ms-2 fw-normal" style="font-size: 0.75rem;" id="retirosCounter"><%= retiros ? retiros.length : 0 %> Pendientes</span>
+                                    </h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <% if (!retiros || retiros.length === 0) { %>
+                                        <div class="text-center py-5 px-3">
+                                            <div class="bg-light text-success rounded-circle p-4 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                                <i class="bi bi-check2-circle fs-1"></i>
+                                            </div>
+                                            <h5 class="fw-bold text-dark">¡Todo al día!</h5>
+                                            <p class="text-muted small">No hay solicitudes de retiro pendientes en este momento.</p>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="ps-4">ID</th>
+                                                        <th>Cliente</th>
+                                                        <th>Monto Solicitado</th>
+                                                        <th>Saldo Actual</th>
+                                                        <th>Fecha Solicitud</th>
+                                                        <th class="text-end pe-4">Acción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbodyRetiros">
+                                                    <% retiros.forEach(retiro => { %>
+                                                        <tr id="row-retiro-<%= retiro.id %>">
+                                                            <td class="ps-4 fw-bold">#<%= retiro.id %></td>
+                                                            <td>
+                                                                <div class="fw-bold text-dark"><%= retiro.nombre %> <%= retiro.apellido %></div>
+                                                                <small class="text-muted"><%= retiro.dni %></small>
+                                                            </td>
+                                                            <td>
+                                                                <h6 class="fw-bold text-danger mb-0 font-monospace">
+                                                                    $<%= parseFloat(retiro.monto_solicitado).toLocaleString('es-CO') %>
+                                                                </h6>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
+                                                                    $<%= parseFloat(retiro.saldo_actual).toLocaleString('es-CO') %>
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <small class="text-muted d-block">
+                                                                    <%= new Date(retiro.fecha_solicitud).toLocaleDateString() %>
+                                                                </small>
+                                                                <small class="text-muted" style="font-size: 0.75rem;">
+                                                                    <%= new Date(retiro.fecha_solicitud).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                                                                </small>
+                                                            </td>
+                                                            <td class="text-end pe-4">
+                                                                <button class="btn btn-sm btn-dark rounded-pill px-3 fw-bold btn-verificar-retiro" 
+                                                                        data-id="<%= retiro.id %>" 
+                                                                        data-cliente="<%= retiro.nombre %> <%= retiro.apellido %>"
+                                                                        data-dni="<%= retiro.dni %>"
+                                                                        data-monto="<%= Math.round(retiro.monto_solicitado) %>"
+                                                                        data-saldo="<%= Math.round(retiro.saldo_actual) %>"
+                                                                        data-comentarios="<%= retiro.comentarios || '' %>">
+                                                                    <i class="bi bi-eye-fill me-1"></i> Tramitar
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ MODAL: AUDITAR APORTE ═══════════ -->
+    <div class="modal fade" id="modalAuditarAporte" tabindex="-1" aria-labelledby="modalAuditarAporteLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-warning text-dark py-3">
+                    <h5 class="modal-title fw-bold" id="modalAuditarAporteLabel">
+                        <i class="bi bi-check2-square me-2"></i> Auditar Aporte #<span id="aporteIdTitle"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <div class="row g-4">
+                        <!-- Lado Izquierdo: Comprobante subido -->
+                        <div class="col-12 col-lg-7">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden bg-dark d-flex align-items-center justify-content-center" style="min-height: 400px; max-height: 520px; position: relative;">
+                                <img src="" id="aporteImage" class="img-fluid" style="max-height: 500px; object-fit: contain; cursor: zoom-in;" title="Haz clic para ver tamaño completo">
+                                <a href="" id="aporteFullLink" target="_blank" class="btn btn-sm btn-light rounded-circle shadow position-absolute bottom-0 end-0 m-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Abrir en pestaña nueva">
+                                    <i class="bi bi-fullscreen text-dark"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Lado Derecho: Formulario de verificación -->
+                        <div class="col-12 col-lg-5">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white">
+                                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-person-lines-fill text-warning"></i> Datos del Aporte</h6>
+                                
+                                <div class="mb-3">
+                                    <span class="text-muted small d-block">Cliente</span>
+                                    <h6 class="fw-bold text-dark mb-0" id="aporteCliente"></h6>
+                                    <small class="text-muted" id="aporteDni"></small>
+                                </div>
+
+                                <div class="mb-4 p-3 rounded-4 bg-light border">
+                                    <label class="form-label text-dark fw-bold small"><i class="bi bi-cash-coin text-warning"></i> Monto Reportado ($ COP)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white text-dark rounded-start-pill border-end-0 px-3 fw-bold">$</span>
+                                        <input type="text" id="aporteMonto" class="form-control rounded-end-pill px-3 border-start-0 fw-bold text-warning fs-4" readonly style="background-color: #ffffff;">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <span class="text-muted small d-block">Mensaje del Cliente:</span>
+                                    <p class="fst-italic text-dark small bg-light p-2.5 rounded-3 border" id="aporteNotasCliente"></p>
+                                </div>
+
+                                <form id="formTramitarAporte" action="/ahorros/tramitar-aporte" method="POST">
+                                    <input type="hidden" name="reporte_id" id="aporteReporteId">
+                                    <div class="mb-3">
+                                        <label class="form-label text-dark fw-bold small">Comentarios Internos / Motivo de Rechazo</label>
+                                        <textarea name="observaciones" id="aporteObservaciones" class="form-control rounded-3" rows="3" placeholder="Ej. Aporte verificado con éxito, o especificar motivo de rechazo."></textarea>
+                                    </div>
+
+                                    <div class="d-flex gap-2 mt-4">
+                                        <button type="button" class="btn btn-outline-danger flex-fill rounded-pill py-2 fw-bold" id="btnRechazarAporte">
+                                            <i class="bi bi-x-circle-fill me-1"></i> Rechazar
+                                        </button>
+                                        <button type="button" class="btn btn-success flex-fill rounded-pill py-2 fw-bold" id="btnAprobarAporte">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Aprobar Aporte
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ MODAL: TRAMITAR RETIRO ═══════════ -->
+    <div class="modal fade" id="modalTramitarRetiro" tabindex="-1" aria-labelledby="modalTramitarRetiroLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white py-3">
+                    <h5 class="modal-title fw-bold" id="modalTramitarRetiroLabel">
+                        <i class="bi bi-cash-stack me-2"></i> Tramitar Retiro #<span id="retiroIdTitle"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-person-lines-fill text-dark"></i> Datos del Retiro</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Cliente</span>
+                                <h6 class="fw-bold text-dark mb-0" id="retiroCliente"></h6>
+                                <small class="text-muted" id="retiroDni"></small>
+                            </div>
+                            <div class="col-6 text-end">
+                                <span class="text-muted small d-block">Saldo Disponible</span>
+                                <h5 class="fw-bold text-info mb-0 font-monospace" id="retiroSaldo"></h5>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 p-3 rounded-4 bg-danger bg-opacity-10 border border-danger border-opacity-25 text-center">
+                            <span class="text-muted small d-block mb-1">Monto Solicitado para Retiro</span>
+                            <h3 class="fw-bold text-danger mb-0 font-monospace" id="retiroMonto"></h3>
+                        </div>
+
+                        <div class="alert alert-warning py-2 px-3 rounded-3 mb-3 d-none" id="alertSaldoInsuficiente">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Atención:</strong> El monto solicitado excede el saldo disponible del cliente. No se puede aprobar.
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="text-muted small d-block">Mensaje del Cliente:</span>
+                            <p class="fst-italic text-dark small bg-light p-2.5 rounded-3 border" id="retiroNotasCliente"></p>
+                        </div>
+
+                        <form id="formTramitarRetiro" action="/ahorros/tramitar-retiro" method="POST">
+                            <input type="hidden" name="solicitud_id" id="retiroSolicitudId">
+                            <div class="mb-3">
+                                <label class="form-label text-dark fw-bold small">Comentarios Internos / Motivo</label>
+                                <textarea name="comentarios_admin" id="retiroComentarios" class="form-control rounded-3" rows="3" placeholder="Ej. Retiro tramitado vía Nequi, o motivo de rechazo."></textarea>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4">
+                                <button type="button" class="btn btn-outline-danger flex-fill rounded-pill py-2 fw-bold" id="btnRechazarRetiro">
+                                    <i class="bi bi-x-circle-fill me-1"></i> Rechazar
+                                </button>
+                                <button type="button" class="btn btn-success flex-fill rounded-pill py-2 fw-bold" id="btnAprobarRetiro">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Ya transferí, Aprobar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos Premium -->
+    <style>
+        .px-2\.5 { padding-left: 0.65rem !important; padding-right: 0.65rem !important; }
+        .p-2\.5 { padding: 0.625rem !important; }
+
+        /* Pestañas personalizadas */
+        #solicitudesTab .nav-link.tab-aportes {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            transition: all 0.3s ease;
+        }
+        #solicitudesTab .nav-link.tab-aportes.active {
+            background-color: #10b981 !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+        #solicitudesTab .nav-link.tab-retiros {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            transition: all 0.3s ease;
+        }
+        #solicitudesTab .nav-link.tab-retiros.active {
+            background-color: #1e293b !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.35);
+        }
+        #solicitudesTab .nav-link:not(.active):hover {
+            background-color: #cbd5e1 !important;
+        }
+    </style>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // ═══════════ APORTES: MODAL DE AUDITORÍA ═══════════
+            const modalAporteEl = document.getElementById("modalAuditarAporte");
+            const modalAporte = modalAporteEl ? new bootstrap.Modal(modalAporteEl) : null;
+
+            document.querySelectorAll(".btn-verificar-aporte").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    document.getElementById("aporteIdTitle").textContent = this.dataset.id;
+                    document.getElementById("aporteImage").src = this.dataset.comprobanteUrl;
+                    document.getElementById("aporteFullLink").href = this.dataset.comprobanteUrl;
+                    document.getElementById("aporteCliente").textContent = this.dataset.cliente;
+                    document.getElementById("aporteDni").textContent = `CC: ${this.dataset.dni}`;
+                    
+                    const rawMonto = parseFloat(this.dataset.monto);
+                    document.getElementById("aporteMonto").value = rawMonto.toLocaleString("es-CO");
+                    
+                    document.getElementById("aporteNotasCliente").textContent = this.dataset.observaciones || "Sin notas adicionales.";
+                    document.getElementById("aporteReporteId").value = this.dataset.id;
+                    document.getElementById("aporteObservaciones").value = "";
+                    
+                    if (modalAporte) modalAporte.show();
+                });
+            });
+
+            // Zoom en imagen
+            const aporteImg = document.getElementById("aporteImage");
+            if (aporteImg) {
+                aporteImg.addEventListener("click", function() { window.open(this.src, '_blank'); });
+            }
+
+            // Aprobar Aporte
+            const btnAprobarAporte = document.getElementById("btnAprobarAporte");
+            if (btnAprobarAporte) {
+                btnAprobarAporte.addEventListener("click", async function() {
+                    const id = document.getElementById("aporteReporteId").value;
+                    const monto = document.getElementById("aporteMonto").value;
+
+                    const confirmacion = await Swal.fire({
+                        title: '¿Aprobar este aporte?',
+                        html: `Se acreditarán <strong>$${monto} COP</strong> al saldo de ahorro del cliente.`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, aprobar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-success rounded-pill px-4 fw-bold me-2',
+                            cancelButton: 'btn btn-outline-secondary rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
+
+                    if (!confirmacion.isConfirmed) return;
+
+                    const form = document.getElementById("formTramitarAporte");
+                    const hiddenAccion = document.createElement("input");
+                    hiddenAccion.type = "hidden";
+                    hiddenAccion.name = "accion";
+                    hiddenAccion.value = "aprobar";
+                    form.appendChild(hiddenAccion);
+                    form.submit();
+                });
+            }
+
+            // Rechazar Aporte
+            const btnRechazarAporte = document.getElementById("btnRechazarAporte");
+            if (btnRechazarAporte) {
+                btnRechazarAporte.addEventListener("click", async function() {
+                    const obs = document.getElementById("aporteObservaciones").value.trim();
+                    if (obs.length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Motivo requerido',
+                            text: 'Debes ingresar obligatoriamente un motivo de rechazo en los comentarios.',
+                            confirmButtonText: 'Entendido',
+                            customClass: { confirmButton: 'btn btn-warning rounded-pill px-4 fw-bold' },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    const confirmacion = await Swal.fire({
+                        title: '¿Rechazar este aporte?',
+                        text: 'El cliente será notificado del rechazo con tu motivo.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, rechazar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-danger rounded-pill px-4 fw-bold me-2',
+                            cancelButton: 'btn btn-outline-secondary rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
+
+                    if (!confirmacion.isConfirmed) return;
+
+                    const form = document.getElementById("formTramitarAporte");
+                    const hiddenAccion = document.createElement("input");
+                    hiddenAccion.type = "hidden";
+                    hiddenAccion.name = "accion";
+                    hiddenAccion.value = "rechazar";
+                    form.appendChild(hiddenAccion);
+                    form.submit();
+                });
+            }
+
+
+            // ═══════════ RETIROS: MODAL DE TRAMITACIÓN ═══════════
+            const modalRetiroEl = document.getElementById("modalTramitarRetiro");
+            const modalRetiro = modalRetiroEl ? new bootstrap.Modal(modalRetiroEl) : null;
+
+            document.querySelectorAll(".btn-verificar-retiro").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    document.getElementById("retiroIdTitle").textContent = this.dataset.id;
+                    document.getElementById("retiroCliente").textContent = this.dataset.cliente;
+                    document.getElementById("retiroDni").textContent = `CC: ${this.dataset.dni}`;
+                    
+                    const monto = parseFloat(this.dataset.monto);
+                    const saldo = parseFloat(this.dataset.saldo);
+                    
+                    document.getElementById("retiroMonto").textContent = `$${monto.toLocaleString("es-CO")}`;
+                    document.getElementById("retiroSaldo").textContent = `$${saldo.toLocaleString("es-CO")}`;
+                    document.getElementById("retiroNotasCliente").textContent = this.dataset.comentarios || "Sin notas adicionales.";
+                    document.getElementById("retiroSolicitudId").value = this.dataset.id;
+                    document.getElementById("retiroComentarios").value = "";
+
+                    // Mostrar/ocultar alerta de saldo insuficiente
+                    const alertSaldo = document.getElementById("alertSaldoInsuficiente");
+                    const btnAprobar = document.getElementById("btnAprobarRetiro");
+                    if (monto > saldo) {
+                        alertSaldo.classList.remove("d-none");
+                        btnAprobar.disabled = true;
+                        btnAprobar.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Saldo Insuficiente';
+                        btnAprobar.classList.replace("btn-success", "btn-secondary");
+                    } else {
+                        alertSaldo.classList.add("d-none");
+                        btnAprobar.disabled = false;
+                        btnAprobar.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Ya transferí, Aprobar';
+                        btnAprobar.classList.replace("btn-secondary", "btn-success");
+                    }
+                    
+                    if (modalRetiro) modalRetiro.show();
+                });
+            });
+
+            // Aprobar Retiro
+            const btnAprobarRetiro = document.getElementById("btnAprobarRetiro");
+            if (btnAprobarRetiro) {
+                btnAprobarRetiro.addEventListener("click", async function() {
+                    const confirmacion = await Swal.fire({
+                        title: '¿Confirmar aprobación del retiro?',
+                        html: '¿Ya realizaste la transferencia del dinero al cliente? Al aprobar, se descontará automáticamente de su saldo de ahorro.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, ya transferí y apruebo',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-success rounded-pill px-4 fw-bold me-2',
+                            cancelButton: 'btn btn-outline-secondary rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
+
+                    if (!confirmacion.isConfirmed) return;
+
+                    const form = document.getElementById("formTramitarRetiro");
+                    const hiddenAccion = document.createElement("input");
+                    hiddenAccion.type = "hidden";
+                    hiddenAccion.name = "accion";
+                    hiddenAccion.value = "aprobar";
+                    form.appendChild(hiddenAccion);
+                    form.submit();
+                });
+            }
+
+            // Rechazar Retiro
+            const btnRechazarRetiro = document.getElementById("btnRechazarRetiro");
+            if (btnRechazarRetiro) {
+                btnRechazarRetiro.addEventListener("click", async function() {
+                    const obs = document.getElementById("retiroComentarios").value.trim();
+                    if (obs.length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Motivo requerido',
+                            text: 'Debes ingresar obligatoriamente un motivo de rechazo.',
+                            confirmButtonText: 'Entendido',
+                            customClass: { confirmButton: 'btn btn-warning rounded-pill px-4 fw-bold' },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    const confirmacion = await Swal.fire({
+                        title: '¿Rechazar este retiro?',
+                        text: 'El cliente será notificado del rechazo.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, rechazar',
+                        cancelButtonText: 'Cancelar',
+                        customClass: {
+                            confirmButton: 'btn btn-danger rounded-pill px-4 fw-bold me-2',
+                            cancelButton: 'btn btn-outline-secondary rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
+
+                    if (!confirmacion.isConfirmed) return;
+
+                    const form = document.getElementById("formTramitarRetiro");
+                    const hiddenAccion = document.createElement("input");
+                    hiddenAccion.type = "hidden";
+                    hiddenAccion.name = "accion";
+                    hiddenAccion.value = "rechazar";
+                    form.appendChild(hiddenAccion);
+                    form.submit();
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>

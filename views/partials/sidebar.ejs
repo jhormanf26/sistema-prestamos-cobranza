@@ -146,6 +146,13 @@
                         </a>
                     </li>
                     <% } %>
+                    <% if (mod.ahorros !== false) { %>
+                    <li class="nav-item w-100">
+                        <a href="/ahorros/solicitudes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-piggy-bank-fill text-warning"></i> <span class="ms-1 d-inline text-warning fw-bold">Solicitudes Ahorro</span>
+                        </a>
+                    </li>
+                    <% } %>
                     <% if (mod.soporte !== false) { %>
                     <li class="nav-item w-100">
                         <a href="/admin/soporte" class="nav-link px-0 align-middle d-flex align-items-center">

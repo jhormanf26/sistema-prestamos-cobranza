@@ -2,6 +2,8 @@ const AhorroModel = require('../models/AhorroModel');
 const ClienteModel = require('../models/ClienteModel');
 const ConfigModel = require('../models/ConfigModel'); // <--- Importamos Configuración
 const emailService = require('../utils/emailService');
+const AhorroReporteModel = require('../models/AhorroReporteModel');
+const AhorroSolicitudModel = require('../models/AhorroSolicitudModel');
 
 const ahorrosController = {
 
@@ -146,6 +148,123 @@ const ahorrosController = {
             console.error("Error al actualizar la meta de ahorro:", error);
             req.flash('mensajeError', 'Error al actualizar la meta de ahorro');
             res.redirect('/ahorros');
+        }
+    },
+
+    // 7. Bandeja de Solicitudes (Aportes y Retiros)
+    solicitudes: async (req, res) => {
+        try {
+            const reportesPendientes = await AhorroReporteModel.obtenerPendientes();
+            const retirosPendientes = await AhorroSolicitudModel.obtenerPendientes();
+
+            res.render('ahorros/solicitudes', {
+                title: 'Solicitudes de Ahorros',
+                reportes: reportesPendientes,
+                retiros: retirosPendientes
+            });
+        } catch (error) {
+            console.error("Error al cargar solicitudes de ahorro:", error);
+            req.flash('mensajeError', 'Error al cargar las solicitudes');
+            res.redirect('/ahorros');
+        }
+    },
+
+    // 8. Tramitar Aporte (Aprobar o Rechazar)
+    tramitarAporte: async (req, res) => {
+        const { reporte_id, accion, observaciones } = req.body;
+        const validadorId = req.session.usuario ? req.session.usuario.id : null;
+
+        try {
+            const reporte = await AhorroReporteModel.obtenerPorId(reporte_id);
+            if (!reporte) {
+                req.flash('mensajeError', 'Reporte no encontrado');
+                return res.redirect('/ahorros/solicitudes');
+            }
+
+            if (reporte.estado !== 'pendiente') {
+                req.flash('mensajeError', 'Este reporte ya fue tramitado');
+                return res.redirect('/ahorros/solicitudes');
+            }
+
+            const estado = accion === 'aprobar' ? 'aprobado' : 'rechazado';
+            
+            await AhorroReporteModel.actualizarEstado(reporte_id, estado, observaciones, validadorId);
+
+            if (estado === 'aprobado') {
+                await AhorroModel.registrarMovimiento(
+                    reporte.cuenta_id, 
+                    'deposito', 
+                    parseFloat(reporte.monto), 
+                    observaciones || 'Aporte validado desde el portal cliente'
+                );
+            }
+
+            // Aquí se podría enviar una push notification de respuesta al cliente si el cliente tiene suscripción.
+            const { sendPushToUser } = require('../utils/pushService');
+            sendPushToUser(reporte.cliente_id, {
+                title: estado === 'aprobado' ? '✅ Aporte Aprobado' : '❌ Aporte Rechazado',
+                body: estado === 'aprobado' ? `Tu aporte de $${parseFloat(reporte.monto).toLocaleString('es-CO')} ha sido aprobado.` : `Tu aporte fue rechazado: ${observaciones}`,
+                url: '/portal-cliente'
+            }).catch(e => console.error('Push error:', e));
+
+            req.flash('mensajeExito', `Reporte ${estado} con éxito.`);
+            res.redirect('/ahorros/solicitudes');
+        } catch (error) {
+            console.error("Error al tramitar aporte:", error);
+            req.flash('mensajeError', 'Ocurrió un error al tramitar el aporte');
+            res.redirect('/ahorros/solicitudes');
+        }
+    },
+
+    // 9. Tramitar Retiro (Aprobar o Rechazar)
+    tramitarRetiro: async (req, res) => {
+        const { solicitud_id, accion, comentarios_admin } = req.body;
+        const resolutorId = req.session.usuario ? req.session.usuario.id : null;
+
+        try {
+            const solicitud = await AhorroSolicitudModel.obtenerPorId(solicitud_id);
+            if (!solicitud) {
+                req.flash('mensajeError', 'Solicitud no encontrada');
+                return res.redirect('/ahorros/solicitudes');
+            }
+
+            if (solicitud.estado !== 'pendiente') {
+                req.flash('mensajeError', 'Esta solicitud ya fue tramitada');
+                return res.redirect('/ahorros/solicitudes');
+            }
+
+            const estado = accion === 'aprobar' ? 'aprobado' : 'rechazado';
+
+            const cuenta = await AhorroModel.obtenerPorId(solicitud.cuenta_id);
+            if (estado === 'aprobado' && parseFloat(solicitud.monto_solicitado) > parseFloat(cuenta.saldo_actual)) {
+                req.flash('mensajeError', 'No se puede aprobar. El cliente no tiene saldo suficiente.');
+                return res.redirect('/ahorros/solicitudes');
+            }
+
+            await AhorroSolicitudModel.actualizarEstado(solicitud_id, estado, comentarios_admin, resolutorId);
+
+            if (estado === 'aprobado') {
+                await AhorroModel.registrarMovimiento(
+                    solicitud.cuenta_id, 
+                    'retiro', 
+                    parseFloat(solicitud.monto_solicitado), 
+                    comentarios_admin || 'Retiro aprobado y tramitado.'
+                );
+            }
+
+            const { sendPushToUser } = require('../utils/pushService');
+            sendPushToUser(solicitud.cliente_id, {
+                title: estado === 'aprobado' ? '✅ Retiro Aprobado' : '❌ Retiro Rechazado',
+                body: estado === 'aprobado' ? `Tu retiro de $${parseFloat(solicitud.monto_solicitado).toLocaleString('es-CO')} ha sido aprobado y tramitado.` : `Tu retiro fue rechazado: ${comentarios_admin}`,
+                url: '/portal-cliente'
+            }).catch(e => console.error('Push error:', e));
+
+            req.flash('mensajeExito', `Solicitud de retiro ${estado} con éxito.`);
+            res.redirect('/ahorros/solicitudes');
+        } catch (error) {
+            console.error("Error al tramitar retiro:", error);
+            req.flash('mensajeError', 'Ocurrió un error al tramitar la solicitud de retiro');
+            res.redirect('/ahorros/solicitudes');
         }
     }
 };
