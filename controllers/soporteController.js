@@ -92,10 +92,8 @@ const soporteController = {
             const payload = {
                 title: 'Soporte - Nuevo Mensaje',
                 body: mensaje.trim().length > 50 ? `${mensaje.trim().substring(0, 47)}...` : mensaje.trim(),
-                icon: '/icons/icon-192x192.png',
-                data: {
-                    url: '/portal-cliente/chat'
-                }
+                icon: '/img/clientes.png',
+                url: '/portal-cliente/chat'
             };
             
             try {

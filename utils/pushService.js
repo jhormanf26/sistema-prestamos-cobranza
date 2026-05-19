@@ -8,11 +8,11 @@ webpush.setVapidDetails(
     process.env.VAPID_PRIVATE_KEY || ''
 );
 
-async function sendPushToAll(payload) {
+async function sendPushToAdmins(payload) {
     if (!process.env.VAPID_PUBLIC_KEY) return;
     
     try {
-        const [subs] = await db.query("SELECT * FROM push_subscriptions");
+        const [subs] = await db.query("SELECT * FROM push_subscriptions WHERE usuario_id IS NOT NULL");
         for (const sub of subs) {
             const pushSubscription = {
                 endpoint: sub.endpoint,
@@ -33,7 +33,7 @@ async function sendPushToAll(payload) {
             }
         }
     } catch (e) {
-        console.error("Error en sendPushToAll:", e);
+        console.error("Error en sendPushToAdmins:", e);
     }
 }
 
@@ -65,4 +65,4 @@ async function sendPushToUser(clienteId, payload) {
     }
 }
 
-module.exports = { sendPushToAll, sendPushToUser };
+module.exports = { sendPushToAdmins, sendPushToUser };

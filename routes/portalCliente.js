@@ -20,7 +20,12 @@ router.post('/registrar-instalacion', portalClienteController.registrarInstalaci
 // Nuevas funcionalidades del Portal del Cliente
 router.post('/reportar-pago', upload.single('comprobante'), portalClienteController.reportarPago);
 router.post('/solicitar-cupo', portalClienteController.solicitarCupo);
+router.post('/reportar-aporte', upload.single('comprobante'), portalClienteController.reportarAporte);
+router.post('/solicitar-retiro', portalClienteController.solicitarRetiro);
 router.get('/chat', portalClienteController.verChat);
 router.post('/chat/enviar', portalClienteController.enviarMensajeChat);
+
+// Endpoint para polling de estado en tiempo real (Chat y Reportes)
+router.get('/estado-actual', portalClienteController.estadoActual);
 
 module.exports = router;

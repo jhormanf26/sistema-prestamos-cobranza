@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const db = require('../config/db');
-const { sendPushToAll, sendPushToUser } = require('../utils/pushService');
+const { sendPushToAdmins, sendPushToUser } = require('../utils/pushService');
 const { calcularCronograma } = require('../utils/finance');
 const emailService = require('../utils/emailService');
 const { formatCurrency } = require('../utils/formatters');
@@ -40,7 +40,7 @@ function initCronJobs() {
             const [porVencer] = await db.query(query);
 
             if (porVencer.length > 0) {
-                await sendPushToAll({
+                await sendPushToAdmins({
                     title: '⚠️ Cuotas por Vencer',
                     body: `Tienes ${porVencer.length} préstamo(s) que vencen en los próximos 3 días.`,
                     icon: '/img/logo.png',
@@ -56,7 +56,7 @@ function initCronJobs() {
             `;
             const [vencidos] = await db.query(queryVencidos);
             if (vencidos[0].total > 0) {
-                 await sendPushToAll({
+                 await sendPushToAdmins({
                     title: '🚨 Préstamos Vencidos',
                     body: `${vencidos[0].total} préstamo(s) acaban de vencer hoy.`,
                     icon: '/img/logo.png',

@@ -16,4 +16,9 @@ router.post('/transaccion', ahorrosController.procesarTransaccion);
 // Actualizar Meta de Ahorro
 router.post('/meta/:id', ahorrosController.actualizarMeta);
 
+// Bandeja de solicitudes de Aportes y Retiros
+router.get('/solicitudes', ahorrosController.solicitudes);
+router.post('/tramitar-aporte', ahorrosController.tramitarAporte);
+router.post('/tramitar-retiro', ahorrosController.tramitarRetiro);
+
 module.exports = router;

@@ -229,11 +229,11 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mt-4 pt-3 border-top d-flex gap-2">
-                                                <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-outline-dark btn-sm flex-fill">
+                                            <div class="mt-4 pt-3 border-top d-flex flex-wrap gap-2">
+                                                <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-outline-dark btn-sm flex-fill text-nowrap">
                                                     <i class="bi bi-file-earmark-pdf text-danger"></i> Cronograma
                                                 </a>
-                                                <a href="/prestamos/pdf-contrato/<%= p.id %>" target="_blank" class="btn btn-outline-dark btn-sm flex-fill">
+                                                <a href="/prestamos/pdf-contrato/<%= p.id %>" target="_blank" class="btn btn-outline-dark btn-sm flex-fill text-nowrap">
                                                     <i class="bi bi-file-text text-primary"></i> Contrato
                                                 </a>
                                                 <button type="button" class="btn btn-success btn-sm flex-fill fw-bold text-nowrap btn-reportar-pago" data-prestamo-id="<%= p.id %>" data-monto="<%= p.fecha_proxima_cuota ? Math.round(p.restante_proxima_cuota) : '' %>">
@@ -281,6 +281,56 @@
                                                     <div class="progress-bar bg-warning" style="width: <%= (cuentaAhorro.saldo_actual / cuentaAhorro.meta_monto) * 100 %>%"></div>
                                                 </div>
                                                 <p class="text-end text-muted small mt-1">Objetivo: $<%= parseFloat(cuentaAhorro.meta_monto).toLocaleString('en-US', {minimumFractionDigits: 2}) %></p>
+                                            </div>
+                                        <% } %>
+                                        <div class="mt-4 pt-3 border-top border-warning border-opacity-25 d-flex flex-wrap gap-2">
+                                            <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold text-nowrap" data-bs-toggle="modal" data-bs-target="#modalReportarAporte">
+                                                <i class="bi bi-piggy-bank me-1"></i> Reportar Aporte
+                                            </button>
+                                            <button type="button" class="btn btn-outline-dark btn-sm flex-fill fw-bold text-nowrap" data-bs-toggle="modal" data-bs-target="#modalSolicitarRetiro">
+                                                <i class="bi bi-cash-stack me-1"></i> Solicitar Retiro
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Historial de Movimientos -->
+                            <div class="col-12 col-xl-6">
+                                <div class="card border-0 shadow-sm rounded-4 h-100">
+                                    <div class="card-header bg-white border-bottom-0 p-3 pb-0">
+                                        <h6 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                                            <i class="bi bi-clock-history text-warning me-2"></i> Historial de Movimientos
+                                            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill ms-auto" style="font-size: 0.7rem;"><%= locals.movimientosAhorro ? movimientosAhorro.length : 0 %></span>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body p-0" style="max-height: 320px; overflow-y: auto;">
+                                        <% if(locals.movimientosAhorro && movimientosAhorro.length > 0) { %>
+                                            <div class="list-group list-group-flush">
+                                                <% movimientosAhorro.slice(0, 15).forEach(mov => { %>
+                                                    <div class="list-group-item border-0 px-3 py-2.5 d-flex align-items-center gap-3">
+                                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background-color: <%= mov.tipo_movimiento === 'deposito' ? '#dcfce7' : '#fee2e2' %>;">
+                                                            <i class="bi <%= mov.tipo_movimiento === 'deposito' ? 'bi-arrow-down-circle text-success' : 'bi-arrow-up-circle text-danger' %>" style="font-size: 1.1rem;"></i>
+                                                        </div>
+                                                        <div class="flex-grow-1 min-w-0">
+                                                            <div class="fw-bold small text-dark text-truncate">
+                                                                <%= mov.tipo_movimiento === 'deposito' ? 'Depósito' : 'Retiro' %>
+                                                            </div>
+                                                            <small class="text-muted" style="font-size: 0.7rem;">
+                                                                <%= new Date(mov.fecha_movimiento).toLocaleDateString() %> · <%= new Date(mov.fecha_movimiento).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                                                            </small>
+                                                        </div>
+                                                        <div class="text-end flex-shrink-0">
+                                                            <span class="fw-bold font-monospace small <%= mov.tipo_movimiento === 'deposito' ? 'text-success' : 'text-danger' %>">
+                                                                <%= mov.tipo_movimiento === 'deposito' ? '+' : '-' %>$<%= parseFloat(mov.monto).toLocaleString('es-CO') %>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                <% }) %>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="text-center py-5 px-3">
+                                                <i class="bi bi-inbox text-muted" style="font-size: 2.5rem;"></i>
+                                                <p class="text-muted small mt-2 mb-0">Aún no tienes movimientos registrados.</p>
                                             </div>
                                         <% } %>
                                     </div>
@@ -410,6 +460,132 @@
                             </div>
                         </div>
                     </div>
+
+                    <% if (cuentaAhorro) { %>
+                    <!-- Mis Aportes de Ahorro -->
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-piggy-bank text-warning me-2"></i> Mis Aportes de Ahorro</h5>
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">ID</th>
+                                            <th>Monto</th>
+                                            <th>Fecha</th>
+                                            <th>Estado</th>
+                                            <th class="text-end pe-4">Comprobante</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if(locals.reportesAporte && reportesAporte.length > 0) { %>
+                                            <% reportesAporte.forEach(ra => { %>
+                                                <tr>
+                                                    <td class="ps-4 fw-bold text-warning">#<%= ra.id %></td>
+                                                    <td>
+                                                        <h6 class="fw-bold text-dark mb-0 font-monospace">
+                                                            $<%= parseFloat(ra.monto).toLocaleString('es-CO') %>
+                                                        </h6>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted d-block">
+                                                            <%= new Date(ra.fecha_reporte).toLocaleDateString() %>
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <% if(ra.estado === 'pendiente') { %>
+                                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                            </span>
+                                                        <% } else if(ra.estado === 'aprobado') { %>
+                                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                                                            </span>
+                                                        <% } else if(ra.estado === 'rechazado') { %>
+                                                            <button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= ra.observaciones || 'No se especificó un motivo de rechazo.' %>" style="text-decoration: none;">
+                                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                                    <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                                </span>
+                                                            </button>
+                                                        <% } %>
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        <a href="<%= ra.comprobante_url %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Comprobante">
+                                                            <i class="bi bi-image"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted">Aún no has reportado ningún aporte de ahorro.</td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mis Solicitudes de Retiro -->
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cash-stack text-dark me-2"></i> Mis Solicitudes de Retiro</h5>
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">ID</th>
+                                            <th>Monto Solicitado</th>
+                                            <th>Fecha</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if(locals.solicitudesRetiro && solicitudesRetiro.length > 0) { %>
+                                            <% solicitudesRetiro.forEach(sr => { %>
+                                                <tr>
+                                                    <td class="ps-4 fw-bold">#<%= sr.id %></td>
+                                                    <td>
+                                                        <h6 class="fw-bold text-danger mb-0 font-monospace">
+                                                            $<%= parseFloat(sr.monto_solicitado).toLocaleString('es-CO') %>
+                                                        </h6>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted d-block">
+                                                            <%= new Date(sr.fecha_solicitud).toLocaleDateString() %>
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <% if(sr.estado === 'pendiente') { %>
+                                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                            </span>
+                                                        <% } else if(sr.estado === 'aprobado') { %>
+                                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                                                            </span>
+                                                        <% } else if(sr.estado === 'rechazado') { %>
+                                                            <button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= sr.comentarios || 'No se especificó un motivo de rechazo.' %>" style="text-decoration: none;">
+                                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                                    <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                                </span>
+                                                            </button>
+                                                        <% } %>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">Aún no has solicitado ningún retiro.</td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
 
                     <!-- Préstamos Históricos -->
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-secondary me-2"></i> Historial (Pagados)</h5>
@@ -690,6 +866,134 @@
         </div>
     </div>
     <% } %>
+
+    <!-- MODAL: REPORTAR APORTE AHORRO -->
+    <div class="modal fade" id="modalReportarAporte" tabindex="-1" aria-labelledby="modalReportarAporteLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-warning text-dark py-3">
+                    <h5 class="modal-title fw-bold" id="modalReportarAporteLabel">
+                        <i class="bi bi-piggy-bank me-2"></i> Reportar Aporte de Ahorro
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/portal-cliente/reportar-aporte" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="cuenta_id" value="<%= cuentaAhorro ? cuentaAhorro.id : '' %>">
+                        
+                        <!-- Cuentas de Transferencia Autorizadas -->
+                        <div class="p-3 rounded-4 mb-3 border border-dashed border-warning border-2 bg-light">
+                            <h6 class="fw-bold mb-2 text-dark"><i class="bi bi-bank text-warning me-1"></i> Canales de Aporte Autorizados</h6>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded-3 shadow-xs">
+                                    <div>
+                                        <span class="small text-muted d-block" style="font-size: 0.7rem; font-weight: 700;">CELULAR NEQUI</span>
+                                        <span class="fw-bold text-dark font-monospace" id="nequiCopyAhorro"><%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '3123456789' %></span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '3123456789' %>" title="Copiar número">
+                                        <i class="bi bi-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded-3 shadow-xs">
+                                    <div>
+                                        <span class="small text-muted d-block" style="font-size: 0.7rem; font-weight: 700;">BRE-B / TRANSFIYA (CELULAR)</span>
+                                        <span class="fw-bold text-dark font-monospace" id="transfiyaCopyAhorro"><%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '3123456789' %></span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '3123456789' %>" title="Copiar llave">
+                                        <i class="bi bi-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monto del Aporte -->
+                        <div class="mb-3">
+                            <label class="form-label text-dark fw-bold small">Monto Consignado ($ Pesos Colombianos)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-dark rounded-start-pill border-end-0 px-3 fw-bold">$</span>
+                                <input type="text" name="monto" class="form-control rounded-end-pill px-3 border-start-0 currency-input fw-bold text-warning fs-5" placeholder="0" required>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Ingresa el valor transferido sin centavos.</small>
+                        </div>
+
+                        <!-- Comprobante File Uploader -->
+                        <div class="mb-3">
+                            <label class="form-label text-dark fw-bold small">Captura o Foto del Comprobante</label>
+                            <div class="upload-area p-4 rounded-4 text-center position-relative" style="border-color: #ffc107; background-color: #fffbef;" id="dropAreaAhorro">
+                                <input type="file" name="comprobante" class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer upload-input-ahorro" id="fileInputAhorro" accept="image/*" required>
+                                <i class="bi bi-cloud-arrow-up-fill text-warning fs-1 mb-2 d-block"></i>
+                                <span class="fw-bold text-dark d-block text-name-ahorro" id="fileNameAhorro">Arrastra aquí tu comprobante o haz clic</span>
+                                <small class="text-muted" style="font-size: 0.75rem;">Formatos aceptados: JPG, JPEG, PNG (Máx 5MB)</small>
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="mb-3">
+                            <label class="form-label text-dark fw-bold small">Notas / Comentarios (Opcional)</label>
+                            <textarea name="observaciones" class="form-control rounded-3" rows="2" placeholder="Ej. Aporte de quincena"></textarea>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">
+                            <i class="bi bi-send-fill me-1"></i> Enviar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SOLICITAR RETIRO AHORRO -->
+    <div class="modal fade" id="modalSolicitarRetiro" tabindex="-1" aria-labelledby="modalSolicitarRetiroLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white py-3">
+                    <h5 class="modal-title fw-bold" id="modalSolicitarRetiroLabel">
+                        <i class="bi bi-cash-stack me-2"></i> Solicitar Retiro de Ahorro
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/portal-cliente/solicitar-retiro" method="POST">
+                    <div class="modal-body p-4">
+                        <input type="hidden" name="cuenta_id" value="<%= cuentaAhorro ? cuentaAhorro.id : '' %>">
+                        
+                        <div class="alert alert-info rounded-3 mb-4 border-0">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                <span class="fw-bold">Saldo Disponible para Retiro</span>
+                            </div>
+                            <h3 class="mb-0 text-center fw-bold text-dark">$<%= cuentaAhorro ? parseFloat(cuentaAhorro.saldo_actual).toLocaleString('es-CO') : '0' %></h3>
+                        </div>
+
+                        <!-- Monto a Retirar -->
+                        <div class="mb-3">
+                            <label class="form-label text-dark fw-bold small">Monto que deseas retirar</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-dark rounded-start-pill border-end-0 px-3 fw-bold">$</span>
+                                <input type="text" name="monto_solicitado" class="form-control rounded-end-pill px-3 border-start-0 currency-input fw-bold text-dark fs-5" placeholder="0" required>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">El dinero será enviado a la cuenta registrada a tu nombre.</small>
+                        </div>
+
+                        <!-- Comentarios -->
+                        <div class="mb-3">
+                            <label class="form-label text-dark fw-bold small">Motivo / Notas (Opcional)</label>
+                            <textarea name="comentarios" class="form-control rounded-3" rows="2" placeholder="Ej. Retiro parcial de ahorros"></textarea>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">
+                            <i class="bi bi-send-fill me-1"></i> Solicitar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast de Notificación Rápida -->
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
@@ -1059,6 +1363,98 @@
                     });
                 });
             });
+
+            // --- 10. POLLING EN TIEMPO REAL (ESTADO Y CHAT) ---
+            setInterval(async () => {
+                try {
+                    const res = await fetch('/portal-cliente/estado-actual');
+                    const data = await res.json();
+                    if (data.success) {
+                        // 1. Actualizar Chat Badges
+                        const openSidebarBtn = document.getElementById('openSidebarBtn');
+                        if (openSidebarBtn) {
+                            let mobileBadge = openSidebarBtn.querySelector('.bg-danger.rounded-circle');
+                            if (data.chatSinLeer > 0) {
+                                if (!mobileBadge) {
+                                    openSidebarBtn.insertAdjacentHTML('beforeend', `<span class="position-absolute top-0 start-100 translate-middle p-1.5 bg-danger border border-white rounded-circle animate-pulse" style="width: 10px; height: 10px;" id="mobileChatBadge"><span class="visually-hidden">Mensajes no leídos</span></span>`);
+                                }
+                            } else if (mobileBadge) {
+                                mobileBadge.remove();
+                            }
+                        }
+
+                        const sidebarLink = document.querySelector('#menu a[href="/portal-cliente/chat"]');
+                        if (sidebarLink) {
+                            let badge = sidebarLink.querySelector('.badge');
+                            if (data.chatSinLeer > 0) {
+                                if (!badge) {
+                                    sidebarLink.insertAdjacentHTML('beforeend', `<span class="badge rounded-pill bg-danger ms-auto me-2 text-white animate-pulse" style="font-size: 0.7rem; padding: 0.3em 0.55em;">${data.chatSinLeer}</span>`);
+                                } else {
+                                    badge.textContent = data.chatSinLeer;
+                                }
+                            } else if (badge) {
+                                badge.remove();
+                            }
+                        }
+
+                        // 2. Actualizar Tabla de Reportes
+                        if (data.reportes) {
+                            data.reportes.forEach(reporte => {
+                                const trs = Array.from(document.querySelectorAll('#seccion-reportes + .card tbody tr'));
+                                const row = trs.find(tr => {
+                                    const firstTd = tr.querySelector('td.ps-4');
+                                    return firstTd && firstTd.textContent.trim() === '#' + reporte.id;
+                                });
+                                
+                                if (row) {
+                                    const estadoTd = row.querySelector('td:nth-child(5)');
+                                    if (estadoTd) {
+                                        const currentHtml = estadoTd.innerHTML.toLowerCase();
+                                        if (!currentHtml.includes(reporte.estado.toLowerCase())) {
+                                            let newHtml = '';
+                                            if (reporte.estado === 'pendiente') {
+                                                newHtml = `<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                            </span>`;
+                                            } else if (reporte.estado === 'aprobado') {
+                                                newHtml = `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                                                            </span>`;
+                                            } else if (reporte.estado === 'rechazado') {
+                                                const motivo = reporte.observaciones || 'No se especificaron motivos en el sistema.';
+                                                newHtml = `<button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="${motivo}" style="text-decoration: none;">
+                                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                                    <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                                </span>
+                                                            </button>`;
+                                            }
+                                            estadoTd.innerHTML = newHtml;
+                                            
+                                            // Re-bind the click event for the new button
+                                            const newBtn = estadoTd.querySelector('.btn-ver-motivo');
+                                            if (newBtn) {
+                                                newBtn.addEventListener('click', function(e) {
+                                                    e.preventDefault();
+                                                    Swal.fire({
+                                                        title: 'Motivo del Rechazo',
+                                                        text: this.getAttribute('data-motivo'),
+                                                        icon: 'warning',
+                                                        confirmButtonText: 'Entendido',
+                                                        customClass: { confirmButton: 'btn btn-success rounded-pill px-4 fw-bold' },
+                                                        buttonsStyling: false
+                                                    });
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling status:', error);
+                }
+            }, 8000); // Polling cada 8 segundos
         });
     </script>
 </body>

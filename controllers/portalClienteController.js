@@ -6,6 +6,8 @@ const PagoModel = require('../models/PagoModel');
 const ReportePagoModel = require('../models/ReportePagoModel');
 const SolicitudCreditoModel = require('../models/SolicitudCreditoModel');
 const SoporteMensajeModel = require('../models/SoporteMensajeModel');
+const AhorroReporteModel = require('../models/AhorroReporteModel');
+const AhorroSolicitudModel = require('../models/AhorroSolicitudModel');
 const finance = require('../utils/finance');
 const bcrypt = require('bcryptjs');
 
@@ -90,6 +92,9 @@ const portalClienteController = {
             const cuentaAhorro = await AhorroModel.buscarPorCliente(clienteId);
             const empenos = await EmpenoModel.obtenerPorCliente(clienteId);
             const reportesPago = await ReportePagoModel.obtenerPorCliente(clienteId);
+            const reportesAporte = await AhorroReporteModel.obtenerPorCliente(clienteId);
+            const solicitudesRetiro = await AhorroSolicitudModel.obtenerPorCliente(clienteId);
+            const movimientosAhorro = cuentaAhorro ? await AhorroModel.obtenerMovimientos(cuentaAhorro.id) : [];
             
             // Separar préstamos por estado para facilidad
             const prestamosActivos = prestamos.filter(p => p.estado !== 'pagado');
@@ -128,6 +133,9 @@ const portalClienteController = {
                 cuentaAhorro,
                 empenos,
                 reportesPago,
+                reportesAporte,
+                solicitudesRetiro,
+                movimientosAhorro,
                 manifestPath: '/manifest-cliente.json',
                 themeColor: '#10b981'
             });
@@ -228,6 +236,15 @@ const portalClienteController = {
                 observaciones: observaciones || null
             });
 
+            // Notificar a los administradores
+            const { sendPushToAdmins } = require('../utils/pushService');
+            sendPushToAdmins({
+                title: `💰 Nuevo Reporte de Pago`,
+                body: `${req.session.cliente.nombre || 'Un cliente'} ha subido un comprobante por $${cleanMonto.toLocaleString('es-CO')}.`,
+                icon: '/img/icon-192.png',
+                url: '/reportes'
+            }).catch(e => console.error('Error enviando push de reporte:', e));
+
             req.flash('mensajeExito', 'Comprobante reportado con éxito. Está en espera de verificación.');
             res.redirect('/portal-cliente');
         } catch (error) {
@@ -276,6 +293,15 @@ const portalClienteController = {
                 cuotas: parseInt(cuotas),
                 frecuencia: frecuencia || 'quincenal' // por defecto
             });
+
+            // Notificar a los administradores
+            const { sendPushToAdmins } = require('../utils/pushService');
+            sendPushToAdmins({
+                title: `🚀 Nueva Solicitud de Desembolso`,
+                body: `${req.session.cliente.nombre || 'Un cliente'} ha solicitado un cupo rápido por $${cleanMonto.toLocaleString('es-CO')}.`,
+                icon: '/img/icon-192.png',
+                url: '/solicitudes'
+            }).catch(e => console.error('Error enviando push de solicitud:', e));
 
             req.flash('mensajeExito', 'Tu solicitud de desembolso ha sido enviada con éxito. Un asesor la revisará pronto.');
             res.redirect('/portal-cliente');
@@ -330,6 +356,15 @@ const portalClienteController = {
                 mensaje: mensaje.trim()
             });
 
+            // Notificar a los administradores
+            const { sendPushToAdmins } = require('../utils/pushService');
+            sendPushToAdmins({
+                title: `💬 Nuevo mensaje de ${req.session.cliente.nombre || 'Cliente'}`,
+                body: mensaje.trim().length > 50 ? `${mensaje.trim().substring(0, 47)}...` : mensaje.trim(),
+                icon: '/img/icon-192.png',
+                url: '/soporte'
+            }).catch(e => console.error('Error enviando push a admins:', e));
+
             if (req.xhr || req.headers.accept.indexOf('json') > -1) {
                 return res.json({ success: true, mensaje: mensaje.trim() });
             }
@@ -340,6 +375,143 @@ const portalClienteController = {
                 return res.status(500).json({ success: false, error: 'Error en el servidor' });
             }
             res.redirect('/portal-cliente/chat');
+        }
+    },
+
+    // 5. Obtener estado actual (polling)
+    estadoActual: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            
+            // Usamos res.locals que ya fue cargado por app.js
+            const chatSinLeer = res.locals.clienteChatSinLeer || 0;
+
+            // Obtener reportes
+            const reportes = await ReportePagoModel.obtenerPorCliente(clienteId);
+            const reportesStatus = reportes.map(r => ({
+                id: r.id,
+                estado: r.estado,
+                observaciones: r.observaciones
+            }));
+
+            res.json({
+                success: true,
+                chatSinLeer,
+                reportes: reportesStatus
+            });
+        } catch (error) {
+            console.error("Error en estadoActual:", error);
+            res.status(500).json({ success: false });
+        }
+    },
+
+    // 6. Reportar aporte de ahorro subiendo comprobante
+    reportarAporte: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const { cuenta_id, monto, observaciones } = req.body;
+
+            if (!req.file) {
+                req.flash('mensajeError', 'Por favor, sube una imagen de tu comprobante de aporte.');
+                return res.redirect('/portal-cliente');
+            }
+
+            if (!cuenta_id || !monto) {
+                req.flash('mensajeError', 'La cuenta y el monto son requeridos.');
+                return res.redirect('/portal-cliente');
+            }
+
+            // Limpiar formato de moneda estilo Colombia (quitar puntos de miles)
+            const cleanMonto = parseFloat(monto.toString().replace(/\./g, '').replace(/,/g, '.').trim());
+
+            if (isNaN(cleanMonto) || cleanMonto <= 0) {
+                req.flash('mensajeError', 'Monto inválido.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const comprobanteUrl = `/uploads/${req.file.filename}`;
+
+            await AhorroReporteModel.crear({
+                cuenta_id: parseInt(cuenta_id),
+                cliente_id: clienteId,
+                monto: cleanMonto,
+                comprobante_url: comprobanteUrl,
+                observaciones: observaciones || null
+            });
+
+            // Notificar a los administradores
+            const { sendPushToAdmins } = require('../utils/pushService');
+            sendPushToAdmins({
+                title: `💰 Nuevo Aporte de Ahorro`,
+                body: `${req.session.cliente.nombre || 'Un cliente'} ha subido un comprobante de ahorro por $${cleanMonto.toLocaleString('es-CO')}.`,
+                icon: '/img/icon-192.png',
+                url: '/ahorros/solicitudes'
+            }).catch(e => console.error('Error enviando push de aporte de ahorro:', e));
+
+            req.flash('mensajeExito', 'Comprobante de ahorro reportado con éxito. Está en espera de verificación.');
+            res.redirect('/portal-cliente');
+        } catch (error) {
+            console.error("Error en portalClienteController.reportarAporte:", error);
+            req.flash('mensajeError', 'Ocurrió un error al procesar tu comprobante.');
+            res.redirect('/portal-cliente');
+        }
+    },
+
+    // 7. Solicitar retiro de ahorro
+    solicitarRetiro: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const { cuenta_id, monto_solicitado, comentarios } = req.body;
+
+            if (!cuenta_id || !monto_solicitado) {
+                req.flash('mensajeError', 'El monto es requerido.');
+                return res.redirect('/portal-cliente');
+            }
+
+            // Limpiar formato de moneda estilo Colombia (quitar puntos)
+            const cleanMonto = parseFloat(monto_solicitado.toString().replace(/\./g, '').replace(/,/g, '.').trim());
+
+            if (isNaN(cleanMonto) || cleanMonto <= 0) {
+                req.flash('mensajeError', 'Monto solicitado inválido.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const cuenta = await AhorroModel.obtenerPorId(cuenta_id);
+
+            if (!cuenta || cuenta.cliente_id !== clienteId) {
+                req.flash('mensajeError', 'Cuenta de ahorros no encontrada.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const saldoDisponible = parseFloat(cuenta.saldo_actual || 0);
+
+            if (cleanMonto > saldoDisponible) {
+                req.flash('mensajeError', `El monto solicitado excede tu saldo disponible ($ ${saldoDisponible.toLocaleString('es-CO')}).`);
+                return res.redirect('/portal-cliente');
+            }
+
+            await AhorroSolicitudModel.crear({
+                cuenta_id: parseInt(cuenta_id),
+                cliente_id: clienteId,
+                monto_solicitado: cleanMonto,
+                comentarios: comentarios || null
+            });
+
+            // Notificar a los administradores
+            const { sendPushToAdmins } = require('../utils/pushService');
+            sendPushToAdmins({
+                title: `💸 Solicitud de Retiro de Ahorro`,
+                body: `${req.session.cliente.nombre || 'Un cliente'} ha solicitado retirar $${cleanMonto.toLocaleString('es-CO')} de sus ahorros.`,
+                icon: '/img/icon-192.png',
+                url: '/ahorros/solicitudes'
+            }).catch(e => console.error('Error enviando push de solicitud de retiro:', e));
+
+            req.flash('mensajeExito', 'Tu solicitud de retiro de ahorro ha sido enviada con éxito. Un asesor la revisará pronto.');
+            res.redirect('/portal-cliente');
+        } catch (error) {
+            console.error("Error en portalClienteController.solicitarRetiro:", error);
+            req.flash('mensajeError', 'Error al procesar tu solicitud de retiro.');
+            res.redirect('/portal-cliente');
         }
     }
 };

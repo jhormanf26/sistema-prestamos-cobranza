@@ -205,6 +205,51 @@ async function runMigrations() {
     } catch (e) {
         console.error('❌ Error al inyectar plantilla de pago rechazado:', e.message);
     }
+    // 11. Tablas para aportes y retiros de ahorro desde el portal cliente
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS reportes_aporte_ahorro (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cuenta_id INT NOT NULL,
+                cliente_id INT NOT NULL,
+                monto DECIMAL(15,2) NOT NULL,
+                comprobante_url VARCHAR(255) NOT NULL,
+                fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                estado ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+                observaciones TEXT,
+                fecha_validacion TIMESTAMP NULL,
+                usuario_validador_id INT NULL,
+                FOREIGN KEY (cuenta_id) REFERENCES cuentas_ahorro(id) ON DELETE CASCADE,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+                FOREIGN KEY (usuario_validador_id) REFERENCES usuarios(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [reportes_aporte_ahorro] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [reportes_aporte_ahorro]:', e.message);
+    }
+
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS solicitudes_retiro_ahorro (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cuenta_id INT NOT NULL,
+                cliente_id INT NOT NULL,
+                monto_solicitado DECIMAL(15,2) NOT NULL,
+                estado ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+                fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                fecha_resolucion TIMESTAMP NULL,
+                usuario_resolutor_id INT NULL,
+                comentarios TEXT,
+                FOREIGN KEY (cuenta_id) REFERENCES cuentas_ahorro(id) ON DELETE CASCADE,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+                FOREIGN KEY (usuario_resolutor_id) REFERENCES usuarios(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [solicitudes_retiro_ahorro] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [solicitudes_retiro_ahorro]:', e.message);
+    }
 
     console.log('✅ Migraciones automáticas finalizadas.');
 }
