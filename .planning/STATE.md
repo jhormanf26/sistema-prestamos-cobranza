@@ -50,6 +50,7 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 44. **[HECHO]** Registrar formalmente la plantilla de correo `pago_rechazado` en la base de datos MySQL (tabla `plantillas_correo`) y en el archivo de volcado `bk_basededatos.sql`, haciéndola 100% editable por el administrador desde el panel de control y completamente dinámica (TDD verificado al 100%).
 45. **[HECHO]** Diseñar e implementar indicadores visuales (badges animados) de mensajes sin leer en la barra lateral del administrador y en el Portal del Cliente, y corregir bug de la bandeja de soporte (c.no_leidos a c.sin_leer) para un feedback en tiempo real 100% verificado por TDD.
 46. **[HECHO]** Implementar indicadores de soporte premium condicionales en cabeceras móviles (menú hamburguesa flotante) y un banner destacado estilo Glassmorphism en el Dashboard del Portal del Cliente, 100% cubierto por pruebas de integración TDD (`tests/portalClientesAlertas.test.js`).
+47. **[HECHO]** Corregir error de enrutamiento `Cannot GET /admin/soporte` en producción agregando los middlewares de carga de archivos (`uploadAudio.js` y `uploadImage.js`) que habían quedado fuera del commit anterior.
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 
