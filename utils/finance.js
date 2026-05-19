@@ -56,6 +56,37 @@ const finance = {
         }
 
         return listaCuotas;
+    },
+
+    /**
+     * Obtiene la proxima cuota pendiente de un prestamo.
+     * @param {number} montoTotal - Monto total a pagar del prestamo.
+     * @param {number} cuotas - Cantidad de cuotas del prestamo.
+     * @param {string} frecuencia - Frecuencia de pago ('diario', 'semanal', etc.).
+     * @param {string|Date} fechaInicio - Fecha de inicio del prestamo.
+     * @param {number} totalPagado - Suma de pagos realizados hasta la fecha.
+     * @returns {Object|null} La proxima cuota pendiente, o null si ya esta todo pagado.
+     */
+    obtenerProximaCuota: (montoTotal, cuotas, frecuencia, fechaInicio, totalPagado) => {
+        let saldoPagado = parseFloat(totalPagado || 0);
+        const cronograma = finance.calcularCronograma(parseFloat(montoTotal), parseInt(cuotas), frecuencia, fechaInicio);
+        
+        for (let c of cronograma) {
+            const mc = parseFloat(c.monto);
+            if (saldoPagado >= (mc - 0.1)) {
+                // Esta cuota esta completamente pagada
+                saldoPagado -= mc;
+            } else {
+                // Esta cuota es la proxima pendiente (puede estar parcialmente pagada o totalmente sin pagar)
+                return {
+                    numero: c.numero,
+                    fecha: c.fecha,
+                    monto: c.monto,
+                    restante: mc - saldoPagado
+                };
+            }
+        }
+        return null;
     }
 };
 

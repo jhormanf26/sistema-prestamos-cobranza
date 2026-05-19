@@ -13,4 +13,7 @@ router.post('/guardar', ahorrosController.guardarCuenta);
 router.get('/ver/:id', ahorrosController.verCuenta);
 router.post('/transaccion', ahorrosController.procesarTransaccion);
 
+// Actualizar Meta de Ahorro
+router.post('/meta/:id', ahorrosController.actualizarMeta);
+
 module.exports = router;

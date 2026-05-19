@@ -118,6 +118,24 @@ class AhorroModel {
             throw error;
         }
     }
+
+    /**
+     * Actualiza la meta de ahorro (monto y nombre) de una cuenta.
+     * @param {number} cuentaId - ID de la cuenta de ahorros.
+     * @param {number|null} metaMonto - Monto objetivo de la meta.
+     * @param {string|null} metaNombre - Nombre de la meta.
+     * @returns {Promise<any>}
+     */
+    static async actualizarMeta(cuentaId, metaMonto = null, metaNombre = null) {
+        try {
+            const query = 'UPDATE cuentas_ahorro SET meta_monto = ?, meta_nombre = ? WHERE id = ?';
+            const [result] = await db.query(query, [metaMonto, metaNombre, cuentaId]);
+            return result;
+        } catch (error) {
+            console.error("Error al actualizar meta de ahorro:", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = AhorroModel;

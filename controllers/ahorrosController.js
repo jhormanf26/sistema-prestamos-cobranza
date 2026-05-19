@@ -127,6 +127,26 @@ const ahorrosController = {
             req.flash('mensajeError', 'Error en la transacción');
             res.redirect(`/ahorros/ver/${cuenta_id}`);
         }
+    },
+
+    // 6. Actualizar Meta de Ahorro
+    actualizarMeta: async (req, res) => {
+        const { id } = req.params;
+        const { meta_nombre, meta_monto } = req.body;
+        
+        try {
+            // Limpiar puntos de miles y formatear a decimal/float
+            const metaMontoFinal = meta_monto ? parseFloat(meta_monto.replace(/\./g, '')) : null;
+            
+            await AhorroModel.actualizarMeta(id, metaMontoFinal, meta_nombre || null);
+            
+            req.flash('mensajeExito', 'Meta de ahorro actualizada correctamente');
+            res.redirect('/ahorros');
+        } catch (error) {
+            console.error("Error al actualizar la meta de ahorro:", error);
+            req.flash('mensajeError', 'Error al actualizar la meta de ahorro');
+            res.redirect('/ahorros');
+        }
     }
 };
 
