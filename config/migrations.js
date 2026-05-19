@@ -103,6 +103,108 @@ async function runMigrations() {
     } catch (e) {
         if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [push_texto_0d]:', e.message);
     }
+    // 8. Nuevas tablas para Portal de Clientes, Loyalty y Chat
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS reportes_pago (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                prestamo_id INT NOT NULL,
+                cliente_id INT NOT NULL,
+                monto DECIMAL(15,2) NOT NULL,
+                comprobante_url VARCHAR(255) NOT NULL,
+                fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                estado ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+                observaciones TEXT,
+                fecha_validacion TIMESTAMP NULL,
+                usuario_validador_id INT NULL,
+                FOREIGN KEY (prestamo_id) REFERENCES prestamos(id) ON DELETE CASCADE,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+                FOREIGN KEY (usuario_validador_id) REFERENCES usuarios(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [reportes_pago] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [reportes_pago]:', e.message);
+    }
+
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS solicitudes_credito (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cliente_id INT NOT NULL,
+                monto_solicitado DECIMAL(15,2) NOT NULL,
+                cuotas INT NOT NULL,
+                frecuencia VARCHAR(50) DEFAULT 'mensual',
+                estado ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+                fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                fecha_resolucion TIMESTAMP NULL,
+                usuario_resolutor_id INT NULL,
+                comentarios TEXT,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+                FOREIGN KEY (usuario_resolutor_id) REFERENCES usuarios(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [solicitudes_credito] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [solicitudes_credito]:', e.message);
+    }
+
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS soporte_mensajes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cliente_id INT NOT NULL,
+                usuario_id INT NULL,
+                remitente ENUM('cliente', 'administrador') NOT NULL,
+                mensaje TEXT NOT NULL,
+                fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                leido TINYINT(1) DEFAULT 0,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [soporte_mensajes] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [soporte_mensajes]:', e.message);
+    }
+
+    // 9. Nuevos campos de configuración para canales de pago
+    try {
+        await db.query("ALTER TABLE configuracion ADD COLUMN nequi_numero VARCHAR(50) NULL DEFAULT '';");
+        console.log('✅ Columna [nequi_numero] agregada a la tabla [configuracion]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [nequi_numero]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE configuracion ADD COLUMN breve_numero VARCHAR(50) NULL DEFAULT '';");
+        console.log('✅ Columna [breve_numero] agregada a la tabla [configuracion]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [breve_numero]:', e.message);
+    }
+
+    // 10. Inserción de plantilla de pago rechazado si no existe
+    try {
+        const [rows] = await db.query('SELECT id FROM plantillas_correo WHERE slug = ?', ['pago_rechazado']);
+        if (rows.length === 0) {
+            await db.query(`
+                INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disponibles, contenido_html)
+                VALUES (
+                    'Reporte de Pago Rechazado',
+                    'pago_rechazado',
+                    'Comprobante de Pago Rechazado',
+                    'Se envía cuando la administración rechaza un comprobante de pago reportado por el cliente desde el portal.',
+                    'cliente, monto, fecha, motivo, moneda',
+                    '<!DOCTYPE html><html><body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;"><div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 4px solid #dc3545;"><h2 style="color: #dc3545; text-align: center; margin-top: 0;">Comprobante de Pago Rechazado</h2><p style="color: #333333; font-size: 16px;">Hola <strong>{{cliente}}</strong>,</p><p style="color: #555555; line-height: 1.5;">Lamentamos informarte que el comprobante de pago que reportaste por el monto de <strong>{{moneda}}{{monto}}</strong> el día <strong>{{fecha}}</strong> ha sido rechazado tras la revisión de nuestro equipo administrativo.</p><div style="background-color: #fff3f3; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0;"><h4 style="margin-top: 0; color: #dc3545;">Motivo del rechazo:</h4><p style="margin-bottom: 0; color: #333;"><em>{{motivo}}</em></p></div><p style="color: #555555; line-height: 1.5;">Te invitamos a ingresar al Portal del Cliente y subir un nuevo comprobante corregido, o a contactar a nuestro equipo de soporte técnico a través del chat interno para más detalles.</p><br><p style="color: #777777; font-size: 14px; text-align: center; border-top: 1px solid #eeeeee; padding-top: 20px;">Este es un mensaje automático, por favor no respondas a este correo.</p></div></body></html>'
+                )
+            `);
+            console.log('✅ Plantilla de correo [pago_rechazado] inyectada automáticamente');
+        } else {
+            console.log('ℹ️ La plantilla [pago_rechazado] ya existe en la base de datos.');
+        }
+    } catch (e) {
+        console.error('❌ Error al inyectar plantilla de pago rechazado:', e.message);
+    }
 
     console.log('✅ Migraciones automáticas finalizadas.');
 }
