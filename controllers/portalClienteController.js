@@ -321,7 +321,8 @@ const portalClienteController = {
             // Obtener el historial completo
             const mensajes = await SoporteMensajeModel.obtenerChatCompleto(clienteId);
 
-            // Marcar mensajes del administrador como leídos por el cliente
+            // Marcar mensajes del administrador como entregados y leídos por el cliente
+            await SoporteMensajeModel.marcarComoEntregado(clienteId, 'administrador');
             await SoporteMensajeModel.marcarComoLeido(clienteId, 'administrador');
 
             res.render('portal-cliente/chat', {
@@ -382,6 +383,13 @@ const portalClienteController = {
     estadoActual: async (req, res) => {
         try {
             const clienteId = req.session.cliente.id;
+            
+            // Marcar mensajes del administrador como entregados silenciosamente en cada polling de estado del dashboard
+            try {
+                await SoporteMensajeModel.marcarComoEntregado(clienteId, 'administrador');
+            } catch (e) {
+                console.error("Error al auto-marcar entregados en estadoActual:", e.message);
+            }
             
             // Usamos res.locals que ya fue cargado por app.js
             const chatSinLeer = res.locals.clienteChatSinLeer || 0;

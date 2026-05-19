@@ -61,6 +61,17 @@ class SoporteMensajeModel {
      */
     static async obtenerChatsActivos() {
         try {
+            // Marcar automáticamente todos los mensajes pendientes de clientes como entregados al consultar la bandeja
+            try {
+                await db.query(`
+                    UPDATE soporte_mensajes 
+                    SET fecha_entregado = IFNULL(fecha_entregado, CURRENT_TIMESTAMP) 
+                    WHERE remitente = 'cliente' AND fecha_entregado IS NULL
+                `);
+            } catch (e) {
+                console.error("Error al auto-marcar entregados en obtenerChatsActivos:", e.message);
+            }
+
             const query = `
                 SELECT 
                     c.id as cliente_id, 
@@ -84,7 +95,7 @@ class SoporteMensajeModel {
     }
 
     /**
-     * Marca como leídos los mensajes de un remitente específico para un cliente.
+     * Marca como leídos los mensajes de un remitente específico para un cliente, registrando el timestamp del visto.
      * @param {number} clienteId ID del cliente.
      * @param {string} remitente Quién envió los mensajes que queremos marcar como leídos ('cliente', 'administrador').
      * @returns {Promise<Object>} Resultado de la actualización de MySQL.
@@ -94,13 +105,37 @@ class SoporteMensajeModel {
         try {
             const query = `
                 UPDATE soporte_mensajes 
-                SET leido = 1 
+                SET leido = 1,
+                    fecha_visto = IFNULL(fecha_visto, CURRENT_TIMESTAMP),
+                    fecha_entregado = IFNULL(fecha_entregado, CURRENT_TIMESTAMP)
                 WHERE cliente_id = ? AND remitente = ? AND leido = 0
             `;
             const [result] = await db.query(query, [clienteId, remitente]);
             return result;
         } catch (error) {
             console.error("Error en SoporteMensajeModel.marcarComoLeido:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Marca como entregados los mensajes de un remitente específico para un cliente, registrando la fecha de entrega.
+     * @param {number} clienteId ID del cliente.
+     * @param {string} remitente Quién envió los mensajes que queremos marcar como entregados ('cliente', 'administrador').
+     * @returns {Promise<Object>} Resultado de la actualización de MySQL.
+     * @throws {Error} Si hay un error en la base de datos.
+     */
+    static async marcarComoEntregado(clienteId, remitente) {
+        try {
+            const query = `
+                UPDATE soporte_mensajes 
+                SET fecha_entregado = IFNULL(fecha_entregado, CURRENT_TIMESTAMP) 
+                WHERE cliente_id = ? AND remitente = ? AND fecha_entregado IS NULL
+            `;
+            const [result] = await db.query(query, [clienteId, remitente]);
+            return result;
+        } catch (error) {
+            console.error("Error en SoporteMensajeModel.marcarComoEntregado:", error);
             throw error;
         }
     }

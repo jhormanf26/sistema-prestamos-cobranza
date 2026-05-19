@@ -40,7 +40,8 @@ const soporteController = {
 
             const mensajes = await SoporteMensajeModel.obtenerChatCompleto(clienteId);
 
-            // Marcar mensajes enviados por el cliente como leídos por el administrador
+            // Marcar mensajes enviados por el cliente como entregados y leídos por el administrador
+            await SoporteMensajeModel.marcarComoEntregado(clienteId, 'cliente');
             await SoporteMensajeModel.marcarComoLeido(clienteId, 'cliente');
 
             res.json({

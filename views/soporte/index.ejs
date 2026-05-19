@@ -235,8 +235,20 @@
                 let html = "";
                 mensajes.forEach(m => {
                     const esAdmin = m.remitente === 'administrador';
+                    const localTime = m.fecha_envio ? new Date(m.fecha_envio).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '';
                     
                     if (esAdmin) {
+                        let ticks = '';
+                        if (m.fecha_visto) {
+                            const vistoTime = new Date(m.fecha_visto).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                            ticks = `<i class="bi bi-check2-all" style="font-size: 0.85rem; color: #10b981; margin-left: 2px;" title="Leído a las ${vistoTime}"></i>`;
+                        } else if (m.fecha_entregado) {
+                            const entregadoTime = new Date(m.fecha_entregado).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                            ticks = `<i class="bi bi-check2-all text-muted" style="font-size: 0.85rem; margin-left: 2px;" title="Entregado a las ${entregadoTime}"></i>`;
+                        } else {
+                            ticks = `<i class="bi bi-check2 text-muted" style="font-size: 0.85rem; margin-left: 2px;" title="Enviado"></i>`;
+                        }
+                        
                         html += `
                             <div class="d-flex flex-column align-items-end mb-2">
                                 <div class="px-3.5 py-2.5 text-white shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-radius: 18px 18px 0px 18px; max-width: 75%; word-break: break-word;">
@@ -245,8 +257,8 @@
                                     </div>
                                     <p class="mb-0 small" style="line-height: 1.4;">${m.mensaje}</p>
                                 </div>
-                                <span class="text-muted mt-1 me-1" style="font-size: 0.65rem;">
-                                    ${new Date(m.fecha_envio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                <span class="text-muted mt-1 me-1 d-flex align-items-center gap-1" style="font-size: 0.65rem;">
+                                    ${localTime} ${ticks}
                                 </span>
                             </div>
                         `;
@@ -256,8 +268,8 @@
                                 <div class="bg-white border text-dark px-3.5 py-2.5 shadow-sm" style="border-radius: 18px 18px 18px 0px; max-width: 75%; word-break: break-word;">
                                     <p class="mb-0 small" style="line-height: 1.4;">${m.mensaje}</p>
                                 </div>
-                                <span class="text-muted mt-1 ms-1" style="font-size: 0.65rem;">
-                                    ${new Date(m.fecha_envio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                <span class="text-muted mt-1 ms-1 d-flex align-items-center gap-1" style="font-size: 0.65rem;">
+                                    ${localTime}
                                 </span>
                             </div>
                         `;

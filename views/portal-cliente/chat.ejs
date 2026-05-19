@@ -76,7 +76,12 @@
                                                         <div class="px-3.5 py-2.5 text-white shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 18px 18px 0px 18px; max-width: 75%; word-break: break-word;">
                                                             <p class="mb-0 small" style="line-height: 1.4;"><%= m.mensaje %></p>
                                                         </div>
-                                                        <span class="text-muted mt-1" style="font-size: 0.65rem;">
+                                                        <span class="text-muted mt-1 msg-time d-flex align-items-center gap-1" 
+                                                              data-time="<%= m.fecha_envio ? (m.fecha_envio instanceof Date ? m.fecha_envio.toISOString() : new Date(m.fecha_envio).toISOString()) : '' %>" 
+                                                              data-remitente="<%= m.remitente %>" 
+                                                              data-entregado="<%= m.fecha_entregado ? (m.fecha_entregado instanceof Date ? m.fecha_entregado.toISOString() : new Date(m.fecha_entregado).toISOString()) : '' %>" 
+                                                              data-visto="<%= m.fecha_visto ? (m.fecha_visto instanceof Date ? m.fecha_visto.toISOString() : new Date(m.fecha_visto).toISOString()) : '' %>" 
+                                                              style="font-size: 0.65rem;">
                                                             <%= new Date(m.fecha_envio).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) %>
                                                         </span>
                                                     </div>
@@ -89,7 +94,10 @@
                                                             </div>
                                                             <p class="mb-0 small" style="line-height: 1.4;"><%= m.mensaje %></p>
                                                         </div>
-                                                        <span class="text-muted mt-1 ms-1" style="font-size: 0.65rem;">
+                                                        <span class="text-muted mt-1 ms-1 msg-time d-flex align-items-center gap-1" 
+                                                              data-time="<%= m.fecha_envio ? (m.fecha_envio instanceof Date ? m.fecha_envio.toISOString() : new Date(m.fecha_envio).toISOString()) : '' %>" 
+                                                              data-remitente="<%= m.remitente %>" 
+                                                              style="font-size: 0.65rem;">
                                                             <%= new Date(m.fecha_envio).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) %>
                                                         </span>
                                                     </div>
@@ -263,6 +271,41 @@
                 }
             });
 
+            // --- FORMATEO LOCAL DE HORAS Y TICKS DE ESTADO (VISTO) ---
+            function formatChatTimesAndStatus() {
+                document.querySelectorAll('.msg-time').forEach(el => {
+                    const timeStr = el.getAttribute('data-time');
+                    if (!timeStr) return;
+                    
+                    const date = new Date(timeStr);
+                    const localTime = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const remitente = el.getAttribute('data-remitente');
+                    const entregadoStr = el.getAttribute('data-entregado');
+                    const vistoStr = el.getAttribute('data-visto');
+                    
+                    let htmlContent = localTime;
+                    
+                    if (remitente === 'cliente') {
+                        let ticks = '';
+                        if (vistoStr) {
+                            const vistoDate = new Date(vistoStr);
+                            const vistoTime = vistoDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                            ticks = `<i class="bi bi-check2-all" style="font-size: 0.85rem; color: #10b981; margin-left: 2px;" title="Leído a las ${vistoTime}"></i>`;
+                        } else if (entregadoStr) {
+                            const entregadoDate = new Date(entregadoStr);
+                            const entregadoTime = entregadoDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                            ticks = `<i class="bi bi-check2-all text-muted" style="font-size: 0.85rem; margin-left: 2px;" title="Entregado a las ${entregadoTime}"></i>`;
+                        } else {
+                            ticks = `<i class="bi bi-check2 text-muted" style="font-size: 0.85rem; margin-left: 2px;" title="Enviado"></i>`;
+                        }
+                        htmlContent += ` ${ticks}`;
+                    }
+                    
+                    el.innerHTML = htmlContent;
+                });
+            }
+
             // --- CARGA Y ACTUALIZACIÓN SILENCIOSA DE MENSAJES (POLLING) ---
             async function cargarMensajesSilencioso() {
                 try {
@@ -283,6 +326,7 @@
                         // Comparar si cambió antes de re-inyectar y hacer scroll
                         if (messagesList.innerHTML !== nuevosMensajesHTML) {
                             messagesList.innerHTML = nuevosMensajesHTML;
+                            formatChatTimesAndStatus();
                             scrollToBottom();
                         }
                     }
@@ -290,6 +334,9 @@
                     console.error("Error al refrescar mensajes:", err);
                 }
             }
+
+            // Formatear al inicio
+            formatChatTimesAndStatus();
 
             // Polling de actualización cada 4 segundos
             setInterval(cargarMensajesSilencioso, 4000);

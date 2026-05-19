@@ -1,3 +1,6 @@
+// Configurar Zona Horaria por defecto antes de cargar nada
+process.env.TZ = 'America/Bogota';
+
 const express = require('express');
 require('dotenv').config(); // Cargar variables de entorno al inicio
 const path = require('path');

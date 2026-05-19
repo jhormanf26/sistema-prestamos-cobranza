@@ -158,6 +158,8 @@ async function runMigrations() {
                 remitente ENUM('cliente', 'administrador') NOT NULL,
                 mensaje TEXT NOT NULL,
                 fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                fecha_entregado TIMESTAMP NULL DEFAULT NULL,
+                fecha_visto TIMESTAMP NULL DEFAULT NULL,
                 leido TINYINT(1) DEFAULT 0,
                 FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
                 FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
@@ -249,6 +251,20 @@ async function runMigrations() {
         console.log('✅ Tabla [solicitudes_retiro_ahorro] verificada/creada');
     } catch (e) {
         console.error('❌ Error al crear tabla [solicitudes_retiro_ahorro]:', e.message);
+    }
+    // 12. Agregar columnas fecha_entregado y fecha_visto a soporte_mensajes para bases de datos existentes
+    try {
+        await db.query("ALTER TABLE soporte_mensajes ADD COLUMN fecha_entregado TIMESTAMP NULL DEFAULT NULL AFTER fecha_envio;");
+        console.log('✅ Columna [fecha_entregado] agregada a la tabla [soporte_mensajes]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [fecha_entregado]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE soporte_mensajes ADD COLUMN fecha_visto TIMESTAMP NULL DEFAULT NULL AFTER fecha_entregado;");
+        console.log('✅ Columna [fecha_visto] agregada a la tabla [soporte_mensajes]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [fecha_visto]:', e.message);
     }
 
     console.log('✅ Migraciones automáticas finalizadas.');
