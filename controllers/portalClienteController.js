@@ -379,6 +379,76 @@ const portalClienteController = {
         }
     },
 
+    // Enviar un audio de chat
+    enviarAudioChat: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            
+            if (!req.file) {
+                return res.status(400).json({ success: false, error: 'No se recibió ningún archivo de audio válido' });
+            }
+
+            // La ruta web para acceder al archivo subido
+            const rutaAudio = '/uploads/soporte/' + req.file.filename;
+
+            await SoporteMensajeModel.enviarMensaje({
+                cliente_id: clienteId,
+                remitente: 'cliente',
+                mensaje: rutaAudio,
+                tipo: 'audio'
+            });
+
+            // Notificar a los administradores
+            const { sendPushToAdmins } = require('../utils/pushService');
+            sendPushToAdmins({
+                title: `🎤 Nota de voz de ${req.session.cliente.nombre || 'Cliente'}`,
+                body: 'Envió un mensaje de audio',
+                icon: '/img/icon-192.png',
+                url: '/soporte'
+            }).catch(e => console.error('Error enviando push de audio a admins:', e));
+
+            return res.json({ success: true, ruta: rutaAudio });
+        } catch (error) {
+            console.error("Error en portalClienteController.enviarAudioChat:", error);
+            return res.status(500).json({ success: false, error: 'Error al procesar el mensaje de audio' });
+        }
+    },
+
+    // Enviar una imagen de chat
+    enviarImagenChat: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            
+            if (!req.file) {
+                return res.status(400).json({ success: false, error: 'No se recibió ninguna imagen válida' });
+            }
+
+            // La ruta web para acceder al archivo subido
+            const rutaImagen = '/uploads/soporte/' + req.file.filename;
+
+            await SoporteMensajeModel.enviarMensaje({
+                cliente_id: clienteId,
+                remitente: 'cliente',
+                mensaje: rutaImagen,
+                tipo: 'imagen'
+            });
+
+            // Notificar a los administradores
+            const { sendPushToAdmins } = require('../utils/pushService');
+            sendPushToAdmins({
+                title: `📷 Imagen de ${req.session.cliente.nombre || 'Cliente'}`,
+                body: 'Envió una imagen en el chat',
+                icon: '/img/icon-192.png',
+                url: '/soporte'
+            }).catch(e => console.error('Error enviando push de imagen a admins:', e));
+
+            return res.json({ success: true, ruta: rutaImagen });
+        } catch (error) {
+            console.error("Error en portalClienteController.enviarImagenChat:", error);
+            return res.status(500).json({ success: false, error: 'Error al procesar el mensaje de imagen' });
+        }
+    },
+
     // 5. Obtener estado actual (polling)
     estadoActual: async (req, res) => {
         try {

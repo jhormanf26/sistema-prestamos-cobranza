@@ -157,6 +157,7 @@ async function runMigrations() {
                 usuario_id INT NULL,
                 remitente ENUM('cliente', 'administrador') NOT NULL,
                 mensaje TEXT NOT NULL,
+                tipo ENUM('texto', 'audio', 'imagen') DEFAULT 'texto',
                 fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 fecha_entregado TIMESTAMP NULL DEFAULT NULL,
                 fecha_visto TIMESTAMP NULL DEFAULT NULL,
@@ -265,6 +266,23 @@ async function runMigrations() {
         console.log('✅ Columna [fecha_visto] agregada a la tabla [soporte_mensajes]');
     } catch (e) {
         if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [fecha_visto]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE soporte_mensajes ADD COLUMN tipo ENUM('texto', 'audio', 'imagen') DEFAULT 'texto' AFTER mensaje;");
+        console.log('✅ Columna [tipo] agregada a la tabla [soporte_mensajes]');
+    } catch (e) {
+        if (e.code === 'ER_DUP_FIELDNAME') {
+            // Si la columna ya existe, la modificamos para asegurarnos de que acepte el ENUM completo con 'imagen'
+            try {
+                await db.query("ALTER TABLE soporte_mensajes MODIFY COLUMN tipo ENUM('texto', 'audio', 'imagen') DEFAULT 'texto';");
+                console.log('✅ Columna [tipo] en [soporte_mensajes] actualizada a ENUM(texto, audio, imagen)');
+            } catch (modifyErr) {
+                console.error('❌ Error al modificar columna [tipo] en [soporte_mensajes]:', modifyErr.message);
+            }
+        } else {
+            console.error('❌ Error al agregar [tipo]:', e.message);
+        }
     }
 
     console.log('✅ Migraciones automáticas finalizadas.');

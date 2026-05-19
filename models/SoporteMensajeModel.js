@@ -10,18 +10,19 @@ class SoporteMensajeModel {
      * @param {number} datos.cliente_id ID del cliente asociado al chat.
      * @param {number} [datos.usuario_id] ID del usuario administrador que envía el mensaje (NULL si es del cliente).
      * @param {string} datos.remitente Quién envía el mensaje ('cliente', 'administrador').
-     * @param {string} datos.mensaje Contenido del mensaje de texto.
+     * @param {string} datos.mensaje Contenido del mensaje de texto o ruta del archivo de audio.
+     * @param {string} [datos.tipo] Tipo del mensaje ('texto', 'audio'). Por defecto 'texto'.
      * @returns {Promise<Object>} Resultado de la consulta de inserción.
      * @throws {Error} Si hay un error en la base de datos.
      */
     static async enviarMensaje(datos) {
         try {
-            const { cliente_id, usuario_id, remitente, mensaje } = datos;
+            const { cliente_id, usuario_id, remitente, mensaje, tipo = 'texto' } = datos;
             const query = `
-                INSERT INTO soporte_mensajes (cliente_id, usuario_id, remitente, mensaje, leido) 
-                VALUES (?, ?, ?, ?, 0)
+                INSERT INTO soporte_mensajes (cliente_id, usuario_id, remitente, mensaje, tipo, leido) 
+                VALUES (?, ?, ?, ?, ?, 0)
             `;
-            const [result] = await db.query(query, [cliente_id, usuario_id || null, remitente, mensaje]);
+            const [result] = await db.query(query, [cliente_id, usuario_id || null, remitente, mensaje, tipo]);
             return result;
         } catch (error) {
             console.error("Error en SoporteMensajeModel.enviarMensaje:", error);
