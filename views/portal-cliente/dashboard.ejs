@@ -90,6 +90,49 @@
                                                 </div>
                                             </div>
 
+                                            <% 
+                                            if (p.fecha_proxima_cuota) { 
+                                                const hoy = new Date();
+                                                hoy.setHours(0,0,0,0);
+                                                const fechaCuota = new Date(p.fecha_proxima_cuota);
+                                                fechaCuota.setHours(0,0,0,0);
+                                                const esCuotaVencida = fechaCuota < hoy;
+                                            %>
+                                                <div class="mt-4 p-3 rounded-4 <%= esCuotaVencida ? 'bg-danger bg-opacity-10 border border-danger-subtle' : 'bg-primary-subtle bg-opacity-25 border border-primary-subtle' %>" style="border: 1px solid;">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="small fw-bold <%= esCuotaVencida ? 'text-danger' : 'text-primary' %>">
+                                                            <i class="bi <%= esCuotaVencida ? 'bi-exclamation-triangle-fill text-danger animate-pulse' : 'bi-calendar-check-fill' %> me-1"></i>
+                                                            Próxima Cuota #<%= p.numero_proxima_cuota %>
+                                                        </span>
+                                                        <% if (esCuotaVencida) { %>
+                                                            <span class="badge bg-danger rounded-pill px-2 py-1 text-uppercase font-monospace" style="font-size: 0.7rem;">¡Vencida!</span>
+                                                        <% } else { %>
+                                                            <span class="badge bg-primary rounded-pill px-2 py-1 text-uppercase font-monospace" style="font-size: 0.7rem;">Pendiente</span>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="row align-items-center">
+                                                        <div class="col-7 col-sm-8">
+                                                            <p class="mb-0 text-muted small" style="font-size: 0.75rem;">Vence el:</p>
+                                                            <h6 class="mb-0 fw-bold <%= esCuotaVencida ? 'text-danger' : 'text-dark' %>" style="font-size: 0.85rem;">
+                                                                <%= new Date(p.fecha_proxima_cuota).toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
+                                                            </h6>
+                                                        </div>
+                                                        <div class="col-5 col-sm-4 text-end">
+                                                            <p class="mb-0 text-muted small" style="font-size: 0.75rem;">Monto:</p>
+                                                            <h6 class="mb-0 fw-bold <%= esCuotaVencida ? 'text-danger' : 'text-primary' %>" style="font-size: 1.1rem;">
+                                                                $<%= parseFloat(p.restante_proxima_cuota).toLocaleString('es-CO', {minimumFractionDigits: 2}) %>
+                                                            </h6>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <% } else { %>
+                                                <div class="mt-4 p-3 bg-success bg-opacity-10 border border-success-subtle rounded-4 text-center">
+                                                    <span class="small fw-bold text-success">
+                                                        <i class="bi bi-patch-check-fill me-1"></i> ¡Estás al día! No tienes más cuotas programadas.
+                                                    </span>
+                                                </div>
+                                            <% } %>
+
                                             <div class="mt-4 pt-3 border-top d-flex gap-2">
                                                 <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-outline-dark btn-sm flex-fill">
                                                     <i class="bi bi-file-earmark-pdf text-danger"></i> Cronograma

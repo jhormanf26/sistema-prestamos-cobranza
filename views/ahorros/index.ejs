@@ -73,11 +73,24 @@
                                                                         <% } %>
                                                                     </td>
                                                                     <td>
-                                                                        <a href="/ahorros/ver/<%= c.id %>"
-                                                                            class="btn btn-sm btn-outline-primary">
-                                                                            <i class="bi bi-arrow-left-right"></i>
-                                                                            Operaciones
-                                                                        </a>
+                                                                        <div class="d-flex gap-1 justify-content-start">
+                                                                            <a href="/ahorros/ver/<%= c.id %>"
+                                                                                class="btn btn-sm btn-outline-primary">
+                                                                                <i class="bi bi-arrow-left-right"></i>
+                                                                                Operaciones
+                                                                            </a>
+                                                                            <button type="button" class="btn btn-sm btn-outline-secondary btn-editar-meta" 
+                                                                                    data-id="<%= c.id %>" 
+                                                                                    data-nombre="<%= c.meta_nombre || '' %>" 
+                                                                                    data-monto="<%= c.meta_monto ? formatCurrency(c.meta_monto, 0) : '' %>"
+                                                                                    data-titular="<%= c.nombre %> <%= c.apellido %>"
+                                                                                    data-bs-toggle="modal" 
+                                                                                    data-bs-target="#modalEditarMeta"
+                                                                                    title="Configurar Meta de Ahorro">
+                                                                                <i class="bi bi-pencil-square text-secondary"></i>
+                                                                                Meta
+                                                                            </button>
+                                                                        </div>
                                                                     </td>
                                                                 </tr>
                                                                 <% }) %>
@@ -95,4 +108,80 @@
                     </div>
             </div>
         </div>
+
+        <!-- Modal para Editar Meta de Ahorro -->
+        <div class="modal fade" id="modalEditarMeta" tabindex="-1" aria-labelledby="modalEditarMetaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header bg-primary text-white rounded-top-4 py-3">
+                        <h5 class="modal-title fw-bold" id="modalEditarMetaLabel">🎯 Configurar Meta de Ahorro</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="formEditarMeta" action="" method="POST">
+                        <div class="modal-body p-4">
+                            <p class="text-muted small">Define o modifica los objetivos de ahorro para el titular <strong id="metaTitular" class="text-dark"></strong>.</p>
+                            
+                            <div class="mb-3">
+                                <label for="meta_nombre" class="form-label fw-semibold">Nombre de la Meta</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-tag text-primary"></i></span>
+                                    <input type="text" class="form-control" id="meta_nombre" name="meta_nombre" placeholder="Ej. Comprar Moto, Viaje, Estudios..." max="50">
+                                </div>
+                                <small class="text-muted">¿Para qué está ahorrando el cliente?</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="meta_monto" class="form-label fw-semibold">Monto Objetivo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light fw-bold"><%= empresa.moneda %></span>
+                                    <input type="text" class="form-control input-miles" id="meta_monto" name="meta_monto" placeholder="0">
+                                </div>
+                                <small class="text-muted">Monto total que desea alcanzar. Dejar vacío o en 0 para eliminar la meta.</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0 p-3 rounded-bottom-4">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const botonesEditar = document.querySelectorAll(".btn-editar-meta");
+                const form = document.getElementById("formEditarMeta");
+                const inputNombre = document.getElementById("meta_nombre");
+                const inputMonto = document.getElementById("meta_monto");
+                const txtTitular = document.getElementById("metaTitular");
+
+                botonesEditar.forEach(btn => {
+                    btn.addEventListener("click", function() {
+                        const id = this.getAttribute("data-id");
+                        const nombre = this.getAttribute("data-nombre");
+                        const monto = this.getAttribute("data-monto");
+                        const titular = this.getAttribute("data-titular");
+
+                        form.action = `/ahorros/meta/${id}`;
+                        inputNombre.value = nombre;
+                        inputMonto.value = monto;
+                        txtTitular.textContent = titular;
+                    });
+                });
+
+                // Aplicar máscara de miles en tiempo real al input de meta_monto (separador de miles con punto)
+                if (inputMonto) {
+                    inputMonto.addEventListener("input", function(e) {
+                        let valor = this.value.replace(/\D/g, "");
+                        if (valor !== "") {
+                            this.value = parseInt(valor, 10).toLocaleString("es-CO");
+                        } else {
+                            this.value = "";
+                        }
+                    });
+                }
+            });
+        </script>
+
         <%- include('../partials/footer') %>

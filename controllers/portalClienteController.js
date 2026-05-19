@@ -2,6 +2,8 @@ const ClienteModel = require('../models/ClienteModel');
 const PrestamoModel = require('../models/PrestamoModel');
 const AhorroModel = require('../models/AhorroModel');
 const EmpenoModel = require('../models/EmpenoModel');
+const PagoModel = require('../models/PagoModel');
+const finance = require('../utils/finance');
 const bcrypt = require('bcryptjs');
 
 const portalClienteController = {
@@ -88,6 +90,24 @@ const portalClienteController = {
             // Separar préstamos por estado para facilidad
             const prestamosActivos = prestamos.filter(p => p.estado !== 'pagado');
             const prestamosPagados = prestamos.filter(p => p.estado === 'pagado');
+
+            // Calcular próxima cuota para préstamos activos
+            for (let p of prestamosActivos) {
+                const pagos = await PagoModel.obtenerHistorial(p.id);
+                const totalPagado = pagos.reduce((acc, pago) => acc + parseFloat(pago.monto_pagado), 0);
+                const proxima = finance.obtenerProximaCuota(p.monto_total, p.cuotas, p.frecuencia, p.fecha_inicio, totalPagado);
+                if (proxima) {
+                    p.fecha_proxima_cuota = proxima.fecha;
+                    p.monto_proxima_cuota = proxima.monto;
+                    p.restante_proxima_cuota = proxima.restante;
+                    p.numero_proxima_cuota = proxima.numero;
+                } else {
+                    p.fecha_proxima_cuota = null;
+                    p.monto_proxima_cuota = null;
+                    p.restante_proxima_cuota = null;
+                    p.numero_proxima_cuota = null;
+                }
+            }
 
             res.render('portal-cliente/dashboard', {
                 title: 'Mi Portal',

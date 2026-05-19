@@ -31,6 +31,10 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 25. **[HECHO]** Implementar selectores de periodo (7, 15, 30 días) en el gráfico de "Tendencia de Actividad" (Marketing).
 26. **[HECHO]** Implementar nuevas frecuencias "Bimensual" y "Trimensual" para los préstamos (Actualización de ENUM en BD, lógica financiera y Vistas UI).
 27. **[HECHO]** Implementar configuración de visibilidad dinámica para ocultar/mostrar módulos en el menú lateral desde el panel de administración.
+28. **[HECHO]** Implementar visualización de la fecha de la próxima cuota y su monto restante en la vista del cliente (Portal del Cliente) con diseño premium e indicador de cuotas vencidas.
+29. **[HECHO]** Escribir pruebas unitarias TDD completas para validar el cálculo preciso de la próxima cuota pendiente.
+30. **[HECHO]** Implementar funcionalidad de edición y configuración de metas de ahorro (Nombre y Monto Objetivo) en Cuentas de Ahorro, con máscara de entrada en tiempo real y persistencia en BD.
+31. **[HECHO]** Escribir pruebas de integración en BD real para la actualización de metas de ahorro.
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 
