@@ -192,6 +192,37 @@ const emailService = {
             link_whatsapp: linkWhatsapp
         }, fallback);
         return res;
+    },
+
+    plantillaRechazoPago: async (cliente, monto, fecha, motivo, moneda) => {
+        const fallback = `
+            <div style="background-color: #fef2f2; padding: 20px; font-family: Arial;">
+                <table align="center" width="100%" style="max-width: 600px; background: #fff; border-radius: 15px; overflow: hidden; border: 1px solid #fee2e2; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <tr><td align="center" style="background: #dc2626; padding: 30px; color: #fff;"><h1>Comprobante de Pago Rechazado</h1></td></tr>
+                    <tr><td style="padding: 30px; color: #1f2937; font-size: 16px; line-height: 1.5;">
+                        <p>Hola <strong>${cliente}</strong>,</p>
+                        <p>Te informamos que tu reporte de pago por <strong>${moneda} ${formatCurrency(monto, 2)}</strong> enviado el <strong>${new Date(fecha).toLocaleDateString()}</strong> no pudo ser aprobado por nuestra administración.</p>
+                        <div style="background-color: #fff1f2; border-left: 4px solid #f43f5e; padding: 15px; border-radius: 4px; margin: 20px 0;">
+                            <strong style="color: #be123c; display: block; margin-bottom: 5px;">⚠️ Motivo del rechazo:</strong>
+                            <span style="color: #9f1239; font-style: italic;">"${motivo}"</span>
+                        </div>
+                        <p>Por favor, ingresa a tu portal de clientes para verificar la información y volver a subir tu comprobante de pago si fue un error al adjuntar la imagen o al ingresar los datos.</p>
+                        <p align="center" style="margin: 25px 0;">
+                            <a href="https://prestamos.desarollo.site/portal-cliente/login" style="background: #dc2626; color: #fff; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Ir al Portal del Cliente</a>
+                        </p>
+                        <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">Si tienes dudas sobre este rechazo, puedes ponerte en contacto con soporte técnico a través del chat interno de tu portal.</p>
+                    </td></tr>
+                </table>
+            </div>
+        `;
+        const res = await renderizar('pago_rechazado', {
+            cliente, 
+            monto: formatCurrency(monto, 2), 
+            fecha: new Date(fecha).toLocaleDateString(), 
+            motivo,
+            moneda
+        }, fallback);
+        return res;
     }
 };
 

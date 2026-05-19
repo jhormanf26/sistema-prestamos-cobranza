@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper" style="background-color: #f8fafc; min-height: 100vh;">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-4 py-4">
+                    <!-- Cabecera -->
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2.5 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-rocket-takeoff-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold text-dark my-0 fs-3">Solicitudes de Cupo</h2>
+                            <p class="text-muted small mb-0">Gestiona y aprueba los desembolsos rápidos solicitados por tus clientes fidelizados.</p>
+                        </div>
+                    </div>
+
+                    <!-- Listado de Solicitudes -->
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white border-bottom p-3">
+                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                                <i class="bi bi-shield-exclamation text-primary me-2"></i> 
+                                Solicitudes Pendientes de Resolución
+                                <span class="badge bg-primary rounded-pill ms-2 fw-normal" id="pendientesCounter" style="font-size: 0.75rem;"><%= pendientes.length %> Pendientes</span>
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <% if (pendientes.length === 0) { %>
+                                <div class="text-center py-5 px-3" id="emptyState">
+                                    <div class="bg-light text-primary rounded-circle p-4 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                        <i class="bi bi-rocket-fill fs-1 text-primary-dim"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">¡Bandeja vacía!</h5>
+                                    <p class="text-muted small">No hay solicitudes de desembolso rápido pendientes en este momento.</p>
+                                </div>
+                            <% } else { %>
+                                <div class="table-responsive" id="tableContainer">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-4">Solicitud ID</th>
+                                                <th>Cliente</th>
+                                                <th>Monto Solicitado</th>
+                                                <th>Detalle Solicitado</th>
+                                                <th>Fecha Solicitud</th>
+                                                <th class="text-end pe-4">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% pendientes.forEach(p => { %>
+                                                <tr id="row-<%= p.id %>">
+                                                    <td class="ps-4 fw-bold text-primary">#<%= p.id %></td>
+                                                    <td>
+                                                        <div class="fw-bold text-dark"><%= p.cliente_nombre %> <%= p.cliente_apellido %></div>
+                                                        <small class="text-muted"><%= p.cliente_dni %></small>
+                                                    </td>
+                                                    <td>
+                                                        <h6 class="fw-bold text-success mb-0 font-monospace">
+                                                            $<%= parseFloat(p.monto_solicitado).toLocaleString('es-CO') %>
+                                                        </h6>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1 text-capitalize small">
+                                                            <%= p.cuotas %> Cuotas <%= p.frecuencia %>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted d-block">
+                                                            <%= new Date(p.fecha_solicitud).toLocaleDateString() %>
+                                                        </small>
+                                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                                            <%= new Date(p.fecha_solicitud).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                                                        </small>
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold btn-revisar" 
+                                                                data-id="<%= p.id %>" 
+                                                                data-cliente="<%= p.cliente_nombre %> <%= p.cliente_apellido %>"
+                                                                data-dni="<%= p.cliente_dni %>"
+                                                                data-monto="<%= Math.round(p.monto_solicitado) %>"
+                                                                data-cuotas="<%= p.cuotas %>"
+                                                                data-frecuencia="<%= p.frecuencia %>">
+                                                            <i class="bi bi-file-earmark-check me-1"></i> Revisar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INTERACTIVO DE REVISIÓN Y DESEMBOLSO -->
+    <div class="modal fade" id="modalRevisar" tabindex="-1" aria-labelledby="modalRevisarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title fw-bold" id="modalRevisarLabel">
+                        <i class="bi bi-rocket-takeoff-fill me-2"></i> Procesar Solicitud de Cupo #<span id="reviewIdTitle"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <form id="solicitudForm">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-person-badge text-primary me-1"></i> Información del Cliente</h6>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 mb-2">
+                                    <span class="text-muted small d-block">Nombre del Solicitante:</span>
+                                    <h6 class="fw-bold text-dark mb-0" id="reviewCliente"></h6>
+                                </div>
+                                <div class="col-12 col-sm-6 mb-2">
+                                    <span class="text-muted small d-block">Cédula de Ciudadanía:</span>
+                                    <h6 class="fw-bold text-dark mb-0" id="reviewDni"></h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-sliders text-primary me-1"></i> Parámetros de Desembolso (Editables)</h6>
+                            <div class="row g-3">
+                                <!-- Monto aprobado -->
+                                <div class="col-12 col-sm-6">
+                                    <label class="form-label text-dark fw-bold small">Monto Desembolso ($ COP)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-dark rounded-start-pill border-end-0 px-3 fw-bold">$</span>
+                                        <input type="text" id="reviewMonto" class="form-control rounded-end-pill px-3 border-start-0 currency-input fw-bold text-success fs-5" placeholder="0" required>
+                                    </div>
+                                </div>
+
+                                <!-- Cuotas -->
+                                <div class="col-6 col-sm-3">
+                                    <label class="form-label text-dark fw-bold small">Número de Cuotas</label>
+                                    <select id="reviewCuotas" class="form-select rounded-pill px-3" required>
+                                        <% for(let i=1; i<=24; i++) { %>
+                                            <option value="<%= i %>"><%= i %> Cuota<%= i > 1 ? 's' : '' %></option>
+                                        <% } %>
+                                    </select>
+                                </div>
+
+                                <!-- Frecuencia -->
+                                <div class="col-6 col-sm-3">
+                                    <label class="form-label text-dark fw-bold small">Frecuencia de Pago</label>
+                                    <select id="reviewFrecuencia" class="form-select rounded-pill px-3" required>
+                                        <option value="diario">Diario</option>
+                                        <option value="semanal">Semanal</option>
+                                        <option value="quincenal">Quincenal</option>
+                                        <option value="mensual">Mensual</option>
+                                        <option value="bimensual">Bimensual</option>
+                                        <option value="trimensual">Trimensual</option>
+                                    </select>
+                                </div>
+
+                                <!-- Interés Mensual -->
+                                <div class="col-6 col-sm-4">
+                                    <label class="form-label text-dark fw-bold small">Interés Mensual (%)</label>
+                                    <input type="number" step="0.1" id="reviewInteres" class="form-control rounded-pill px-3" required value="<%= typeof empresa !== 'undefined' && empresa.interes_global ? empresa.interes_global : '5' %>">
+                                </div>
+
+                                <!-- Interés Mora -->
+                                <div class="col-6 col-sm-4">
+                                    <label class="form-label text-dark fw-bold small">Interés Mora Mensual (%)</label>
+                                    <input type="number" step="0.1" id="reviewInteresMora" class="form-control rounded-pill px-3" required value="0">
+                                </div>
+
+                                <!-- Fecha Inicio -->
+                                <div class="col-12 col-sm-4">
+                                    <label class="form-label text-dark fw-bold small">Fecha Primer Pago</label>
+                                    <input type="date" id="reviewFechaInicio" class="form-control rounded-pill px-3" required>
+                                </div>
+                            </div>
+                            <div class="alert alert-info border-0 rounded-4 mt-3 small mb-0">
+                                <i class="bi bi-info-circle-fill me-1"></i>
+                                **Revisión de Parámetros:** Si el cliente cometió un error o solicitó condiciones inapropiadas, puedes editarlas libremente arriba. Al aprobar, se calculará el interés y el cronograma del préstamo real basándose en los valores modificados.
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                            <label class="form-label text-dark fw-bold small">Observaciones / Motivo de Declinación</label>
+                            <textarea id="reviewComentarios" class="form-control rounded-3" rows="2.5" placeholder="Escribe notas de desembolso o el motivo obligatorio en caso de rechazo..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="button" class="btn btn-outline-danger flex-fill rounded-pill py-2.5 fw-bold" id="btnRechazar">
+                                <i class="bi bi-x-circle-fill me-1"></i> Declinado / Rechazar
+                            </button>
+                            <button type="button" class="btn btn-primary flex-fill rounded-pill py-2.5 fw-bold" id="btnAprobar">
+                                <i class="bi bi-rocket-takeoff-fill me-1"></i> Aprobar Desembolso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos de Solicitudes -->
+    <style>
+        .px-3\.5 {
+            padding-left: 0.85rem !important;
+            padding-right: 0.85rem !important;
+        }
+        .py-2\.5 {
+            padding-top: 0.65rem !important;
+            padding-bottom: 0.65rem !important;
+        }
+        .p-2\.5 {
+            padding: 0.625rem !important;
+        }
+        .text-primary-dim {
+            opacity: 0.2;
+        }
+    </style>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let activeSolicitudId = null;
+            const modalElement = document.getElementById("modalRevisar");
+            const modal = new bootstrap.Modal(modalElement);
+            
+            const reviewIdTitle = document.getElementById("reviewIdTitle");
+            const reviewCliente = document.getElementById("reviewCliente");
+            const reviewDni = document.getElementById("reviewDni");
+            const reviewMonto = document.getElementById("reviewMonto");
+            const reviewCuotas = document.getElementById("reviewCuotas");
+            const reviewFrecuencia = document.getElementById("reviewFrecuencia");
+            const reviewInteres = document.getElementById("reviewInteres");
+            const reviewInteresMora = document.getElementById("reviewInteresMora");
+            const reviewFechaInicio = document.getElementById("reviewFechaInicio");
+            const reviewComentarios = document.getElementById("reviewComentarios");
+            
+            const btnAprobar = document.getElementById("btnAprobar");
+            const btnRechazar = document.getElementById("btnRechazar");
+
+            // Fecha de hoy por defecto para el primer pago
+            const hoy = new Date().toISOString().split("T")[0];
+            reviewFechaInicio.value = hoy;
+
+            // Escuchar clics en "Revisar"
+            document.querySelectorAll(".btn-revisar").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    activeSolicitudId = this.getAttribute("data-id");
+                    
+                    // Llenar datos
+                    reviewIdTitle.textContent = activeSolicitudId;
+                    reviewCliente.textContent = this.getAttribute("data-cliente");
+                    reviewDni.textContent = `CC: ${this.getAttribute("data-dni")}`;
+                    
+                    // Llenar parámetros editables
+                    const rawMonto = parseFloat(this.getAttribute("data-monto"));
+                    reviewMonto.value = rawMonto.toLocaleString("es-CO");
+                    reviewCuotas.value = this.getAttribute("data-cuotas");
+                    reviewFrecuencia.value = this.getAttribute("data-frecuencia");
+                    
+                    reviewComentarios.value = "";
+                    reviewFechaInicio.value = hoy;
+                    
+                    modal.show();
+                });
+            });
+
+            // Acción: Aprobar Desembolso
+            btnAprobar.addEventListener("click", async function() {
+                if (!activeSolicitudId) return;
+                
+                // Limpiar puntos del monto antes de enviar
+                const cleanMonto = parseFloat(reviewMonto.value.replace(/\./g, "").replace(/,/g, "."));
+                
+                if (isNaN(cleanMonto) || cleanMonto <= 0) {
+                    alert("Por favor, ingresa un monto válido mayor a cero.");
+                    return;
+                }
+
+                btnAprobar.disabled = true;
+                btnRechazar.disabled = true;
+                
+                try {
+                    const response = await fetch(`/admin/solicitudes/${activeSolicitudId}/procesar`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams({
+                            estado: "aprobado",
+                            monto: cleanMonto,
+                            cuotas: reviewCuotas.value,
+                            frecuencia: reviewFrecuencia.value,
+                            interes: reviewInteres.value,
+                            interes_mora: reviewInteresMora.value,
+                            fecha_inicio: reviewFechaInicio.value,
+                            comentarios: reviewComentarios.value.trim()
+                        })
+                    });
+
+                    const resData = await response.json();
+                    
+                    if (resData.success) {
+                        alert("¡Solicitud aprobada y crédito desembolsado correctamente!");
+                        modal.hide();
+                        removerFilaSolicitud(activeSolicitudId);
+                    } else {
+                        alert("Error: " + resData.error);
+                    }
+                } catch (err) {
+                    console.error("Error al procesar aprobación de crédito:", err);
+                    alert("Ocurrió un error de red al procesar el desembolso.");
+                } finally {
+                    btnAprobar.disabled = false;
+                    btnRechazar.disabled = false;
+                }
+            });
+
+            // Acción: Rechazar Solicitud
+            btnRechazar.addEventListener("click", async function() {
+                if (!activeSolicitudId) return;
+                
+                const comentariosVal = reviewComentarios.value.trim();
+                if (comentariosVal.length === 0) {
+                    alert("Debes ingresar obligatoriamente un motivo de rechazo en los comentarios.");
+                    return;
+                }
+
+                if (!confirm("¿Estás seguro de que deseas declinar esta solicitud de crédito? El cliente recibirá una alerta.")) {
+                    return;
+                }
+
+                btnAprobar.disabled = true;
+                btnRechazar.disabled = true;
+                
+                try {
+                    const response = await fetch(`/admin/solicitudes/${activeSolicitudId}/procesar`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams({
+                            estado: "rechazado",
+                            comentarios: comentariosVal
+                        })
+                    });
+
+                    const resData = await response.json();
+                    
+                    if (resData.success) {
+                        alert("Solicitud declinada correctamente.");
+                        modal.hide();
+                        removerFilaSolicitud(activeSolicitudId);
+                    } else {
+                        alert("Error: " + resData.error);
+                    }
+                } catch (err) {
+                    console.error("Error al declinar solicitud:", err);
+                    alert("Ocurrió un error de red al procesar el rechazo.");
+                } finally {
+                    btnAprobar.disabled = false;
+                    btnRechazar.disabled = false;
+                }
+            });
+
+            // Remover fila con animación suave
+            function removerFilaSolicitud(id) {
+                const row = document.getElementById(`row-${id}`);
+                if (row) {
+                    row.style.transition = "all 0.4s ease";
+                    row.style.opacity = 0;
+                    row.style.transform = "translateX(50px)";
+                    setTimeout(() => {
+                        row.remove();
+                        actualizarContadores();
+                    }, 400);
+                }
+            }
+
+            // Actualizar contadores
+            function actualizarContadores() {
+                const tbody = document.querySelector("table tbody");
+                const counter = document.getElementById("pendientesCounter");
+                
+                if (tbody && tbody.children.length === 0) {
+                    location.reload();
+                } else if (tbody && counter) {
+                    counter.textContent = `${tbody.children.length} Pendientes`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

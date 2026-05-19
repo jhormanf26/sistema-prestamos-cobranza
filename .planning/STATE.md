@@ -35,6 +35,21 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 29. **[HECHO]** Escribir pruebas unitarias TDD completas para validar el cálculo preciso de la próxima cuota pendiente.
 30. **[HECHO]** Implementar funcionalidad de edición y configuración de metas de ahorro (Nombre y Monto Objetivo) en Cuentas de Ahorro, con máscara de entrada en tiempo real y persistencia en BD.
 31. **[HECHO]** Escribir pruebas de integración en BD real para la actualización de metas de ahorro.
+32. **[HECHO]** Implementar Portal del Cliente - Módulo de Gestión de Pagos con comprobantes, input editable administrativo para corregir montos y su impacto en caja.
+33. **[HECHO]** Implementar Portal del Cliente - Módulo Loyalty con banner interactivo de Cupo Pre-aprobado y edición de parámetros de solicitud.
+34. **[HECHO]** Implementar Portal del Cliente - Chat Interno bidireccional tipo Messenger con polling reactivo silencioso por DOMParser y burbujas personalizadas.
+35. **[HECHO]** Desarrollar suite de pruebas TDD de integración de mejoras del portal de clientes validando flujos de solicitudes, abonos corregidos e integridad del chat de soporte.
+36. **[HECHO]** Implementar configuración de canales de pago Nequi y Bre-B/Transfiya desde el panel de administración, permitiendo su parametrización dinámica y sincronización en tiempo real con el Portal de Clientes.
+37. **[HECHO]** Crear una nueva suite de pruebas TDD (`tests/canalesPago.test.js`) para garantizar que la persistencia y recuperación de los nuevos parámetros de pago se realice de forma íntegra.
+38. **[HECHO]** Integrar local e independientemente el formateador global `formatCurrency` y la máscara de moneda interactiva `applyCurrencyMask` en el Portal del Cliente, permitiendo la visualización con puntos de miles en tiempo real (ej. `20.000`) en el modal de reportes de abono.
+39. **[HECHO]** Reemplazar las alertas (`alert()`) y diálogos de confirmación (`confirm()`) nativos por diálogos SweetAlert2 interactivos, animados y con estilos premium adaptados a la interfaz en el panel de Auditoría de Comprobantes.
+40. **[HECHO]** Diseñar e implementar el envío automatizado de correo electrónico de notificación de rechazo de comprobante de pago con plantilla HTML premium (`plantillaRechazoPago` en `emailService.js`) que describe los motivos definidos por el administrador.
+41. **[HECHO]** Desarrollar la sección visual premium de "Mis Reportes de Pago" en el Portal del Cliente (`dashboard.ejs`), listando en tiempo real todos los comprobantes enviados, sus estados (Pendiente, Aprobado, Rechazado) y un botón interactivo SweetAlert2 para consultar el motivo de rechazo en caso de denegación.
+42. **[HECHO]** Integrar sección interactiva colapsable premium "Ver Historial de Pagos" dentro de cada tarjeta de Préstamo Activo en el Portal del Cliente, listando en tiempo real el historial de abonos reales aplicados.
+43. **[HECHO]** Añadir opción premium de acceso rápido "Mis Reportes" en el menú de la barra lateral izquierda del Portal de Clientes con scroll suave reactivo en JavaScript y redirección anclada.
+44. **[HECHO]** Registrar formalmente la plantilla de correo `pago_rechazado` en la base de datos MySQL (tabla `plantillas_correo`) y en el archivo de volcado `bk_basededatos.sql`, haciéndola 100% editable por el administrador desde el panel de control y completamente dinámica (TDD verificado al 100%).
+45. **[HECHO]** Diseñar e implementar indicadores visuales (badges animados) de mensajes sin leer en la barra lateral del administrador y en el Portal del Cliente, y corregir bug de la bandeja de soporte (c.no_leidos a c.sin_leer) para un feedback en tiempo real 100% verificado por TDD.
+46. **[HECHO]** Implementar indicadores de soporte premium condicionales en cabeceras móviles (menú hamburguesa flotante) y un banner destacado estilo Glassmorphism en el Dashboard del Portal del Cliente, 100% cubierto por pruebas de integración TDD (`tests/portalClientesAlertas.test.js`).
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 
@@ -45,12 +60,16 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 - [x] **Mapa de Calor (Scroll Depth)**: Se añadieron rastreadores al 25%, 50%, 75% y 90% para entender el comportamiento del usuario.
 - [x] **Lista de Leads Marketing**: Tabla de acceso rápido a prospectos con botón directo a WhatsApp.
 - [x] **Funcionalidad PWA (App Móvil)**: El sistema ahora es instalable en celulares y PCs como una aplicación nativa, con iconos personalizados y apertura a pantalla completa.
+- [x] **Mejoras del Portal del Cliente**: Implementados los módulos de Gestión de Pagos con corrección administrativa, Loyalty con simulador y Chat de Soporte bidireccional neobanco.
 
 ### Decisiones técnicas:
 - Se implementó un Service Worker básico para cumplir con los requisitos de instalación de Chrome/Safari.
 - Se generaron iconos de 192px y 512px con IA para una apariencia premium en el inicio del celular.
 - La Tasa de Conversión se basa en *Visitantes Únicos* vs *Leads* para mayor precisión real.
 - El botón de llamada se configuró en el lado izquierdo para no interferir con el botón de WhatsApp (derecha).
+- Para el chat de soporte se optó por un enfoque XHR silencioso ("HTML-over-wire") utilizando `DOMParser()` para procesar la lista de mensajes sin endpoints JSON dedicados duplicados, optimizando la latencia y la coherencia visual.
+- El abono corregido por el administrador impacta directamente la caja del sistema y actualiza el saldo del préstamo de forma transaccional precisa.
+- La suite de pruebas TDD se diseñó con un enfoque autolimpiable dinámico, autodetectando datos existentes de clientes, préstamos y usuarios administradores en base de datos para no violar restricciones de integridad referencial.
 
 ### Pendiente:
 - Monitorear la carga de la base de datos con el aumento de eventos de scroll.
@@ -66,3 +85,11 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 - Se implementó un sistema de **Plantillas PDF** donde los textos legales y cláusulas se almacenan en la tabla `plantillas_pdf` y se inyectan dinámicamente en `pdfService.js`, permitiendo su edición sin modificar código.
 - Se corrigió el manejo de fechas añadiendo el sufijo `T00:00:00` al crear objetos `Date` desde strings `YYYY-MM-DD`, garantizando que se interpreten en la zona horaria local y no en UTC.
 - Se actualizó la columna `frecuencia` de la tabla `prestamos` para incluir el valor `quincenal` en el ENUM, resolviendo el error de truncado de datos al crear préstamos con esta frecuencia.
+- Los comprobantes de pago subidos por el cliente al Portal se procesan mediante `multer` con validación de extensión y peso, vinculándose mediante una tabla relacional `comprobantes_pago` con estado `pendiente`, `aprobado` o `rechazado`.
+- El chat de soporte utiliza clases CSS con nomenclatura BEM para separar los estados de "mensaje saliente" (cliente) y "mensaje entrante" (admin), asegurando que el diseño responsivo se mantenga en dispositivos móviles sin necesidad de media queries complejas.
+- Se implementaron diálogos interactivos de SweetAlert2 con estilos HSL a la medida (`customClass` vinculada a clases Bootstrap) en la sección de Auditoría de Comprobantes para reemplazar la rigidez y asincronía tosca del `confirm()` y `alert()` del navegador por confirmaciones asíncronas fluidas y animadas.
+- Para el historial de pagos y reportes de abonos en el Portal de Clientes, se inyecta en el objeto del préstamo los abonos reales aprobados mediante `PagoModel.obtenerHistorial()` y se renderiza un colapsable premium interactivo en cada tarjeta. Para asegurar la encontrabilidad y facilidad de acceso a "Mis Reportes de Pago" (que por defecto se renderiza en la parte inferior del Dashboard), se añadió un enlace anclado `/portal-cliente#seccion-reportes` en la barra lateral con interceptación en JS para realizar un scroll suave (smooth) de manera inmediata y fluida.
+- La plantilla de correo de rechazo de pago (`pago_rechazado`) se registró en la tabla `plantillas_correo` de la base de datos y se inyectó en el volcado de la base de datos `bk_basededatos.sql`, haciéndola completamente editable y dinámica a través de `emailService` y el panel administrativo.
+- Se implementaron indicadores visuales dinámicos (badges de Bootstrap 5 con la clase de animación `animate-pulse` de Tailwind incorporada como estilo local) en el sidebar del administrador y en el Portal del Cliente. Los contadores se calculan en tiempo real mediante un middleware global asíncrono y ultra-eficiente en `app.js` que consulta la base de datos de soporte sólo si hay una sesión activa, garantizando alta escalabilidad e impacto visual inmediato.
+- Se corrigió un bug en la Bandeja de Soporte administrativa donde se intentaba evaluar `c.no_leidos` en lugar de `c.sin_leer` devuelto por la consulta SQL, logrando que los badges de mensajes no leídos se muestren de forma fiable en la lista de chats activos.
+- Para alertar de manera inmersiva al cliente sobre respuestas de soporte técnico, se inyectaron estilos de animación global `.animate-pulse` con transiciones de opacidad en `head.ejs` para evitar interferir con layouts CSS de Bootstrap. Se instalaron bolitas rojas animadas flotantes sobre el menú hamburguesa móvil (`#openSidebarBtn`) en el Dashboard, Perfil y Chat del Portal del Cliente. Adicionalmente, se diseñó un banner premium de alerta estilo Glassmorphism en la zona de resúmenes del Dashboard de escritorio y móvil, enlazando directamente al chat interno y 100% verificado por pruebas TDD.

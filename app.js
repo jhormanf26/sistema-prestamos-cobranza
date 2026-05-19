@@ -52,16 +52,47 @@ app.use(flash());
 // Variables Globales
 const { formatCurrency } = require('./utils/formatters');
 const pkg = require('./package.json');
+const db = require('./config/db');
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     app.locals.version = pkg.version;
     app.locals.formatCurrency = formatCurrency;
     app.locals.mensajeExito = req.flash('mensajeExito');
     app.locals.mensajeError = req.flash('mensajeError');
     app.locals.usuario = req.session.usuario || null;
     app.locals.empresa = app.locals.empresa || { nombre_empresa: 'SISTEMA PRÉSTAMOS', logo: null, moneda: '$' };
+    
+    // Contadores de mensajes sin leer disponibles en cualquier vista
+    res.locals.soporteSinLeer = 0;
+    res.locals.clienteChatSinLeer = 0;
+
+    try {
+        if (req.session && req.session.usuario) {
+            // Chats activos con mensajes del cliente pendientes de lectura
+            const [rows] = await db.query(`
+                SELECT COUNT(DISTINCT cliente_id) as total 
+                FROM soporte_mensajes 
+                WHERE remitente = 'cliente' AND leido = 0
+            `);
+            res.locals.soporteSinLeer = rows[0]?.total || 0;
+        }
+
+        if (req.session && req.session.cliente) {
+            // Mensajes de la administración pendientes de lectura por parte del cliente actual
+            const [rows] = await db.query(`
+                SELECT COUNT(*) as total 
+                FROM soporte_mensajes 
+                WHERE cliente_id = ? AND remitente = 'administrador' AND leido = 0
+            `, [req.session.cliente.id]);
+            res.locals.clienteChatSinLeer = rows[0]?.total || 0;
+        }
+    } catch (error) {
+        console.error("Aviso: Error cargando contadores de mensajes no leídos:", error.message);
+    }
+    
     next();
 });
+
 
 // Archivos Estáticos
 app.use(express.static(path.join(__dirname, 'public')));
@@ -119,6 +150,11 @@ cargarRuta('/plantillas-pdf', './routes/plantillasPdf');
 
 // Portal de Clientes
 cargarRuta('/portal-cliente', './routes/portalCliente');
+
+// Administración de Mejoras del Portal del Cliente
+cargarRuta('/admin/soporte', './routes/soporte');
+cargarRuta('/admin/comprobantes', './routes/comprobantes');
+cargarRuta('/admin/solicitudes', './routes/solicitudes');
 
 // 5. Reportes
 cargarRuta('/reportes', './routes/reportes');

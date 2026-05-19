@@ -3,6 +3,9 @@ const PrestamoModel = require('../models/PrestamoModel');
 const AhorroModel = require('../models/AhorroModel');
 const EmpenoModel = require('../models/EmpenoModel');
 const PagoModel = require('../models/PagoModel');
+const ReportePagoModel = require('../models/ReportePagoModel');
+const SolicitudCreditoModel = require('../models/SolicitudCreditoModel');
+const SoporteMensajeModel = require('../models/SoporteMensajeModel');
 const finance = require('../utils/finance');
 const bcrypt = require('bcryptjs');
 
@@ -86,6 +89,7 @@ const portalClienteController = {
             const prestamos = await PrestamoModel.obtenerPorCliente(clienteId);
             const cuentaAhorro = await AhorroModel.buscarPorCliente(clienteId);
             const empenos = await EmpenoModel.obtenerPorCliente(clienteId);
+            const reportesPago = await ReportePagoModel.obtenerPorCliente(clienteId);
             
             // Separar préstamos por estado para facilidad
             const prestamosActivos = prestamos.filter(p => p.estado !== 'pagado');
@@ -94,6 +98,7 @@ const portalClienteController = {
             // Calcular próxima cuota para préstamos activos
             for (let p of prestamosActivos) {
                 const pagos = await PagoModel.obtenerHistorial(p.id);
+                p.pagos = pagos; // Guardamos el historial de pagos reales para la vista colapsable
                 const totalPagado = pagos.reduce((acc, pago) => acc + parseFloat(pago.monto_pagado), 0);
                 const proxima = finance.obtenerProximaCuota(p.monto_total, p.cuotas, p.frecuencia, p.fecha_inicio, totalPagado);
                 if (proxima) {
@@ -109,6 +114,11 @@ const portalClienteController = {
                 }
             }
 
+            // Obtener historial de pagos para préstamos cancelados/pagados
+            for (let p of prestamosPagados) {
+                p.pagos = await PagoModel.obtenerHistorial(p.id);
+            }
+
             res.render('portal-cliente/dashboard', {
                 title: 'Mi Portal',
                 cliente,
@@ -117,6 +127,7 @@ const portalClienteController = {
                 prestamos, // Enviamos todos para compatibilidad si la vista lo requiere
                 cuentaAhorro,
                 empenos,
+                reportesPago,
                 manifestPath: '/manifest-cliente.json',
                 themeColor: '#10b981'
             });
@@ -180,6 +191,155 @@ const portalClienteController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ success: false });
+        }
+    },
+
+    // 1. Reportar abono subiendo comprobante
+    reportarPago: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const { prestamo_id, monto, observaciones } = req.body;
+
+            if (!req.file) {
+                req.flash('mensajeError', 'Por favor, sube una imagen de tu comprobante de pago.');
+                return res.redirect('/portal-cliente');
+            }
+
+            if (!prestamo_id || !monto) {
+                req.flash('mensajeError', 'El préstamo y el monto son requeridos.');
+                return res.redirect('/portal-cliente');
+            }
+
+            // Limpiar formato de moneda estilo Colombia (quitar puntos de miles)
+            const cleanMonto = parseFloat(monto.toString().replace(/\./g, '').replace(/,/g, '.').trim());
+
+            if (isNaN(cleanMonto) || cleanMonto <= 0) {
+                req.flash('mensajeError', 'Monto inválido.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const comprobanteUrl = `/uploads/${req.file.filename}`;
+
+            await ReportePagoModel.crear({
+                prestamo_id: parseInt(prestamo_id),
+                cliente_id: clienteId,
+                monto: cleanMonto,
+                comprobante_url: comprobanteUrl,
+                observaciones: observaciones || null
+            });
+
+            req.flash('mensajeExito', 'Comprobante reportado con éxito. Está en espera de verificación.');
+            res.redirect('/portal-cliente');
+        } catch (error) {
+            console.error("Error en portalClienteController.reportarPago:", error);
+            req.flash('mensajeError', 'Ocurrió un error al procesar tu comprobante.');
+            res.redirect('/portal-cliente');
+        }
+    },
+
+    // 2. Solicitar préstamo usando cupo pre-aprobado (Fidelización)
+    solicitarCupo: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const { monto_solicitado, cuotas, frecuencia } = req.body;
+
+            if (!monto_solicitado || !cuotas) {
+                req.flash('mensajeError', 'El monto y las cuotas son requeridos.');
+                return res.redirect('/portal-cliente');
+            }
+
+            // Limpiar formato de moneda estilo Colombia (quitar puntos)
+            const cleanMonto = parseFloat(monto_solicitado.toString().replace(/\./g, '').replace(/,/g, '.').trim());
+
+            if (isNaN(cleanMonto) || cleanMonto <= 0) {
+                req.flash('mensajeError', 'Monto solicitado inválido.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+
+            if (!cliente) {
+                req.flash('mensajeError', 'Cliente no encontrado.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const cupoDisponible = parseFloat(cliente.monto_preaprobado || 0);
+
+            if (cleanMonto > cupoDisponible) {
+                req.flash('mensajeError', `El monto solicitado excede tu cupo pre-aprobado disponible ($ ${cupoDisponible.toLocaleString('es-CO')}).`);
+                return res.redirect('/portal-cliente');
+            }
+
+            await SolicitudCreditoModel.crear({
+                cliente_id: clienteId,
+                monto_solicitado: cleanMonto,
+                cuotas: parseInt(cuotas),
+                frecuencia: frecuencia || 'quincenal' // por defecto
+            });
+
+            req.flash('mensajeExito', 'Tu solicitud de desembolso ha sido enviada con éxito. Un asesor la revisará pronto.');
+            res.redirect('/portal-cliente');
+        } catch (error) {
+            console.error("Error en portalClienteController.solicitarCupo:", error);
+            req.flash('mensajeError', 'Error al procesar tu solicitud de cupo.');
+            res.redirect('/portal-cliente');
+        }
+    },
+
+    // 3. Ver chat de soporte
+    verChat: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+
+            // Obtener el historial completo
+            const mensajes = await SoporteMensajeModel.obtenerChatCompleto(clienteId);
+
+            // Marcar mensajes del administrador como leídos por el cliente
+            await SoporteMensajeModel.marcarComoLeido(clienteId, 'administrador');
+
+            res.render('portal-cliente/chat', {
+                title: 'Chat de Soporte',
+                cliente,
+                mensajes,
+                manifestPath: '/manifest-cliente.json',
+                themeColor: '#10b981'
+            });
+        } catch (error) {
+            console.error("Error en portalClienteController.verChat:", error);
+            res.status(500).send('Error al cargar el chat de soporte');
+        }
+    },
+
+    // 4. Enviar un mensaje de chat
+    enviarMensajeChat: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const { mensaje } = req.body;
+
+            if (!mensaje || mensaje.trim().length === 0) {
+                if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+                    return res.status(400).json({ success: false, error: 'Mensaje vacío' });
+                }
+                return res.redirect('/portal-cliente/chat');
+            }
+
+            await SoporteMensajeModel.enviarMensaje({
+                cliente_id: clienteId,
+                remitente: 'cliente',
+                mensaje: mensaje.trim()
+            });
+
+            if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+                return res.json({ success: true, mensaje: mensaje.trim() });
+            }
+            res.redirect('/portal-cliente/chat');
+        } catch (error) {
+            console.error("Error en portalClienteController.enviarMensajeChat:", error);
+            if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+                return res.status(500).json({ success: false, error: 'Error en el servidor' });
+            }
+            res.redirect('/portal-cliente/chat');
         }
     }
 };
