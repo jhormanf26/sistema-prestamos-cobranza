@@ -28,7 +28,7 @@
             id="menu">
 
             <% 
-                let mod = {clientes:true, prestamos:true, simulador:true, gastos:true, reportes:true, empenos:true, ahorros:true, cadenas:true, promocion:true};
+                let mod = {clientes:true, prestamos:true, simulador:true, gastos:true, reportes:true, empenos:true, ahorros:true, cadenas:true, promocion:true, comprobantes:true, solicitudes:true, soporte:true};
                 if (typeof empresa !== 'undefined' && empresa.modulos_activos) {
                     try {
                         mod = typeof empresa.modulos_activos === 'string' ? JSON.parse(empresa.modulos_activos) : empresa.modulos_activos;
@@ -125,6 +125,37 @@
                     <li class="nav-item w-100">
                         <a href="/promocion" target="_blank" class="nav-link px-0 align-middle text-info">
                             <i class="bi bi-megaphone-fill"></i> <span class="ms-1 d-inline fw-bold">Web Promocional</span>
+                        </a>
+                    </li>
+                    <% } %>                    
+                    <% if (mod.comprobantes !== false || mod.solicitudes !== false || mod.soporte !== false) { %>
+                    <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                        style="font-size: 0.7rem; color: #ffffff !important;">Portal Clientes</li>
+                    <% } %>
+                    <% if (mod.comprobantes !== false) { %>
+                    <li class="nav-item w-100">
+                        <a href="/admin/comprobantes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-wallet2 text-success animate-pulse"></i> <span class="ms-1 d-inline text-success fw-bold">Comprobantes</span>
+                        </a>
+                    </li>
+                    <% } %>
+                    <% if (mod.solicitudes !== false) { %>
+                    <li class="nav-item w-100">
+                        <a href="/admin/solicitudes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-rocket-takeoff-fill text-primary"></i> <span class="ms-1 d-inline text-primary fw-bold">Solicitudes Cupo</span>
+                        </a>
+                    </li>
+                    <% } %>
+                    <% if (mod.soporte !== false) { %>
+                    <li class="nav-item w-100">
+                        <a href="/admin/soporte" class="nav-link px-0 align-middle d-flex align-items-center">
+                            <i class="bi bi-headset" style="color: #6366f1;"></i> 
+                            <span class="ms-1 d-inline fw-bold" style="color: #6366f1;">Chat Soporte</span>
+                            <% if (typeof soporteSinLeer !== 'undefined' && soporteSinLeer > 0) { %>
+                                <span class="badge rounded-pill bg-danger ms-auto me-2 text-white animate-pulse" style="font-size: 0.7rem; padding: 0.3em 0.55em;">
+                                    <%= soporteSinLeer %>
+                                </span>
+                            <% } %>
                         </a>
                     </li>
                     <% } %>

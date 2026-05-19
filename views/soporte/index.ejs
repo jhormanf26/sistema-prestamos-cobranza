@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+            
+            <div class="col py-0 py-md-3 main-content-wrapper" style="background-color: #f8fafc; min-height: 100vh;">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-4 py-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2.5 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-headset fs-3"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold text-dark my-0 fs-3">Bandeja de Soporte</h2>
+                            <p class="text-muted small mb-0">Responde y gestiona los mensajes de soporte de tus clientes en tiempo real.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Panel de Conversaciones Activas (Izquierda) -->
+                        <div class="col-12 col-md-5 col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="display: flex; flex-direction: column; min-height: 550px; max-height: calc(100vh - 160px);">
+                                <div class="card-header bg-white border-bottom p-3">
+                                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-chat-left-text text-primary me-2"></i>Chats Activos</h6>
+                                </div>
+                                <div class="card-body p-0 flex-grow-1 overflow-y-auto" id="inboxList" style="background-color: #ffffff;">
+                                    <% if (chats.length === 0) { %>
+                                        <div class="text-center py-5 px-3">
+                                            <i class="bi bi-chat-square-dots text-muted fs-1 mb-2 d-block"></i>
+                                            <p class="text-muted small">No hay conversaciones de soporte registradas.</p>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="list-group list-group-flush" id="chatListGroup">
+                                            <% chats.forEach(c => { %>
+                                                <a href="#" class="list-group-item list-group-item-action p-3 border-bottom d-flex align-items-start gap-3 btn-iniciar-chat" 
+                                                   data-cliente-id="<%= c.cliente_id %>"
+                                                   style="transition: all 0.2s ease; border-left: 3px solid transparent;">
+                                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center position-relative" style="width: 44px; height: 44px; min-width: 44px;">
+                                                        <%= c.cliente_nombre ? c.cliente_nombre.charAt(0).toUpperCase() : 'C' %>
+                                                        <% if (c.sin_leer > 0) { %>
+                                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem; z-index: 10;">
+                                                                <%= c.sin_leer %>
+                                                            </span>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="flex-grow-1 min-w-0">
+                                                        <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                                            <h6 class="fw-bold text-dark mb-0 text-truncate" style="font-size: 0.9rem;"><%= c.cliente_nombre %> <%= c.cliente_apellido %></h6>
+                                                            <small class="text-muted font-monospace" style="font-size: 0.65rem;">
+                                                                <%= c.ultimo_envio ? new Date(c.ultimo_envio).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '' %>
+                                                            </small>
+                                                        </div>
+                                                        <p class="mb-0 text-muted text-truncate small" style="font-size: 0.8rem; line-height: 1.2;">
+                                                            <%= c.ultimo_mensaje %>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            <% }) %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel de Detalle y Chat Activo (Derecha) -->
+                        <div class="col-12 col-md-7 col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="height: calc(100vh - 160px); min-height: 550px; display: flex; flex-direction: column;">
+                                
+                                <!-- Vista Vacía (Empty State) -->
+                                <div class="card-body p-5 text-center my-auto" id="emptyState" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #ffffff;">
+                                    <div class="bg-light text-primary rounded-circle p-4 mb-3 d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+                                        <i class="bi bi-chat-dots fs-1"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">Conversación sin seleccionar</h5>
+                                    <p class="text-muted small mx-auto" style="max-width: 380px;">
+                                        Selecciona un cliente de la lista de la izquierda para ver su historial completo de soporte, resolver sus dudas y responder en tiempo real.
+                                    </p>
+                                </div>
+
+                                <!-- Vista de Chat Activo (Oculta por defecto) -->
+                                <div id="chatArea" class="h-100 flex-grow-1" style="display: none; flex-direction: column;">
+                                    <!-- Cabecera del Chat Activo -->
+                                    <div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2.5 me-3 d-flex align-items-center justify-content-center fw-bold" id="chatHeaderInicial" style="width: 44px; height: 44px;">
+                                                C
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold text-dark mb-0" id="chatHeaderNombre">Juan Pérez</h6>
+                                                <small class="text-muted d-flex align-items-center" id="chatHeaderDni">
+                                                    CC: 123456789
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Historial de Mensajes -->
+                                    <div class="card-body p-4 bg-light flex-grow-1 overflow-y-auto" id="chatMessages" style="background-image: radial-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 0); background-size: 24px 24px;">
+                                        <div class="d-flex flex-column gap-3" id="adminMessagesList">
+                                            <!-- Inyectado dinámicamente por JavaScript -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Campo de Entrada -->
+                                    <div class="card-footer bg-white border-top p-3">
+                                        <form id="adminChatForm" class="d-flex gap-2">
+                                            <div class="input-group">
+                                                <input type="text" id="adminChatInput" class="form-control rounded-pill px-4" placeholder="Escribe tu respuesta aquí..." autocomplete="off" maxlength="1000" style="border-color: #e2e8f0;" required>
+                                                <button type="submit" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center p-0 ms-2" style="width: 46px; height: 46px; min-width: 46px; transition: all 0.2s ease;">
+                                                    <i class="bi bi-send-fill fs-5 text-white" style="margin-left: 2px;"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos de Soporte -->
+    <style>
+        .btn-iniciar-chat.active-chat {
+            background-color: #f1f5f9 !important;
+            border-left: 3px solid #6366f1 !important;
+        }
+        .px-3\.5 {
+            padding-left: 0.85rem !important;
+            padding-right: 0.85rem !important;
+        }
+        .py-2\.5 {
+            padding-top: 0.65rem !important;
+            padding-bottom: 0.65rem !important;
+        }
+        .p-2\.5 {
+            padding: 0.625rem !important;
+        }
+    </style>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let activeClienteId = null;
+            
+            const emptyState = document.getElementById("emptyState");
+            const chatArea = document.getElementById("chatArea");
+            
+            const chatHeaderInicial = document.getElementById("chatHeaderInicial");
+            const chatHeaderNombre = document.getElementById("chatHeaderNombre");
+            const chatHeaderDni = document.getElementById("chatHeaderDni");
+            const chatMessages = document.getElementById("chatMessages");
+            const adminMessagesList = document.getElementById("adminMessagesList");
+            const adminChatForm = document.getElementById("adminChatForm");
+            const adminChatInput = document.getElementById("adminChatInput");
+            
+            // Función para hacer scroll hacia abajo
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Al hacer clic en un chat de la lista de la izquierda
+            document.getElementById("inboxList").addEventListener("click", function(e) {
+                const chatBtn = e.target.closest(".btn-iniciar-chat");
+                if (!chatBtn) return;
+                
+                e.preventDefault();
+                
+                // Remover clase activa de los demás
+                document.querySelectorAll(".btn-iniciar-chat").forEach(btn => {
+                    btn.classList.remove("active-chat");
+                });
+                
+                // Agregar clase activa
+                chatBtn.classList.add("active-chat");
+                
+                const clienteId = chatBtn.getAttribute("data-cliente-id");
+                abrirChat(clienteId);
+            });
+
+            // Abrir un chat de cliente
+            async function abrirChat(clienteId) {
+                activeClienteId = clienteId;
+                
+                try {
+                    const response = await fetch(`/admin/soporte/chat/${clienteId}`);
+                    const resData = await response.json();
+                    
+                    if (resData.success) {
+                        const { cliente, mensajes } = resData;
+                        
+                        // Configurar cabecera
+                        chatHeaderInicial.textContent = cliente.nombre.charAt(0).toUpperCase();
+                        chatHeaderNombre.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                        chatHeaderDni.textContent = `CC: ${cliente.dni}`;
+                        
+                        // Renderizar mensajes
+                        renderMessages(mensajes);
+                        
+                        // Quitar el badge de no leídos de la lista
+                        const chatBtn = document.querySelector(`.btn-iniciar-chat[data-cliente-id="${clienteId}"]`);
+                        if (chatBtn) {
+                            const badge = chatBtn.querySelector(".badge");
+                            if (badge) badge.remove();
+                        }
+                        
+                        // Mostrar chat y ocultar empty state
+                        emptyState.style.display = "none";
+                        chatArea.style.display = "flex";
+                        
+                        // Scroll
+                        scrollToBottom();
+                        adminChatInput.focus();
+                    }
+                } catch (err) {
+                    console.error("Error al abrir chat del cliente:", err);
+                }
+            }
+
+            // Renderizar la lista de mensajes en la ventana
+            function renderMessages(mensajes) {
+                if (mensajes.length === 0) {
+                    adminMessagesList.innerHTML = `<div class="text-center py-4 text-muted small"><i class="bi bi-info-circle me-1"></i>Sin mensajes previos. Escribe tu primera respuesta.</div>`;
+                    return;
+                }
+                
+                let html = "";
+                mensajes.forEach(m => {
+                    const esAdmin = m.remitente === 'administrador';
+                    
+                    if (esAdmin) {
+                        html += `
+                            <div class="d-flex flex-column align-items-end mb-2">
+                                <div class="px-3.5 py-2.5 text-white shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-radius: 18px 18px 0px 18px; max-width: 75%; word-break: break-word;">
+                                    <div class="d-flex align-items-center mb-1 text-white-50" style="font-size: 0.65rem; font-weight: 700;">
+                                        <i class="bi bi-person-check me-1"></i> TÚ
+                                    </div>
+                                    <p class="mb-0 small" style="line-height: 1.4;">${m.mensaje}</p>
+                                </div>
+                                <span class="text-muted mt-1 me-1" style="font-size: 0.65rem;">
+                                    ${new Date(m.fecha_envio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="d-flex flex-column align-items-start mb-2">
+                                <div class="bg-white border text-dark px-3.5 py-2.5 shadow-sm" style="border-radius: 18px 18px 18px 0px; max-width: 75%; word-break: break-word;">
+                                    <p class="mb-0 small" style="line-height: 1.4;">${m.mensaje}</p>
+                                </div>
+                                <span class="text-muted mt-1 ms-1" style="font-size: 0.65rem;">
+                                    ${new Date(m.fecha_envio).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            </div>
+                        `;
+                    }
+                });
+                
+                adminMessagesList.innerHTML = html;
+            }
+
+            // Enviar respuesta por AJAX
+            adminChatForm.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                if (!activeClienteId) return;
+                
+                const mensajeText = adminChatInput.value.trim();
+                if (!mensajeText) return;
+                
+                adminChatInput.disabled = true;
+                
+                try {
+                    const response = await fetch(`/admin/soporte/chat/${activeClienteId}/responder`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams({ mensaje: mensajeText })
+                    });
+                    
+                    const resData = await response.json();
+                    if (resData.success) {
+                        adminChatInput.value = "";
+                        // Actualizar mensajes e inbox inmediatamente
+                        await refrescarConversacion();
+                        await refrescarListaInbox();
+                    }
+                } catch (err) {
+                    console.error("Error al enviar respuesta:", err);
+                } finally {
+                    adminChatInput.disabled = false;
+                    adminChatInput.focus();
+                }
+            });
+
+            // Refrescar la conversación actual en pantalla (silencioso)
+            async function refrescarConversacion() {
+                if (!activeClienteId) return;
+                
+                try {
+                    const response = await fetch(`/admin/soporte/chat/${activeClienteId}`);
+                    const resData = await response.json();
+                    
+                    if (resData.success) {
+                        const viejosMensajesCount = adminMessagesList.children.length;
+                        renderMessages(resData.mensajes);
+                        
+                        // Si hay más mensajes que antes, hacer scroll
+                        if (resData.mensajes.length !== viejosMensajesCount) {
+                            scrollToBottom();
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error al refrescar conversación:", err);
+                }
+            }
+
+            // Refrescar la lista de la izquierda (inbox)
+            async function refrescarListaInbox() {
+                try {
+                    const response = await fetch("/admin/soporte");
+                    const text = await response.text();
+                    
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, "text/html");
+                    const nuevoListGroup = doc.getElementById("chatListGroup");
+                    
+                    if (nuevoListGroup) {
+                        const originalHTML = document.getElementById("inboxList").innerHTML;
+                        const nuevoHTML = doc.getElementById("inboxList").innerHTML;
+                        
+                        // Actualizar lista conservando la selección activa
+                        if (originalHTML !== nuevoHTML) {
+                            document.getElementById("inboxList").innerHTML = nuevoHTML;
+                            
+                            // Re-aplicar clase active
+                            if (activeClienteId) {
+                                const chatBtn = document.querySelector(`.btn-iniciar-chat[data-cliente-id="${activeClienteId}"]`);
+                                if (chatBtn) {
+                                    chatBtn.classList.add("active-chat");
+                                    // Remover el badge también de este botón actualizado
+                                    const badge = chatBtn.querySelector(".badge");
+                                    if (badge) badge.remove();
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error al refrescar lista de soporte:", err);
+                }
+            }
+
+            // Polling de refresco periódico cada 5 segundos
+            setInterval(async () => {
+                await refrescarConversacion();
+                await refrescarListaInbox();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

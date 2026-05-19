@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const portalClienteController = require('../controllers/portalClienteController');
 const authCliente = require('../middleware/authCliente');
+const upload = require('../middleware/upload');
 
 // Rutas Públicas (Login)
 router.get('/login', portalClienteController.mostrarLogin);
@@ -15,5 +16,11 @@ router.get('/', portalClienteController.dashboard);
 router.get('/perfil', portalClienteController.perfil);
 router.post('/perfil/password', portalClienteController.actualizarPassword);
 router.post('/registrar-instalacion', portalClienteController.registrarInstalacion);
+
+// Nuevas funcionalidades del Portal del Cliente
+router.post('/reportar-pago', upload.single('comprobante'), portalClienteController.reportarPago);
+router.post('/solicitar-cupo', portalClienteController.solicitarCupo);
+router.get('/chat', portalClienteController.verChat);
+router.post('/chat/enviar', portalClienteController.enviarMensajeChat);
 
 module.exports = router;

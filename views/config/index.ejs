@@ -103,7 +103,7 @@
                                                         </div>
 
                                                         <% 
-                                                            let mod = {clientes:true, prestamos:true, simulador:true, gastos:true, reportes:true, empenos:true, ahorros:true, cadenas:true, promocion:true};
+                                                            let mod = {clientes:true, prestamos:true, simulador:true, gastos:true, reportes:true, empenos:true, ahorros:true, cadenas:true, promocion:true, comprobantes:true, solicitudes:true, soporte:true};
                                                             if (config.modulos_activos) {
                                                                 try {
                                                                     mod = typeof config.modulos_activos === 'string' ? JSON.parse(config.modulos_activos) : config.modulos_activos;
@@ -165,6 +165,38 @@
                                                                     <input class="form-check-input" type="checkbox" name="mod_promocion" id="mod_promocion" <%= mod.promocion !== false ? 'checked' : '' %>>
                                                                     <label class="form-check-label" for="mod_promocion">Web Promocional</label>
                                                                 </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_comprobantes" id="mod_comprobantes" <%= mod.comprobantes !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_comprobantes">Comprobantes</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_solicitudes" id="mod_solicitudes" <%= mod.solicitudes !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_solicitudes">Solicitudes Cupo</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input" type="checkbox" name="mod_soporte" id="mod_soporte" <%= mod.soporte !== false ? 'checked' : '' %>>
+                                                                    <label class="form-check-label" for="mod_soporte">Chat Soporte</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <h5 class="text-secondary mb-3 mt-4"><i class="bi bi-wallet2"></i> Canales de Pago Autorizados (Portal Cliente)</h5>
+                                                        <div class="row g-3 mb-4">
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold">Celular Nequi</label>
+                                                                <input type="text" name="nequi_numero" class="form-control" value="<%= config.nequi_numero || '3123456789' %>">
+                                                                <div class="form-text text-muted small">Número de celular Nequi autorizado para recibir pagos rápidos del cliente.</div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="form-label fw-bold">Bre-B / Transfiya (Celular o Llave)</label>
+                                                                <input type="text" name="breve_numero" class="form-control" value="<%= config.breve_numero || '3123456789' %>">
+                                                                <div class="form-text text-muted small">Número de celular o llave registrado en Bre-B / Transfiya.</div>
                                                             </div>
                                                         </div>
 

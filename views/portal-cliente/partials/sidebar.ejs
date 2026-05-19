@@ -21,10 +21,28 @@
                     <i class="bi bi-house-door-fill text-success"></i> <span class="ms-1 d-inline">Inicio</span>
                 </a>
             </li>
+
+            <li class="nav-item w-100 mt-2">
+                <a href="/portal-cliente#seccion-reportes" class="nav-link align-middle px-0 text-white btn-sidebar-reportes">
+                    <i class="bi bi-receipt text-success"></i> <span class="ms-1 d-inline">Mis Reportes</span>
+                </a>
+            </li>
             
             <li class="nav-item w-100 mt-2">
                 <a href="/portal-cliente/perfil" class="nav-link align-middle px-0 text-white">
                     <i class="bi bi-person-circle text-success"></i> <span class="ms-1 d-inline">Mi Perfil</span>
+                </a>
+            </li>
+
+            <li class="nav-item w-100 mt-2">
+                <a href="/portal-cliente/chat" class="nav-link align-middle px-0 text-white d-flex align-items-center">
+                    <i class="bi bi-chat-left-dots-fill text-success"></i> 
+                    <span class="ms-1 d-inline">Chat de Soporte</span>
+                    <% if (typeof clienteChatSinLeer !== 'undefined' && clienteChatSinLeer > 0) { %>
+                        <span class="badge rounded-pill bg-danger ms-auto me-2 text-white animate-pulse" style="font-size: 0.7rem; padding: 0.3em 0.55em;">
+                            <%= clienteChatSinLeer %>
+                        </span>
+                    <% } %>
                 </a>
             </li>
         </ul>

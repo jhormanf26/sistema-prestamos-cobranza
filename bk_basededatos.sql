@@ -128,13 +128,15 @@ CREATE TABLE IF NOT EXISTS `configuracion` (
   `push_texto_3d` varchar(255) DEFAULT 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.',
   `push_texto_1d` varchar(255) DEFAULT 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.',
   `push_texto_0d` varchar(255) DEFAULT 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.',
+  `nequi_numero` varchar(50) DEFAULT '3123456789',
+  `breve_numero` varchar(50) DEFAULT '3123456789',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla sistema_prestamos.configuracion: ~1 rows (aproximadamente)
 DELETE FROM `configuracion`;
-INSERT INTO `configuracion` (`id`, `nombre_empresa`, `ruc`, `direccion`, `telefono`, `email_contacto`, `logo`, `moneda`, `interes_global`, `modulos_activos`, `alerta_hora`, `push_texto_3d`, `push_texto_1d`, `push_texto_0d`) VALUES
-	(1, 'Préstamos Pro', '00000000000', 'Calle Principal 123', '555-0000', 'contacto@empresa.com', 'logo-1775114231208-217650330.png', 'S/', 0.00, '{"clientes":true, "prestamos":true, "simulador":true, "gastos":true, "reportes":true, "empenos":true, "ahorros":true, "cadenas":true, "promocion":true}', 8, 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.', 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.', 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.');
+INSERT INTO `configuracion` (`id`, `nombre_empresa`, `ruc`, `direccion`, `telefono`, `email_contacto`, `logo`, `moneda`, `interes_global`, `modulos_activos`, `alerta_hora`, `push_texto_3d`, `push_texto_1d`, `push_texto_0d`, `nequi_numero`, `breve_numero`) VALUES
+	(1, 'Préstamos Pro', '00000000000', 'Calle Principal 123', '555-0000', 'contacto@empresa.com', 'logo-1775114231208-217650330.png', 'S/', 0.00, '{"clientes":true, "prestamos":true, "simulador":true, "gastos":true, "reportes":true, "empenos":true, "ahorros":true, "cadenas":true, "promocion":true}', 8, 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.', 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.', 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.', '3123456789', '3123456789');
 
 -- Volcando estructura para tabla sistema_prestamos.cuentas_ahorro
 CREATE TABLE IF NOT EXISTS `cuentas_ahorro` (
@@ -612,7 +614,51 @@ INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disp
         </tr>
     </table>
 </div>
-');
+'),
+
+('Reporte de Pago Rechazado', 'pago_rechazado', 'Comprobante de Pago Rechazado', 'Se envía cuando la administración rechaza un comprobante de pago reportado por el cliente desde el portal.', 'cliente, monto, fecha, motivo, moneda', 
+'<div style="background-color: #fef2f2; padding: 20px; font-family: \'Helvetica Neue\', Helvetica, Arial, sans-serif;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 15px; overflow: hidden; border: 1px solid #fee2e2; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <tr>
+            <td align="center" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 20px;">
+                <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: bold;">Comprobante Rechazado</h1>
+                <p style="margin: 10px 0 0; color: #ffffff; opacity: 0.8;">Tu reporte de pago requiere corrección.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 40px 30px; text-align: left;">
+                <p style="margin: 0 0 20px; color: #333; font-size: 16px;">Hola <strong>{{cliente}}</strong>,</p>
+                <p style="margin: 0 0 20px; color: #475569; font-size: 15px; line-height: 1.6;">
+                    Te informamos que tu reporte de pago por <strong>{{moneda}} {{monto}}</strong> enviado el <strong>{{fecha}}</strong> no pudo ser aprobado por nuestra administración.
+                </p>
+                
+                <div style="background-color: #fff1f2; border-left: 4px solid #f43f5e; padding: 15px; border-radius: 6px; margin: 25px 0;">
+                    <strong style="color: #be123c; display: block; margin-bottom: 5px;">⚠️ Motivo del rechazo:</strong>
+                    <span style="color: #9f1239; font-style: italic;">"{{motivo}}"</span>
+                </div>
+                
+                <p style="margin: 0 0 25px; color: #475569; font-size: 15px; line-height: 1.6;">
+                    Por favor, ingresa a tu portal de clientes para verificar la información y volver a subir tu comprobante de pago si fue un error al adjuntar la imagen o al ingresar los datos del reporte.
+                </p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="https://prestamos.desarollo.site/portal-cliente/login" style="background: #dc2626; color: #ffffff; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; font-size: 14px; box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);">Ir al Portal del Cliente</a>
+                </div>
+                
+                <p style="font-size: 13px; color: #64748b; margin-top: 30px; line-height: 1.5; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                    Si tienes alguna duda o consideras que se trata de un error, puedes ponerte en contacto con soporte técnico de inmediato a través del <strong>chat interno de tu portal de cliente</strong>.
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="padding: 20px; background-color: #f9fafb; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9;">
+                © Sistema de Cobranza Profesional.
+            </td>
+        </tr>
+    </table>
+</div>');
+
 
 
 -- Volcando estructura para tabla sistema_prestamos.plantillas_pdf
@@ -702,6 +748,52 @@ CREATE TABLE IF NOT EXISTS `push_subscriptions` (
   `ultima_conexion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Volcando estructura para tabla sistema_prestamos.reportes_pago
+CREATE TABLE IF NOT EXISTS `reportes_pago` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `prestamo_id` INT NOT NULL,
+  `cliente_id` INT NOT NULL,
+  `monto` DECIMAL(15,2) NOT NULL,
+  `comprobante_url` VARCHAR(255) NOT NULL,
+  `fecha_reporte` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `estado` ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+  `observaciones` TEXT,
+  `fecha_validacion` TIMESTAMP NULL,
+  `usuario_validador_id` INT NULL,
+  FOREIGN KEY (`prestamo_id`) REFERENCES `prestamos`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`usuario_validador_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando estructura para tabla sistema_prestamos.solicitudes_credito
+CREATE TABLE IF NOT EXISTS `solicitudes_credito` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `cliente_id` INT NOT NULL,
+  `monto_solicitado` DECIMAL(15,2) NOT NULL,
+  `cuotas` INT NOT NULL,
+  `frecuencia` VARCHAR(50) DEFAULT 'mensual',
+  `estado` ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+  `fecha_solicitud` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `fecha_resolucion` TIMESTAMP NULL,
+  `usuario_resolutor_id` INT NULL,
+  `comentarios` TEXT,
+  FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`usuario_resolutor_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando estructura para tabla sistema_prestamos.soporte_mensajes
+CREATE TABLE IF NOT EXISTS `soporte_mensajes` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `cliente_id` INT NOT NULL,
+  `usuario_id` INT NULL,
+  `remitente` ENUM('cliente', 'administrador') NOT NULL,
+  `mensaje` TEXT NOT NULL,
+  `fecha_envio` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `leido` TINYINT(1) DEFAULT 0,
+  FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

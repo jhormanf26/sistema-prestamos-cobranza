@@ -14,8 +14,13 @@
                         <i class="bi bi-person-badge text-success fs-3 me-2"></i>
                         <h5 class="mb-0 fw-bold">Mi Perfil</h5>
                     </div>
-                    <button class="btn btn-outline-secondary" id="openSidebarBtn">
+                    <button class="btn btn-outline-secondary position-relative" id="openSidebarBtn">
                         <i class="bi bi-list fs-4"></i>
+                        <% if (typeof clienteChatSinLeer !== 'undefined' && clienteChatSinLeer > 0) { %>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1.5 bg-danger border border-white rounded-circle animate-pulse" style="width: 10px; height: 10px;">
+                                <span class="visually-hidden">Mensajes no leídos</span>
+                            </span>
+                        <% } %>
                     </button>
                 </div>
 

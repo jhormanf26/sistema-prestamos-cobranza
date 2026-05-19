@@ -73,7 +73,9 @@ router.post('/actualizar', upload.single('logo'), async (req, res) => {
             alerta_hora,
             push_texto_3d,
             push_texto_1d,
-            push_texto_0d
+            push_texto_0d,
+            nequi_numero,
+            breve_numero
         } = req.body;
         
         // Si subió foto, capturamos el nombre. Si no, es null.
@@ -88,7 +90,10 @@ router.post('/actualizar', upload.single('logo'), async (req, res) => {
             empenos: req.body.mod_empenos === 'on',
             ahorros: req.body.mod_ahorros === 'on',
             cadenas: req.body.mod_cadenas === 'on',
-            promocion: req.body.mod_promocion === 'on'
+            promocion: req.body.mod_promocion === 'on',
+            comprobantes: req.body.mod_comprobantes === 'on',
+            solicitudes: req.body.mod_solicitudes === 'on',
+            soporte: req.body.mod_soporte === 'on'
         };
 
         const datos = {
@@ -104,7 +109,9 @@ router.post('/actualizar', upload.single('logo'), async (req, res) => {
             alerta_hora: parseInt(alerta_hora) || 8,
             push_texto_3d: push_texto_3d || 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.',
             push_texto_1d: push_texto_1d || 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.',
-            push_texto_0d: push_texto_0d || 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.'
+            push_texto_0d: push_texto_0d || 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.',
+            nequi_numero: nequi_numero || '3123456789',
+            breve_numero: breve_numero || '3123456789'
         };
 
         // Guardar en BD
