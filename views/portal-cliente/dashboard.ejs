@@ -444,9 +444,15 @@
                                                         <% } %>
                                                     </td>
                                                     <td class="text-end pe-4">
-                                                        <a href="<%= rp.comprobante_url %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Comprobante">
-                                                            <i class="bi bi-image"></i>
-                                                        </a>
+                                                        <% if(rp.comprobante_url) { %>
+                                                            <a href="<%= rp.comprobante_url %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Comprobante">
+                                                                <i class="bi bi-image"></i>
+                                                            </a>
+                                                        <% } else { %>
+                                                            <span class="text-muted small" title="Pago en efectivo / sin comprobante">
+                                                                <i class="bi bi-dash"></i>
+                                                            </span>
+                                                        <% } %>
                                                     </td>
                                                 </tr>
                                             <% }) %>
@@ -510,9 +516,15 @@
                                                         <% } %>
                                                     </td>
                                                     <td class="text-end pe-4">
-                                                        <a href="<%= ra.comprobante_url %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Comprobante">
-                                                            <i class="bi bi-image"></i>
-                                                        </a>
+                                                        <% if(ra.comprobante_url) { %>
+                                                            <a href="<%= ra.comprobante_url %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Comprobante">
+                                                                <i class="bi bi-image"></i>
+                                                            </a>
+                                                        <% } else { %>
+                                                            <span class="text-muted small" title="Aporte en efectivo / sin comprobante">
+                                                                <i class="bi bi-dash"></i>
+                                                            </span>
+                                                        <% } %>
                                                     </td>
                                                 </tr>
                                             <% }) %>
@@ -733,9 +745,9 @@
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold small">Captura o Foto del Comprobante</label>
                             <div class="upload-area p-4 rounded-4 text-center position-relative" id="dropArea">
-                                <input type="file" name="comprobante" id="fileInput" class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer" accept="image/*" required>
+                                <input type="file" name="comprobante" id="fileInput" class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer" accept="image/*">
                                 <i class="bi bi-cloud-arrow-up-fill text-success fs-1 mb-2 d-block"></i>
-                                <span class="fw-bold text-dark d-block" id="fileName">Arrastra aquí tu comprobante o haz clic</span>
+                                <span class="fw-bold text-dark d-block" id="fileName">Arrastra aquí tu comprobante, haz clic, o déjalo vacío si es pago en efectivo</span>
                                 <small class="text-muted" style="font-size: 0.75rem;">Formatos aceptados: JPG, JPEG, PNG (Máx 5MB)</small>
                             </div>
                         </div>
@@ -920,9 +932,9 @@
                         <div class="mb-3">
                             <label class="form-label text-dark fw-bold small">Captura o Foto del Comprobante</label>
                             <div class="upload-area p-4 rounded-4 text-center position-relative" style="border-color: #ffc107; background-color: #fffbef;" id="dropAreaAhorro">
-                                <input type="file" name="comprobante" class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer upload-input-ahorro" id="fileInputAhorro" accept="image/*" required>
+                                <input type="file" name="comprobante" class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer upload-input-ahorro" id="fileInputAhorro" accept="image/*">
                                 <i class="bi bi-cloud-arrow-up-fill text-warning fs-1 mb-2 d-block"></i>
-                                <span class="fw-bold text-dark d-block text-name-ahorro" id="fileNameAhorro">Arrastra aquí tu comprobante o haz clic</span>
+                                <span class="fw-bold text-dark d-block text-name-ahorro" id="fileNameAhorro">Arrastra aquí tu comprobante, haz clic, o déjalo vacío si es aporte en efectivo</span>
                                 <small class="text-muted" style="font-size: 0.75rem;">Formatos aceptados: JPG, JPEG, PNG (Máx 5MB)</small>
                             </div>
                         </div>
