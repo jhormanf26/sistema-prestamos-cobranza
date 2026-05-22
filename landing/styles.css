@@ -280,12 +280,35 @@ h1, h2, h3, .logo {
 }
 
 .benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    display: flex;
+    overflow-x: auto;
     gap: 30px;
+    padding-bottom: 20px;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    /* Ocultar scrollbar estándar */
+    -ms-overflow-style: none;
+    scrollbar-width: thin;
+}
+.benefits-grid::-webkit-scrollbar {
+    height: 8px;
+}
+.benefits-grid::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+.benefits-grid::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.benefits-grid::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .benefit-card {
+    min-width: 280px;
+    flex: 1;
+    scroll-snap-align: start;
     padding: 40px;
     background: var(--light);
     border-radius: 24px;
@@ -668,9 +691,8 @@ footer {
         letter-spacing: 1px;
     }
 
-    /* Gap extra para testimonios amontonados */
-    .testimonials .row { gap: 30px; }
-    .testimonial-card { margin-bottom: 10px; }
+    /* Gap extra para testimonios amontonados en móvil */
+    .testimonial-card { margin-bottom: 30px; }
 }
 
 /* Simulator Responsive */
@@ -714,7 +736,30 @@ footer {
 .g-2 { animation-delay: 1s !important; }
 
 /* Testimonials Refined */
-.testimonials { background: #f8fafc; }
+.testimonials { background: #f8fafc; overflow: hidden; }
+
+.testimonials-slider {
+    display: flex;
+    overflow-x: auto;
+    gap: 30px;
+    padding-bottom: 20px;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -ms-overflow-style: none;
+    scrollbar-width: thin;
+}
+.testimonials-slider::-webkit-scrollbar { height: 8px; }
+.testimonials-slider::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+.testimonials-slider::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.testimonials-slider::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.testimonial-card-wrapper {
+    min-width: 320px;
+    max-width: 400px;
+    flex: 1;
+    scroll-snap-align: start;
+}
+
 .testimonial-card {
     background: white; border-radius: 24px; padding: 35px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);

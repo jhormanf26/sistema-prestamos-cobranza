@@ -66,6 +66,7 @@
                 <li><a href="#">Inicio</a></li>
                 <li><a href="#beneficios">Beneficios</a></li>
                 <li><a href="#simulador">Simulador</a></li>
+                <li><a href="/portal-cliente/login" target="_blank" class="btn-cta-nav" style="background: white; color: var(--primary) !important; border: 2px solid var(--primary); box-shadow: none;">Portal Clientes</a></li>
                 <li><a href="#simulador" class="btn-cta-nav">Solicitar Ahora</a></li>
             </ul>
         </div>
@@ -192,11 +193,17 @@
 
     <section class="benefits" id="beneficios">
         <div class="container">
-            <div class="section-header" data-aos="fade-up">
-                <h2>¿Por qué elegir <span>Préstamos Pro</span>?</h2>
-                <p>Nuestra plataforma está diseñada para brindarte la mejor experiencia financiera.</p>
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; text-align: left;" data-aos="fade-up">
+                <div>
+                    <h2 style="margin-bottom: 5px;">¿Por qué elegir <span>Préstamos Pro</span>?</h2>
+                    <p style="margin-bottom: 0;">Nuestra plataforma está diseñada para brindarte la mejor experiencia financiera.</p>
+                </div>
+                <div class="slider-controls" style="display: flex; gap: 10px;">
+                    <button id="btnPrevBen" style="width: 45px; height: 45px; border-radius: 50%; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: var(--primary); transition: all 0.3s;"><i class="bi bi-chevron-left"></i></button>
+                    <button id="btnNextBen" style="width: 45px; height: 45px; border-radius: 50%; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: var(--primary); transition: all 0.3s;"><i class="bi bi-chevron-right"></i></button>
+                </div>
             </div>
-            <div class="benefits-grid">
+            <div class="benefits-grid" id="benefitsSlider">
                 <div class="benefit-card" data-aos="fade-up" data-aos-delay="100">
                     <div class="icon-box blue"><i class="bi bi-lightning-charge-fill"></i></div>
                     <h3>Rapidez Total</h3>
@@ -211,6 +218,11 @@
                     <div class="icon-box gold"><i class="bi bi-calendar-heart-fill"></i></div>
                     <h3>Tus Reglas</h3>
                     <p>Elige el plazo y la frecuencia de pago que mejor se adapte a tu bolsillo.</p>
+                </div>
+                <div class="benefit-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="icon-box blue" style="background: rgba(13, 202, 240, 0.1); color: #0dcaf0;"><i class="bi bi-laptop"></i></div>
+                    <h3>Portal de Clientes</h3>
+                    <p>Revisa en tiempo real el estado de tus créditos, tus próximos pagos e historial completo con tu propio usuario.</p>
                 </div>
             </div>
         </div>
@@ -299,13 +311,19 @@
     <!-- Testimonials Section -->
     <section class="testimonials py-5" id="testimonios">
         <div class="container">
-            <div class="section-header text-center mb-5" data-aos="fade-up">
-                <h2>Historias <span>Reales</span></h2>
-                <p>Miles de personas ya han solucionado sus imprevistos con nosotros.</p>
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; text-align: left; margin-bottom: 3rem;" data-aos="fade-up">
+                <div>
+                    <h2 style="margin-bottom: 5px;">Historias <span>Reales</span></h2>
+                    <p style="margin-bottom: 0;">Miles de personas ya han solucionado sus imprevistos con nosotros.</p>
+                </div>
+                <div class="slider-controls" style="display: flex; gap: 10px;">
+                    <button id="btnPrevTestimonial" style="width: 45px; height: 45px; border-radius: 50%; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: var(--primary); transition: all 0.3s;"><i class="bi bi-chevron-left"></i></button>
+                    <button id="btnNextTestimonial" style="width: 45px; height: 45px; border-radius: 50%; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: var(--primary); transition: all 0.3s;"><i class="bi bi-chevron-right"></i></button>
+                </div>
             </div>
-            <div class="row g-4">
+            <div class="testimonials-slider" id="testimonialsSlider">
                 <!-- Testimonio 1 -->
-                <div class="col-md-3" data-aos="fade-up">
+                <div class="testimonial-card-wrapper" data-aos="fade-up">
                     <div class="testimonial-card">
                         <div class="quote-icon">“</div>
                         <div class="text-warning">
@@ -322,7 +340,7 @@
                     </div>
                 </div>
                 <!-- Testimonio 2 -->
-                <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="testimonial-card-wrapper" data-aos="fade-up" data-aos-delay="100">
                     <div class="testimonial-card">
                         <div class="quote-icon">“</div>
                         <div class="text-warning">
@@ -339,7 +357,7 @@
                     </div>
                 </div>
                 <!-- Testimonio 3 -->
-                <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="testimonial-card-wrapper" data-aos="fade-up" data-aos-delay="200">
                     <div class="testimonial-card">
                         <div class="quote-icon">“</div>
                         <div class="text-warning">
@@ -356,7 +374,7 @@
                     </div>
                 </div>
                 <!-- Testimonio 4 -->
-                <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="testimonial-card-wrapper" data-aos="fade-up" data-aos-delay="300">
                     <div class="testimonial-card">
                         <div class="quote-icon">“</div>
                         <div class="text-warning">

@@ -285,6 +285,28 @@ async function runMigrations() {
         }
     }
 
+    // 13. Columnas para contratos digitales (Firma)
+    try {
+        await db.query("ALTER TABLE prestamos ADD COLUMN firma_digital LONGTEXT NULL AFTER estado;");
+        console.log('✅ Columna [firma_digital] agregada a la tabla [prestamos]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [firma_digital]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE prestamos ADD COLUMN fecha_firma DATETIME NULL AFTER firma_digital;");
+        console.log('✅ Columna [fecha_firma] agregada a la tabla [prestamos]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [fecha_firma]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE prestamos ADD COLUMN ip_firma VARCHAR(50) NULL AFTER fecha_firma;");
+        console.log('✅ Columna [ip_firma] agregada a la tabla [prestamos]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [ip_firma]:', e.message);
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 

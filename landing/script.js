@@ -55,6 +55,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     const leadPhone = document.getElementById('leadPhone');
     const closeModal = document.querySelector('.close-modal');
     
+    // Slider Beneficios
+    const benefitsSlider = document.getElementById('benefitsSlider');
+    const btnPrevBen = document.getElementById('btnPrevBen');
+    const btnNextBen = document.getElementById('btnNextBen');
+
+    if (benefitsSlider && btnPrevBen && btnNextBen) {
+        btnNextBen.addEventListener('click', () => {
+            benefitsSlider.scrollBy({ left: 330, behavior: 'smooth' });
+        });
+        btnPrevBen.addEventListener('click', () => {
+            benefitsSlider.scrollBy({ left: -330, behavior: 'smooth' });
+        });
+        
+        // Auto-scroll ligero inicial para dar la idea de que es deslizable en movil
+        setTimeout(() => {
+            if(window.innerWidth < 992 && benefitsSlider.scrollLeft === 0) {
+                benefitsSlider.scrollBy({ left: 100, behavior: 'smooth' });
+                setTimeout(() => {
+                    benefitsSlider.scrollBy({ left: -100, behavior: 'smooth' });
+                }, 600);
+            }
+        }, 3000);
+    }
+    
+    // Slider Testimonios
+    const testimonialsSlider = document.getElementById('testimonialsSlider');
+    const btnPrevTestimonial = document.getElementById('btnPrevTestimonial');
+    const btnNextTestimonial = document.getElementById('btnNextTestimonial');
+
+    if (testimonialsSlider && btnPrevTestimonial && btnNextTestimonial) {
+        btnNextTestimonial.addEventListener('click', () => {
+            testimonialsSlider.scrollBy({ left: 350, behavior: 'smooth' });
+        });
+        btnPrevTestimonial.addEventListener('click', () => {
+            testimonialsSlider.scrollBy({ left: -350, behavior: 'smooth' });
+        });
+        
+        setTimeout(() => {
+            if(window.innerWidth < 992 && testimonialsSlider.scrollLeft === 0) {
+                testimonialsSlider.scrollBy({ left: 100, behavior: 'smooth' });
+                setTimeout(() => {
+                    testimonialsSlider.scrollBy({ left: -100, behavior: 'smooth' });
+                }, 600);
+            }
+        }, 3500);
+    }
+    
     // Mobile Menu
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const closeMenuBtn = document.getElementById('close-menu-btn');
