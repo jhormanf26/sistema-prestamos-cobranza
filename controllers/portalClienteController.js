@@ -591,6 +591,63 @@ const portalClienteController = {
             req.flash('mensajeError', 'Error al procesar tu solicitud de retiro.');
             res.redirect('/portal-cliente');
         }
+    },
+
+    // Ver el contrato para firmarlo
+    verContrato: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const prestamo = await PrestamoModel.obtenerPorId(id);
+
+            if (!prestamo || prestamo.cliente_id !== req.session.cliente.id) {
+                req.flash('mensajeError', 'Préstamo no encontrado o no tienes permiso.');
+                return res.redirect('/portal-cliente');
+            }
+
+            if (prestamo.firma_digital) {
+                req.flash('mensajeExito', 'Este contrato ya fue firmado.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const cliente = await ClienteModel.obtenerPorId(req.session.cliente.id);
+            res.render('portal-cliente/contrato', {
+                title: 'Firma de Contrato',
+                cliente,
+                prestamo,
+                layout: false
+            });
+        } catch (error) {
+            console.error(error);
+            req.flash('mensajeError', 'Error al cargar el contrato.');
+            res.redirect('/portal-cliente');
+        }
+    },
+
+    // Recibir y guardar la firma
+    firmarContrato: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { firma } = req.body;
+            const prestamo = await PrestamoModel.obtenerPorId(id);
+
+            if (!prestamo || prestamo.cliente_id !== req.session.cliente.id) {
+                return res.status(403).json({ success: false, message: 'No tienes permiso.' });
+            }
+
+            if (prestamo.firma_digital) {
+                return res.status(400).json({ success: false, message: 'Ya firmado.' });
+            }
+
+            // Obtener IP
+            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+            await PrestamoModel.guardarFirma(id, firma, ip);
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ success: false, message: 'Error interno.' });
+        }
     }
 };
 

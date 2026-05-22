@@ -125,6 +125,21 @@ class PrestamoModel {
     static async obtenerVencidos() {
         try { return (await db.query("SELECT p.*, c.nombre, c.apellido, c.dni, c.telefono FROM prestamos p JOIN clientes c ON p.cliente_id = c.id WHERE p.estado = 'vencido' ORDER BY p.fecha_fin ASC"))[0]; } catch (error) { throw error; }
     }
+
+    static async guardarFirma(id, firmaBase64, ip) {
+        try {
+            let dateBogota = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            const fecha = dateBogota.getFullYear() + "-" + 
+                          String(dateBogota.getMonth() + 1).padStart(2, '0') + "-" + 
+                          String(dateBogota.getDate()).padStart(2, '0') + " " + 
+                          String(dateBogota.getHours()).padStart(2, '0') + ":" + 
+                          String(dateBogota.getMinutes()).padStart(2, '0') + ":" + 
+                          String(dateBogota.getSeconds()).padStart(2, '0');
+            const query = 'UPDATE prestamos SET firma_digital = ?, fecha_firma = ?, ip_firma = ? WHERE id = ?';
+            const [result] = await db.query(query, [firmaBase64, fecha, ip, id]);
+            return result;
+        } catch (error) { throw error; }
+    }
 }
 
 module.exports = PrestamoModel;

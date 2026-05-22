@@ -93,6 +93,17 @@ const pdfService = {
                 doc.strokeColor('#ccc').moveTo(50, firmaY).lineTo(230, firmaY).stroke();
                 doc.moveTo(330, firmaY).lineTo(510, firmaY).stroke();
 
+                if (prestamo.firma_digital) {
+                    try {
+                        const firmaImg = prestamo.firma_digital.replace(/^data:image\/\w+;base64,/, '');
+                        const firmaBuffer = Buffer.from(firmaImg, 'base64');
+                        doc.image(firmaBuffer, 340, firmaY - 50, { width: 160, height: 50 });
+                        
+                        const fechaStr = prestamo.fecha_firma ? new Date(prestamo.fecha_firma).toLocaleString('es-CO', {timeZone: 'America/Bogota'}) : '';
+                        doc.fontSize(6).fillColor('#7f8c8d').text(`Firmado digitalmente: IP ${prestamo.ip_firma || 'N/A'} - ${fechaStr}`, 330, firmaY + 40, { width: 180, align: 'center' });
+                    } catch (e) { console.error('Error insertando firma en PDF:', e); }
+                }
+
                 doc.fontSize(10).font('Helvetica-Bold').fillColor('#2c3e50');
                 doc.text('FIRMA ACREEDOR', 50, firmaY + 10, { width: 180, align: 'center' });
                 doc.text('FIRMA DEUDOR', 330, firmaY + 10, { width: 180, align: 'center' });
@@ -159,12 +170,30 @@ const pdfService = {
                 doc.text(`Total a devolver: ${moneda} ${formatCurrency(prestamo.monto_total, 2)}`);
                 doc.text(`Cuotas: ${prestamo.cuotas} (${prestamo.frecuencia})`);
 
-                doc.moveDown(3);
+                if (prestamo.firma_digital) {
+                    doc.moveDown(1);
+                    try {
+                        const firmaImg = prestamo.firma_digital.replace(/^data:image\/\w+;base64,/, '');
+                        const firmaBuffer = Buffer.from(firmaImg, 'base64');
+                        // Dibujar firma y luego añadir espacio extra para la línea
+                        doc.image(firmaBuffer, 63, doc.y, { width: 100, height: 35, align: 'center' });
+                        doc.y += 40;
+                    } catch (e) { console.error('Error insertando firma en Ticket:', e); }
+                } else {
+                    doc.moveDown(3);
+                }
 
                 doc.text('________________________________', { align: 'center' });
                 doc.text('RECIBÍ CONFORME (Firma Cliente)', { align: 'center' });
                 doc.moveDown(0.5);
                 doc.text(`CC: ${prestamo.dni}`, { align: 'center' });
+                
+                if (prestamo.firma_digital) {
+                    doc.moveDown(0.5);
+                    const fechaStr = prestamo.fecha_firma ? new Date(prestamo.fecha_firma).toLocaleString('es-CO', {timeZone: 'America/Bogota'}) : '';
+                    doc.fontSize(6).fillColor('#7f8c8d').text(`Firmado digitalmente: IP ${prestamo.ip_firma || 'N/A'} - ${fechaStr}`, { align: 'center' });
+                    doc.fillColor('#000').fontSize(8);
+                }
 
                 doc.moveDown(2);
 

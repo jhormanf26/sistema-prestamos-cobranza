@@ -50,6 +50,36 @@
                         </div>
                     </div>
 
+                    <!-- Alerta de Contrato Pendiente de Firma -->
+                    <% 
+                        const prestamosSinFirmar = prestamosActivos.filter(p => !p.firma_digital);
+                        if (prestamosSinFirmar.length > 0) { 
+                    %>
+                        <div class="card border-0 shadow-sm rounded-4 mb-4 text-dark position-relative overflow-hidden" style="background: rgba(13, 110, 253, 0.05); border: 1px solid rgba(13, 110, 253, 0.15) !important;">
+                            <div class="position-absolute top-50 end-0 translate-middle-y opacity-10" style="font-size: 7rem; right: 2%; pointer-events: none;">
+                                <i class="bi bi-pen-fill text-primary"></i>
+                            </div>
+                            <div class="card-body p-4 position-relative">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8 col-lg-9">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 mb-2 rounded-pill px-3 py-1 fw-bold text-uppercase" style="font-size: 0.75rem;">
+                                            <i class="bi bi-exclamation-circle-fill me-1 animate-pulse"></i> Acción Requerida
+                                        </span>
+                                        <h4 class="fw-bold mb-1 text-dark">Tienes <%= prestamosSinFirmar.length === 1 ? 'un contrato' : prestamosSinFirmar.length + ' contratos' %> pendiente de firma</h4>
+                                        <p class="mb-0 text-muted small">
+                                            Por favor, revisa y firma digitalmente <%= prestamosSinFirmar.length === 1 ? 'el pagaré de tu préstamo activo' : 'los pagarés de tus préstamos activos' %> para completar el proceso.
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 col-lg-3 text-md-end mt-3 mt-md-0">
+                                        <a href="/portal-cliente/contrato/<%= prestamosSinFirmar[0].id %>" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center" style="transition: all 0.3s ease;">
+                                            <i class="bi bi-pen me-2"></i> Firmar Ahora
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+
                     <!-- Alerta de Mensajes de Soporte sin Leer -->
                     <% if (typeof clienteChatSinLeer !== 'undefined' && clienteChatSinLeer > 0) { %>
                         <div class="card border-0 shadow-sm rounded-4 mb-4 text-dark position-relative overflow-hidden" style="background: rgba(220, 53, 69, 0.05); border: 1px solid rgba(220, 53, 69, 0.15) !important;">
