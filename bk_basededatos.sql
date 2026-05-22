@@ -792,7 +792,10 @@ CREATE TABLE IF NOT EXISTS `soporte_mensajes` (
   `usuario_id` INT NULL,
   `remitente` ENUM('cliente', 'administrador') NOT NULL,
   `mensaje` TEXT NOT NULL,
+  `tipo` ENUM('texto', 'audio', 'imagen') DEFAULT 'texto',
   `fecha_envio` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `fecha_entregado` TIMESTAMP NULL DEFAULT NULL,
+  `fecha_visto` TIMESTAMP NULL DEFAULT NULL,
   `leido` TINYINT(1) DEFAULT 0,
   FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL
