@@ -81,9 +81,9 @@ const mercadopagoController = {
                     email: req.session.cliente.email || 'correo@ejemplo.com'
                 },
                 back_urls: {
-                    success: `${baseUrl}/portal/dashboard?pago=success`,
-                    failure: `${baseUrl}/portal/dashboard?pago=failure`,
-                    pending: `${baseUrl}/portal/dashboard?pago=pending`
+                    success: `${baseUrl}/portal-cliente?pago=success`,
+                    failure: `${baseUrl}/portal-cliente?pago=failure`,
+                    pending: `${baseUrl}/portal-cliente?pago=pending`
                 },
                 // Enviamos la data cruda del préstamo para que el webhook sepa a qué cuenta abonar
                 external_reference: JSON.stringify({
@@ -184,6 +184,17 @@ const mercadopagoController = {
                     INSERT INTO caja (concepto, monto, tipo, categoria, usuario, referencia_id) 
                     VALUES (?, ?, 'ingreso', 'Cobro Cuota', 'Sistema MP', ?)
                 `, [`Pago en línea (MP ${dataID}) - Préstamo #${prestamoId}`, montoAbonar, prestamoId]);
+
+                // Liquidar el préstamo si la deuda quedó saldada
+                const prestamo = await PrestamoModel.obtenerPorId(prestamoId);
+                if (prestamo) {
+                    const totalDeuda = parseFloat(prestamo.monto_total);
+                    const totalPagadoActual = parseFloat(await PagoModel.obtenerTotalPagado(prestamoId));
+                    if (totalPagadoActual >= (totalDeuda - 0.01)) {
+                        await PrestamoModel.actualizarEstado(prestamoId, 'pagado');
+                        console.log(`[MercadoPago] Préstamo #${prestamoId} liquidado automáticamente como PAGADO.`);
+                    }
+                }
 
                 console.log(`[MercadoPago] Pago ${dataID} procesado exitosamente.`);
             }
