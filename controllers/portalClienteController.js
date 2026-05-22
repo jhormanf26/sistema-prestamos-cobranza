@@ -638,8 +638,12 @@ const portalClienteController = {
                 return res.status(400).json({ success: false, message: 'Ya firmado.' });
             }
 
-            // Obtener IP
-            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            // Obtener IP de manera más robusta detrás de Nginx/Deploy
+            let ip = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || req.socket.remoteAddress;
+            // Si viene una lista (ej. proxy1, proxy2), tomamos la primera
+            if (ip && ip.includes(',')) {
+                ip = ip.split(',')[0].trim();
+            }
 
             await PrestamoModel.guardarFirma(id, firma, ip);
 
