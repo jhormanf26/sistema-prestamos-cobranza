@@ -213,6 +213,15 @@
                         <div class="col-12 col-lg-7">
                             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden bg-dark d-flex align-items-center justify-content-center" style="min-height: 400px; max-height: 520px; position: relative;">
                                 <img src="" id="aporteImage" class="img-fluid" style="max-height: 500px; object-fit: contain; cursor: zoom-in;" title="Haz clic para ver tamaño completo">
+                                
+                                <div id="aporteNoImage" class="d-none text-center p-4">
+                                    <div class="bg-secondary bg-opacity-25 rounded-circle d-inline-flex p-4 mb-3">
+                                        <i class="bi bi-image-alt text-white opacity-50" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h5 class="text-white fw-bold">Sin Comprobante Físico</h5>
+                                    <p class="text-white-50 small mb-0">El cliente registró este aporte sin adjuntar una imagen.</p>
+                                </div>
+
                                 <a href="" id="aporteFullLink" target="_blank" class="btn btn-sm btn-light rounded-circle shadow position-absolute bottom-0 end-0 m-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Abrir en pestaña nueva">
                                     <i class="bi bi-fullscreen text-dark"></i>
                                 </a>
@@ -371,8 +380,26 @@
             document.querySelectorAll(".btn-verificar-aporte").forEach(btn => {
                 btn.addEventListener("click", function() {
                     document.getElementById("aporteIdTitle").textContent = this.dataset.id;
-                    document.getElementById("aporteImage").src = this.dataset.comprobanteUrl;
-                    document.getElementById("aporteFullLink").href = this.dataset.comprobanteUrl;
+                    
+                    const imgUrl = this.dataset.comprobanteUrl;
+                    const imgEl = document.getElementById("aporteImage");
+                    const linkEl = document.getElementById("aporteFullLink");
+                    const noImageEl = document.getElementById("aporteNoImage");
+                    
+                    if (imgUrl && imgUrl !== 'null' && imgUrl.trim() !== '') {
+                        imgEl.src = imgUrl;
+                        imgEl.classList.remove("d-none");
+                        linkEl.href = imgUrl;
+                        linkEl.classList.remove("d-none");
+                        if (noImageEl) noImageEl.classList.add("d-none");
+                    } else {
+                        imgEl.src = "";
+                        imgEl.classList.add("d-none");
+                        linkEl.href = "#";
+                        linkEl.classList.add("d-none");
+                        if (noImageEl) noImageEl.classList.remove("d-none");
+                    }
+                    
                     document.getElementById("aporteCliente").textContent = this.dataset.cliente;
                     document.getElementById("aporteDni").textContent = `CC: ${this.dataset.dni}`;
                     

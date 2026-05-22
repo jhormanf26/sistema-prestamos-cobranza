@@ -755,7 +755,7 @@ CREATE TABLE IF NOT EXISTS `reportes_pago` (
   `prestamo_id` INT NOT NULL,
   `cliente_id` INT NOT NULL,
   `monto` DECIMAL(15,2) NOT NULL,
-  `comprobante_url` VARCHAR(255) NOT NULL,
+  `comprobante_url` VARCHAR(255) NULL,
   `fecha_reporte` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `estado` ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
   `observaciones` TEXT,

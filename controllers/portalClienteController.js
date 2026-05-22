@@ -208,9 +208,9 @@ const portalClienteController = {
             const clienteId = req.session.cliente.id;
             const { prestamo_id, monto, observaciones } = req.body;
 
-            if (!req.file) {
-                req.flash('mensajeError', 'Por favor, sube una imagen de tu comprobante de pago.');
-                return res.redirect('/portal-cliente');
+            let comprobanteUrl = null;
+            if (req.file) {
+                comprobanteUrl = `/uploads/${req.file.filename}`;
             }
 
             if (!prestamo_id || !monto) {
@@ -226,7 +226,7 @@ const portalClienteController = {
                 return res.redirect('/portal-cliente');
             }
 
-            const comprobanteUrl = `/uploads/${req.file.filename}`;
+            // comprobanteUrl ya está asignado arriba
 
             await ReportePagoModel.crear({
                 prestamo_id: parseInt(prestamo_id),
@@ -489,9 +489,9 @@ const portalClienteController = {
             const clienteId = req.session.cliente.id;
             const { cuenta_id, monto, observaciones } = req.body;
 
-            if (!req.file) {
-                req.flash('mensajeError', 'Por favor, sube una imagen de tu comprobante de aporte.');
-                return res.redirect('/portal-cliente');
+            let comprobanteUrl = null;
+            if (req.file) {
+                comprobanteUrl = `/uploads/${req.file.filename}`;
             }
 
             if (!cuenta_id || !monto) {
@@ -507,7 +507,7 @@ const portalClienteController = {
                 return res.redirect('/portal-cliente');
             }
 
-            const comprobanteUrl = `/uploads/${req.file.filename}`;
+            // comprobanteUrl ya está asignado arriba
 
             await AhorroReporteModel.crear({
                 cuenta_id: parseInt(cuenta_id),

@@ -119,6 +119,15 @@
                         <div class="col-12 col-lg-7">
                             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden bg-dark d-flex align-items-center justify-content-center" style="min-height: 400px; max-height: 520px; position: relative;">
                                 <img src="" id="auditImage" class="img-fluid" style="max-height: 500px; object-fit: contain; cursor: zoom-in;" title="Haz clic para ver tamaño completo">
+                                
+                                <div id="auditNoImage" class="d-none text-center p-4">
+                                    <div class="bg-secondary bg-opacity-25 rounded-circle d-inline-flex p-4 mb-3">
+                                        <i class="bi bi-image-alt text-white opacity-50" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <h5 class="text-white fw-bold">Sin Comprobante Físico</h5>
+                                    <p class="text-white-50 small mb-0">El cliente registró este pago sin adjuntar una imagen.</p>
+                                </div>
+
                                 <a href="" id="auditFullLink" target="_blank" class="btn btn-sm btn-light rounded-circle shadow position-absolute bottom-0 end-0 m-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Abrir en pestaña nueva">
                                     <i class="bi bi-fullscreen text-dark"></i>
                                 </a>
@@ -223,8 +232,24 @@
                     
                     // Llenar datos
                     auditIdTitle.textContent = activeReporteId;
-                    auditImage.src = this.getAttribute("data-comprobante-url");
-                    auditFullLink.href = this.getAttribute("data-comprobante-url");
+                    
+                    const imgUrl = this.getAttribute("data-comprobante-url");
+                    const noImageEl = document.getElementById("auditNoImage");
+                    
+                    if (imgUrl && imgUrl !== 'null' && imgUrl.trim() !== '') {
+                        auditImage.src = imgUrl;
+                        auditImage.classList.remove("d-none");
+                        auditFullLink.href = imgUrl;
+                        auditFullLink.classList.remove("d-none");
+                        if (noImageEl) noImageEl.classList.add("d-none");
+                    } else {
+                        auditImage.src = "";
+                        auditImage.classList.add("d-none");
+                        auditFullLink.href = "#";
+                        auditFullLink.classList.add("d-none");
+                        if (noImageEl) noImageEl.classList.remove("d-none");
+                    }
+                    
                     auditCliente.textContent = this.getAttribute("data-cliente");
                     auditDni.textContent = `CC: ${this.getAttribute("data-dni")}`;
                     auditPrestamoId.textContent = `Préstamo #${this.getAttribute("data-prestamo-id")}`;
