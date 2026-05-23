@@ -8,6 +8,66 @@
             <%- include('partials/sidebar') %>
 
             <div class="col py-0 py-md-3 main-content-wrapper" style="background-color: #f8fafc; min-height: 100vh;">
+                <!-- Aquí incluimos el sidebar móvil (offcanvas) pero no queremos duplicar el HTML
+                     Lo ideal es que el menú sea resposive naturalmente, por lo que usaremos un div overlay -->
+
+                <!-- Modal MercadoPago Checkout -->
+                <div class="modal fade" id="modalMercadoPago" tabindex="-1" aria-labelledby="modalMercadoPagoLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                            <div class="modal-header bg-primary border-0 py-3">
+                                <h5 class="modal-title fw-bold text-white d-flex align-items-center" id="modalMercadoPagoLabel">
+                                    <i class="bi bi-credit-card me-2"></i> Pagar en Línea (PSE/Tarjetas)
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body p-4 bg-light">
+                                <form id="formMercadoPago">
+                                    <input type="hidden" id="mpPrestamoId" name="prestamo_id">
+                                    
+                                    <div class="alert alert-info border-0 shadow-sm d-flex mb-4">
+                                        <i class="bi bi-info-circle-fill me-3 fs-4 text-info"></i>
+                                        <div class="small text-dark">
+                                            Al pagar en línea a través de MercadoPago, tu pago se registrará automáticamente sin necesidad de revisión manual. Podrás usar PSE, Tarjeta de Crédito, Débito o dinero en cuenta.
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold text-dark small">¿Cuánto deseas abonar a tu préstamo? <span class="text-danger">*</span></label>
+                                        <div class="input-group input-group-lg shadow-sm">
+                                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-currency-dollar"></i></span>
+                                            <input type="number" class="form-control border-start-0 fw-bold fs-5" id="mpMontoNeto" name="monto_pagar" required min="1000" step="1">
+                                        </div>
+                                        <div class="form-text mt-2"><i class="bi bi-pencil me-1"></i> Puedes modificar este valor si deseas abonar más o menos de la cuota programada.</div>
+                                    </div>
+
+                                    <div class="card border-0 bg-white shadow-sm rounded-3 p-3 mb-4">
+                                        <h6 class="fw-bold border-bottom pb-2 mb-3 fs-6">Resumen del Cobro</h6>
+                                        
+                                        <div class="d-flex justify-content-between mb-2 small">
+                                            <span class="text-muted">Monto a abonar al préstamo:</span>
+                                            <span class="fw-bold text-dark" id="txtMpMontoNeto">$0</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2 small">
+                                            <span class="text-muted">Comisión pasarela (MercadoPago):</span>
+                                            <span class="fw-bold text-danger" id="txtMpComision">$0</span>
+                                        </div>
+                                        <hr class="my-2 border-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold text-dark">Total a pagar:</span>
+                                            <span class="fw-bold text-primary fs-4" id="txtMpTotal">$0</span>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm d-flex justify-content-center align-items-center" id="btnProcesarMp">
+                                        <span class="me-2">Continuar a MercadoPago</span> <i class="bi bi-arrow-right-circle fs-5"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Mobile Header Simple -->
                 <div class="d-md-none bg-white p-3 shadow-sm d-flex justify-content-between align-items-center mb-3">
                     <div class="d-flex align-items-center">
@@ -269,6 +329,11 @@
                                                 <button type="button" class="btn btn-success btn-sm flex-fill fw-bold text-nowrap btn-reportar-pago" data-prestamo-id="<%= p.id %>" data-monto="<%= p.fecha_proxima_cuota ? Math.round(p.restante_proxima_cuota) : '' %>">
                                                     <i class="bi bi-wallet2 me-1"></i> Reportar Pago
                                                 </button>
+                                                <% if(p.estado !== 'pagado') { %>
+                                                <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold text-nowrap btn-pagar-mp" data-prestamo-id="<%= p.id %>" data-monto="<%= p.fecha_proxima_cuota ? Math.round(p.restante_proxima_cuota) : '' %>">
+                                                    <i class="bi bi-credit-card me-1"></i> Pagar en Línea
+                                                </button>
+                                                <% } %>
                                             </div>
                                         </div>
                                     </div>
@@ -1497,6 +1562,94 @@
                     console.error('Error polling status:', error);
                 }
             }, 8000); // Polling cada 8 segundos
+
+            // --- 11. MERCADOPAGO LOGIC ---
+            // Calcular comisión
+            function calcularMp(montoNeto) {
+                if(!montoNeto || isNaN(montoNeto)) {
+                    document.getElementById('txtMpMontoNeto').textContent = '$0';
+                    document.getElementById('txtMpComision').textContent = '$0';
+                    document.getElementById('txtMpTotal').textContent = '$0';
+                    return;
+                }
+                const costoFijo = 800 * 1.19; // 952
+                const porcentaje = 0.0329 * 1.19; // 0.039151
+                const montoBruto = Math.ceil((montoNeto + costoFijo) / (1 - porcentaje));
+                const comision = montoBruto - montoNeto;
+
+                document.getElementById('txtMpMontoNeto').textContent = '$' + montoNeto.toLocaleString('es-CO');
+                document.getElementById('txtMpComision').textContent = '$' + comision.toLocaleString('es-CO');
+                document.getElementById('txtMpTotal').textContent = '$' + montoBruto.toLocaleString('es-CO');
+            }
+
+            // Abrir Modal
+            document.querySelectorAll('.btn-pagar-mp').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-prestamo-id');
+                    let monto = this.getAttribute('data-monto');
+                    if(!monto || monto === '') monto = 1000;
+                    
+                    document.getElementById('mpPrestamoId').value = id;
+                    document.getElementById('mpMontoNeto').value = monto;
+                    calcularMp(parseFloat(monto));
+                    
+                    new bootstrap.Modal(document.getElementById('modalMercadoPago')).show();
+                });
+            });
+
+            // Cambiar monto en vivo
+            document.getElementById('mpMontoNeto')?.addEventListener('input', function() {
+                calcularMp(parseFloat(this.value));
+            });
+
+            // Enviar Formulario
+            document.getElementById('formMercadoPago')?.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('btnProcesarMp');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Conectando...';
+                btn.disabled = true;
+
+                try {
+                    const formData = new FormData(this);
+                    const res = await fetch('/pagos/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(Object.fromEntries(formData))
+                    });
+                    const data = await res.json();
+                    
+                    if(data.success && data.init_point) {
+                        window.location.href = data.init_point; // Redirigir a pasarela
+                    } else {
+                        Swal.fire('Error', data.message || 'No se pudo generar el pago', 'error');
+                        btn.innerHTML = originalHtml;
+                        btn.disabled = false;
+                    }
+                } catch(error) {
+                    Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            });
+
+            // Detectar si venimos de un pago exitoso
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('pago') === 'success') {
+                Swal.fire({
+                    title: '¡Pago Exitoso!',
+                    text: 'Tu pago está siendo procesado automáticamente y se verá reflejado en instantes.',
+                    icon: 'success',
+                    confirmButtonText: 'Genial',
+                    customClass: { confirmButton: 'btn btn-success rounded-pill px-4 fw-bold' },
+                    buttonsStyling: false
+                });
+                // Limpiar URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (urlParams.get('pago') === 'failure') {
+                Swal.fire('Pago Fallido', 'No se pudo completar el pago en la pasarela. Intenta de nuevo.', 'error');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         });
     </script>
 </body>

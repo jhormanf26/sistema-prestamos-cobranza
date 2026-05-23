@@ -89,6 +89,19 @@ const portalClienteController = {
             const clienteId = req.session.cliente.id;
             const cliente = await ClienteModel.obtenerPorId(clienteId);
             const prestamos = await PrestamoModel.obtenerPorCliente(clienteId);
+            
+            // Auto-reparación proactiva: Si un préstamo está activo pero ya se pagó en su totalidad, lo liquidamos en la base de datos
+            for (let p of prestamos) {
+                if (p.estado !== 'pagado') {
+                    const totalPagado = parseFloat(p.total_pagado || 0);
+                    const totalDeuda = parseFloat(p.monto_total || 0);
+                    if (totalPagado >= (totalDeuda - 0.01)) {
+                        await PrestamoModel.actualizarEstado(p.id, 'pagado');
+                        p.estado = 'pagado';
+                    }
+                }
+            }
+
             const cuentaAhorro = await AhorroModel.buscarPorCliente(clienteId);
             const empenos = await EmpenoModel.obtenerPorCliente(clienteId);
             const reportesPago = await ReportePagoModel.obtenerPorCliente(clienteId);
