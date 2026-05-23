@@ -90,7 +90,13 @@ const mercadopagoController = {
                     prestamo_id: prestamo_id,
                     monto_neto: montoNeto
                 }),
-                notification_url: `${baseUrl}/pagos/webhook`
+                notification_url: `${baseUrl}/pagos/webhook`,
+                payment_methods: {
+                    excluded_payment_types: [
+                        { id: "ticket" },
+                        { id: "atm" }
+                    ]
+                }
             };
 
             // Solo aplicar auto_return si no estamos en localhost/127.0.0.1 (MercadoPago lo rechaza en local)
