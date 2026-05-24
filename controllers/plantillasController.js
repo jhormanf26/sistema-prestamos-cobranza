@@ -114,6 +114,15 @@ const plantillasController = {
                 case 'prestamo_preaprobado':
                     result = await emailService.plantillaPreaprobado('Cliente de Prueba', 5000000, moneda, telefono);
                     break;
+                case 'documento_cargado':
+                    result = await emailService.plantillaDocumentoCargado('Cliente de Prueba', '12345678', 'Cedula.pdf', new Date().toLocaleString('es-CO'));
+                    break;
+                case 'documento_aprobado':
+                    result = await emailService.plantillaDocumentoAprobado('Cliente de Prueba', 'Cedula.pdf');
+                    break;
+                case 'documento_rechazado':
+                    result = await emailService.plantillaDocumentoRechazado('Cliente de Prueba', 'Cedula.pdf', 'La imagen no es lo suficientemente legible.');
+                    break;
                 default:
                     return res.json({ success: false, mensaje: 'Plantilla no reconocida para pruebas.' });
             }

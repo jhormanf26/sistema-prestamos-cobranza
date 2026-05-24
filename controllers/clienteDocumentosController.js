@@ -71,29 +71,18 @@ const clienteDocumentosController = {
             try {
                 const config = await ConfigModel.obtener();
                 const destinatario = config ? config.email_contacto : 'admin@sistema.com';
-                const asunto = `[Sistema] Nuevo documento subido por ${cliente.nombre} ${cliente.apellido}`;
-                
-                const html = `
-                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">
-                        <h2 style="color: #1e3c72; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0;">Nuevo Documento Recibido</h2>
-                        <p>El cliente <strong>${cliente.nombre} ${cliente.apellido}</strong> (CC/DNI: <strong>${cliente.dni}</strong>) ha subido un nuevo documento a la plataforma.</p>
-                        
-                        <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-                            <ul style="margin: 0; padding-left: 20px; color: #334155;">
-                                <li><strong>Nombre del Documento:</strong> ${nombre_documento || 'Documento sin nombre'}</li>
-                                <li><strong>Fecha de Carga:</strong> ${new Date().toLocaleString('es-CO')}</li>
-                                <li><strong>Canal de Carga:</strong> Portal de Clientes</li>
-                            </ul>
-                        </div>
-                        
-                        <p style="margin-top: 25px;">Por favor, ingresa al panel de administración para auditar y validar el archivo.</p>
-                        <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 20px 0;">
-                        <p style="font-size: 12px; color: #94a3b8; text-align: center;">Este es un mensaje automático del Sistema de Préstamos.</p>
-                    </div>
-                `;
+                const fecha = new Date().toLocaleString('es-CO');
+                const nombreDoc = nombre_documento || 'Documento Adjunto';
+                const result = await emailService.plantillaDocumentoCargado(
+                    `${cliente.nombre} ${cliente.apellido}`,
+                    cliente.dni,
+                    nombreDoc,
+                    fecha
+                );
 
-                if (destinatario) {
-                    await emailService.enviarCorreo(destinatario, asunto, html);
+                if (destinatario && result && result.html) {
+                    const asuntoEnvio = result.asunto || `[Sistema] Nuevo documento subido por ${cliente.nombre} ${cliente.apellido}`;
+                    await emailService.enviarCorreo(destinatario, asuntoEnvio, result.html);
                 }
             } catch (errEmail) {
                 console.error('Error al enviar correo de notificación al administrador:', errEmail.message);
@@ -176,70 +165,26 @@ const clienteDocumentosController = {
             // Enviar notificación al cliente por correo si tiene correo registrado
             if (documento.cliente_email) {
                 try {
-                    const asunto = estado === 'aprobado' 
-                        ? `¡Excelente! Tu documento ha sido aprobado` 
-                        : `Atención: Tu documento ha sido rechazado`;
-
-                    const colorHeader = estado === 'aprobado' ? '#15803d' : '#dc2626';
-                    const iconHeader = estado === 'aprobado' ? '✅' : '❌';
-                    const bannerTitle = estado === 'aprobado' ? 'Documento Aprobado' : 'Documento Rechazado';
-
-                    let contenidoHtml = `
-                        <div style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 30px; color: #1e293b;">
-                            <table align="center" width="100%" style="max-width: 600px; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-top: 4px solid ${colorHeader};">
-                                <tr>
-                                    <td align="center" style="background: ${colorHeader}; padding: 30px 20px; color: #ffffff;">
-                                        <div style="font-size: 40px; margin-bottom: 10px;">${iconHeader}</div>
-                                        <h1 style="margin: 0; font-size: 24px; font-weight: bold;">${bannerTitle}</h1>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 30px 25px;">
-                                        <p>Hola <strong>${documento.cliente_nombre} ${documento.cliente_apellido}</strong>,</p>
-                                        <p>El documento que reportaste en tu portal de cliente ha sido revisado por nuestro equipo:</p>
-                                        
-                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                                            <tr>
-                                                <td style="padding: 4px 0;"><strong>Documento:</strong></td>
-                                                <td>${documento.nombre_documento}</td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding: 4px 0;"><strong>Estado:</strong></td>
-                                                <td style="text-transform: uppercase; font-weight: bold; color: ${colorHeader};">${estado}</td>
-                                            </tr>
-                                        </table>
-                    `;
-
-                    if (estado === 'rechazado') {
-                        contenidoHtml += `
-                            <div style="background-color: #fff1f2; border-left: 4px solid #f43f5e; padding: 15px; border-radius: 4px; margin: 20px 0;">
-                                <strong style="color: #be123c; display: block; margin-bottom: 5px;">Motivo del Rechazo:</strong>
-                                <span style="color: #9f1239; font-style: italic;">"${motivo || 'No especificado por el administrador'}"</span>
-                            </div>
-                            <p>Te solicitamos ingresar a tu Portal de Clientes, eliminar este archivo y volver a cargar tu documento corregido.</p>
-                        `;
+                    let result;
+                    if (estado === 'aprobado') {
+                        result = await emailService.plantillaDocumentoAprobado(
+                            `${documento.cliente_nombre} ${documento.cliente_apellido}`,
+                            documento.nombre_documento
+                        );
                     } else {
-                        contenidoHtml += `
-                            <p>Tu documento ha sido validado correctamente y ahora forma parte de tu expediente digital. No es necesario realizar acciones adicionales.</p>
-                        `;
+                        result = await emailService.plantillaDocumentoRechazado(
+                            `${documento.cliente_nombre} ${documento.cliente_apellido}`,
+                            documento.nombre_documento,
+                            motivo
+                        );
                     }
 
-                    contenidoHtml += `
-                                        <p style="margin-top: 30px; text-align: center;">
-                                            <a href="https://prestamos.desarollo.site/portal-cliente/login" style="background: ${colorHeader}; color: #ffffff; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Ingresar al Portal</a>
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td align="center" style="background-color: #f8fafc; padding: 20px; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-                                        Este es un mensaje automático, por favor no respondas a este correo.
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    `;
-
-                    await emailService.enviarCorreo(documento.cliente_email, asunto, contenidoHtml);
+                    if (result && result.html) {
+                        const asuntoEnvio = result.asunto || (estado === 'aprobado' 
+                            ? `¡Excelente! Tu documento ha sido aprobado` 
+                            : `Atención: Tu documento ha sido rechazado`);
+                        await emailService.enviarCorreo(documento.cliente_email, asuntoEnvio, result.html);
+                    }
                 } catch (errEmail) {
                     console.error('Error al notificar al cliente sobre el cambio de estado del documento:', errEmail.message);
                 }

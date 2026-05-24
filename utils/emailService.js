@@ -223,6 +223,114 @@ const emailService = {
             moneda
         }, fallback);
         return res;
+    },
+
+    plantillaDocumentoCargado: async (cliente, dni, documento, fecha) => {
+        const fallback = `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">
+                <h2 style="color: #1e3c72; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0;">Nuevo Documento Recibido</h2>
+                <p>El cliente <strong>${cliente}</strong> (CC/DNI: <strong>${dni}</strong>) ha subido un nuevo documento a la plataforma.</p>
+                <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+                    <ul style="margin: 0; padding-left: 20px; color: #334155;">
+                        <li><strong>Nombre del Documento:</strong> ${documento}</li>
+                        <li><strong>Fecha de Carga:</strong> ${fecha}</li>
+                        <li><strong>Canal de Carga:</strong> Portal de Clientes</li>
+                    </ul>
+                </div>
+                <p style="margin-top: 25px;">Por favor, ingresa al panel de administración para auditar y validar el archivo.</p>
+            </div>
+        `;
+        const res = await renderizar('documento_cargado', {
+            cliente,
+            dni,
+            documento,
+            fecha
+        }, fallback);
+        return res;
+    },
+
+    plantillaDocumentoAprobado: async (cliente, documento) => {
+        const portalUrl = 'https://prestamos.desarollo.site/portal-cliente/login';
+        const fallback = `
+            <div style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 30px; color: #1e293b;">
+                <table align="center" width="100%" style="max-width: 600px; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-top: 4px solid #15803d;">
+                    <tr>
+                        <td align="center" style="background: #15803d; padding: 30px 20px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Documento Aprobado</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 30px 25px;">
+                            <p>Hola <strong>${cliente}</strong>,</p>
+                            <p>Tu documento ha sido aprobado correctamente por nuestro equipo:</p>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                                <tr>
+                                    <td><strong>Documento:</strong></td>
+                                    <td>${documento}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado:</strong></td>
+                                    <td style="color: #15803d; font-weight: bold;">APROBADO</td>
+                                </tr>
+                            </table>
+                            <p align="center" style="margin-top: 30px;">
+                                <a href="${portalUrl}" style="background: #15803d; color: #ffffff; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">Ingresar al Portal</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        `;
+        const res = await renderizar('documento_aprobado', {
+            cliente,
+            documento,
+            portal_url: portalUrl
+        }, fallback);
+        return res;
+    },
+
+    plantillaDocumentoRechazado: async (cliente, documento, motivo) => {
+        const portalUrl = 'https://prestamos.desarollo.site/portal-cliente/login';
+        const fallback = `
+            <div style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 30px; color: #1e293b;">
+                <table align="center" width="100%" style="max-width: 600px; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-top: 4px solid #dc2626;">
+                    <tr>
+                        <td align="center" style="background: #dc2626; padding: 30px 20px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Documento Rechazado</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 30px 25px;">
+                            <p>Hola <strong>${cliente}</strong>,</p>
+                            <p>Tu documento ha sido rechazado tras la revisión:</p>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                                <tr>
+                                    <td><strong>Documento:</strong></td>
+                                    <td>${documento}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado:</strong></td>
+                                    <td style="color: #dc2626; font-weight: bold;">RECHAZADO</td>
+                                </tr>
+                            </table>
+                            <div style="background-color: #fff1f2; border-left: 4px solid #f43f5e; padding: 15px; border-radius: 4px; margin: 20px 0;">
+                                <strong style="color: #be123c;">Motivo:</strong> ${motivo || 'No especificado'}
+                            </div>
+                            <p align="center" style="margin-top: 30px;">
+                                <a href="${portalUrl}" style="background: #dc2626; color: #ffffff; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold;">Ingresar al Portal</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        `;
+        const res = await renderizar('documento_rechazado', {
+            cliente,
+            documento,
+            motivo: motivo || 'No especificado por el administrador',
+            portal_url: portalUrl
+        }, fallback);
+        return res;
     }
 };
 
