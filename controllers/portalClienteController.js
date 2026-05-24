@@ -8,6 +8,7 @@ const SolicitudCreditoModel = require('../models/SolicitudCreditoModel');
 const SoporteMensajeModel = require('../models/SoporteMensajeModel');
 const AhorroReporteModel = require('../models/AhorroReporteModel');
 const AhorroSolicitudModel = require('../models/AhorroSolicitudModel');
+const ConfigModel = require('../models/ConfigModel');
 const finance = require('../utils/finance');
 const bcrypt = require('bcryptjs');
 
@@ -87,6 +88,7 @@ const portalClienteController = {
     dashboard: async (req, res) => {
         try {
             const clienteId = req.session.cliente.id;
+            const empresa = await ConfigModel.obtener();
             const cliente = await ClienteModel.obtenerPorId(clienteId);
             const prestamos = await PrestamoModel.obtenerPorCliente(clienteId);
             
@@ -139,6 +141,7 @@ const portalClienteController = {
 
             res.render('portal-cliente/dashboard', {
                 title: 'Mi Portal',
+                empresa,
                 cliente,
                 prestamosActivos,
                 prestamosPagados,

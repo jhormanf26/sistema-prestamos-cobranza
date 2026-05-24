@@ -110,8 +110,8 @@ router.post('/actualizar', upload.single('logo'), async (req, res) => {
             push_texto_3d: push_texto_3d || 'Hola {{cliente}}, recuerda que tu cuota #{{numero}} de {{moneda}}{{monto}} vence en 3 días.',
             push_texto_1d: push_texto_1d || 'Hola {{cliente}}, mañana vence tu cuota #{{numero}} de {{moneda}}{{monto}}.',
             push_texto_0d: push_texto_0d || 'Hola {{cliente}}, hoy vence tu cuota #{{numero}} de {{moneda}}{{monto}}. Evita recargos.',
-            nequi_numero: nequi_numero || '3123456789',
-            breve_numero: breve_numero || '3123456789'
+            nequi_numero: nequi_numero || '--',
+            breve_numero: breve_numero || '--'
         };
 
         // Guardar en BD

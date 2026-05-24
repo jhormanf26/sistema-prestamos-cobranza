@@ -20,26 +20,27 @@ function ejecutarPruebasMercadoPago() {
         // Escenario A: Pago neto de $50.000 COP
         const netoA = 50000;
         const brutoCalculadoA = mercadopagoController.calcularMontoBruto(netoA);
-        // Esperamos Math.ceil((50000 + 800 * 1.19) / (1 - 0.0329 * 1.19))
-        // (50000 + 952) / (1 - 0.039151) = 50952 / 0.960849 = 53028.099 -> ceil = 53029
-        assert.strictEqual(brutoCalculadoA, 53029, 'El monto bruto para $50.000 netos debería ser $53.029 COP.');
-        console.log(`   - Neto: $${netoA} -> Bruto: $${brutoCalculadoA} (Comisión: $${brutoCalculadoA - netoA}) [OK]`);
+        // Fórmula con impuestos (Retefuente 1.5% e ICA 0.414%)
+        // porcentajesTotales = (0.0329 * 1.19) + 0.015 + 0.00414 = 0.039151 + 0.015 + 0.00414 = 0.058291
+        // Bruto = (50000 + 952) / (1 - 0.058291) = 50952 / 0.941709 = 54105.88... -> ceil = 54106
+        assert.strictEqual(brutoCalculadoA, 54106, 'El monto bruto para $50.000 netos debería ser $54.106 COP.');
+        console.log(`   - Neto: $${netoA} -> Bruto: $${brutoCalculadoA} (Comisión+Impuestos: $${brutoCalculadoA - netoA}) [OK]`);
 
         // Escenario B: Pago neto de $100.000 COP
         const netoB = 100000;
         const brutoCalculadoB = mercadopagoController.calcularMontoBruto(netoB);
-        // (100000 + 952) / 0.960849 = 100952 / 0.960849 = 105065.405 -> ceil = 105066
-        assert.strictEqual(brutoCalculadoB, 105066, 'El monto bruto para $100.000 netos debería ser $105.066 COP.');
-        console.log(`   - Neto: $${netoB} -> Bruto: $${brutoCalculadoB} (Comisión: $${brutoCalculadoB - netoB}) [OK]`);
+        // Bruto = (100000 + 952) / 0.941709 = 100952 / 0.941709 = 107200.84... -> ceil = 107201
+        assert.strictEqual(brutoCalculadoB, 107201, 'El monto bruto para $100.000 netos debería ser $107.201 COP.');
+        console.log(`   - Neto: $${netoB} -> Bruto: $${brutoCalculadoB} (Comisión+Impuestos: $${brutoCalculadoB - netoB}) [OK]`);
 
         // Escenario C: Pago neto de $300.000 COP
         const netoC = 300000;
         const brutoCalculadoC = mercadopagoController.calcularMontoBruto(netoC);
-        // (300000 + 952) / 0.960849 = 300952 / 0.960849 = 313214.667 -> ceil = 313215
-        assert.strictEqual(brutoCalculadoC, 313215, 'El monto bruto para $300.000 netos debería ser $313.215 COP.');
-        console.log(`   - Neto: $${netoC} -> Bruto: $${brutoCalculadoC} (Comisión: $${brutoCalculadoC - netoC}) [OK]`);
+        // Bruto = (300000 + 952) / 0.941709 = 300952 / 0.941709 = 319580.67... -> ceil = 319581
+        assert.strictEqual(brutoCalculadoC, 319581, 'El monto bruto para $300.000 netos debería ser $319.581 COP.');
+        console.log(`   - Neto: $${netoC} -> Bruto: $${brutoCalculadoC} (Comisión+Impuestos: $${brutoCalculadoC - netoC}) [OK]`);
 
-        console.log('✅ Suite de Pruebas de Comisión de MercadoPago COMPLETADA CON ÉXITO.');
+        console.log('✅ Suite de Pruebas de Comisión e Impuestos de MercadoPago COMPLETADA CON ÉXITO.');
 
     } catch (error) {
         console.error('❌ Error durante la ejecución de las pruebas TDD de MercadoPago:', error.message);

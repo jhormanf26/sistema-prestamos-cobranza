@@ -15,11 +15,18 @@ function calcularMontoBruto(montoNeto) {
     const costoFijo = 800; // COP
     const iva = 0.19; // 19%
     const porcentajeMP = 0.0329; // 3.29%
+    
+    // Impuestos retenidos por MercadoPago
+    const reteFuente = 0.015; // 1.5%
+    const reteIca = 0.00414; // 0.414%
 
     const costoFijoConIva = costoFijo * (1 + iva); // 952
     const porcentajeConIva = porcentajeMP * (1 + iva); // 0.039151
+    
+    // Total de porcentajes a descontar del bruto para obtener el neto
+    const porcentajesTotales = porcentajeConIva + reteFuente + reteIca; // 0.058291
 
-    const montoBruto = (montoNeto + costoFijoConIva) / (1 - porcentajeConIva);
+    const montoBruto = (montoNeto + costoFijoConIva) / (1 - porcentajesTotales);
     return Math.ceil(montoBruto);
 }
 

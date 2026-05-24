@@ -36,7 +36,7 @@
                                         <label class="form-label fw-bold text-dark small">¿Cuánto deseas abonar a tu préstamo? <span class="text-danger">*</span></label>
                                         <div class="input-group input-group-lg shadow-sm">
                                             <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-currency-dollar"></i></span>
-                                            <input type="number" class="form-control border-start-0 fw-bold fs-5" id="mpMontoNeto" name="monto_pagar" required min="1000" step="1">
+                                            <input type="text" class="form-control border-start-0 fw-bold fs-5 currency-input" id="mpMontoNeto" name="monto_pagar" required>
                                         </div>
                                         <div class="form-text mt-2"><i class="bi bi-pencil me-1"></i> Puedes modificar este valor si deseas abonar más o menos de la cuota programada.</div>
                                     </div>
@@ -795,18 +795,18 @@
                                 <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded-3 shadow-xs">
                                     <div>
                                         <span class="small text-muted d-block" style="font-size: 0.7rem; font-weight: 700;">CELULAR NEQUI</span>
-                                        <span class="fw-bold text-dark font-monospace" id="nequiCopy"><%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '3123456789' %></span>
+                                        <span class="fw-bold text-dark font-monospace" id="nequiCopy"><%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '--' %></span>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-success border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '3123456789' %>" title="Copiar número">
+                                    <button type="button" class="btn btn-sm btn-outline-success border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '--' %>" title="Copiar número">
                                         <i class="bi bi-copy"></i>
                                     </button>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded-3 shadow-xs">
                                     <div>
                                         <span class="small text-muted d-block" style="font-size: 0.7rem; font-weight: 700;">BRE-B / TRANSFIYA (CELULAR)</span>
-                                        <span class="fw-bold text-dark font-monospace" id="transfiyaCopy"><%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '3123456789' %></span>
+                                        <span class="fw-bold text-dark font-monospace" id="transfiyaCopy"><%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '--' %></span>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-success border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '3123456789' %>" title="Copiar llave">
+                                    <button type="button" class="btn btn-sm btn-outline-success border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '--' %>" title="Copiar llave">
                                         <i class="bi bi-copy"></i>
                                     </button>
                                 </div>
@@ -995,18 +995,18 @@
                                 <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded-3 shadow-xs">
                                     <div>
                                         <span class="small text-muted d-block" style="font-size: 0.7rem; font-weight: 700;">CELULAR NEQUI</span>
-                                        <span class="fw-bold text-dark font-monospace" id="nequiCopyAhorro"><%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '3123456789' %></span>
+                                        <span class="fw-bold text-dark font-monospace" id="nequiCopyAhorro"><%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '--' %></span>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '3123456789' %>" title="Copiar número">
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.nequi_numero) ? empresa.nequi_numero : '--' %>" title="Copiar número">
                                         <i class="bi bi-copy"></i>
                                     </button>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded-3 shadow-xs">
                                     <div>
                                         <span class="small text-muted d-block" style="font-size: 0.7rem; font-weight: 700;">BRE-B / TRANSFIYA (CELULAR)</span>
-                                        <span class="fw-bold text-dark font-monospace" id="transfiyaCopyAhorro"><%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '3123456789' %></span>
+                                        <span class="fw-bold text-dark font-monospace" id="transfiyaCopyAhorro"><%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '--' %></span>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '3123456789' %>" title="Copiar llave">
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-dark border-0 px-2 rounded-circle btn-copiar-datos" data-copiar="<%= (typeof empresa !== 'undefined' && empresa.breve_numero) ? empresa.breve_numero : '--' %>" title="Copiar llave">
                                         <i class="bi bi-copy"></i>
                                     </button>
                                 </div>
@@ -1573,8 +1573,12 @@
                     return;
                 }
                 const costoFijo = 800 * 1.19; // 952
-                const porcentaje = 0.0329 * 1.19; // 0.039151
-                const montoBruto = Math.ceil((montoNeto + costoFijo) / (1 - porcentaje));
+                const porcentajeConIva = 0.0329 * 1.19; // 0.039151
+                const reteFuente = 0.015; // 1.5%
+                const reteIca = 0.00414; // 0.414%
+                
+                const porcentajesTotales = porcentajeConIva + reteFuente + reteIca; // 0.058291
+                const montoBruto = Math.ceil((montoNeto + costoFijo) / (1 - porcentajesTotales));
                 const comision = montoBruto - montoNeto;
 
                 document.getElementById('txtMpMontoNeto').textContent = '$' + montoNeto.toLocaleString('es-CO');
@@ -1590,8 +1594,10 @@
                     if(!monto || monto === '') monto = 1000;
                     
                     document.getElementById('mpPrestamoId').value = id;
-                    document.getElementById('mpMontoNeto').value = monto;
-                    calcularMp(parseFloat(monto));
+                    const mpInput = document.getElementById('mpMontoNeto');
+                    mpInput.value = monto;
+                    // Forzar el evento input para que aplique la máscara de moneda y calcule MP
+                    mpInput.dispatchEvent(new Event('input', { bubbles: true }));
                     
                     new bootstrap.Modal(document.getElementById('modalMercadoPago')).show();
                 });
@@ -1599,7 +1605,9 @@
 
             // Cambiar monto en vivo
             document.getElementById('mpMontoNeto')?.addEventListener('input', function() {
-                calcularMp(parseFloat(this.value));
+                // Remover puntos de miles antes de calcular
+                const cleanValue = this.value.replace(/\./g, '');
+                calcularMp(parseFloat(cleanValue));
             });
 
             // Enviar Formulario
@@ -1612,6 +1620,12 @@
 
                 try {
                     const formData = new FormData(this);
+                    
+                    // Limpiar puntos de miles antes de enviar al servidor
+                    if (formData.has('monto_pagar')) {
+                        formData.set('monto_pagar', formData.get('monto_pagar').replace(/\./g, ''));
+                    }
+
                     const res = await fetch('/pagos/checkout', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
