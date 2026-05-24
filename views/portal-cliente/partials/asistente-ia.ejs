@@ -1,0 +1,627 @@
+<!-- Inclusión de marked.js para soporte completo de Markdown y tablas en el cliente -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- Widget Flotante del Asistente de IA -->
+<div id="ai-assistant-widget" class="ai-widget-container">
+    <!-- Botón de apertura -->
+    <button id="ai-assistant-btn" class="ai-btn-trigger shadow-lg animate-bounce-subtle" title="Asistente Virtual">
+        <div class="ai-btn-content">
+            <i class="bi bi-robot fs-4"></i>
+            <span class="ai-btn-pulse"></span>
+        </div>
+    </button>
+
+    <!-- Ventana de Chat (Oculta por defecto) -->
+    <div id="ai-assistant-chat" class="ai-chat-window shadow-2xl d-none">
+        <!-- Cabecera -->
+        <div class="ai-chat-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <div class="ai-avatar-header">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold text-white fs-6">Asistente Financiero IA</h6>
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="ai-status-indicator"></span>
+                        <small class="text-white-50" style="font-size: 0.7rem;">En línea (Llama-3.1)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button id="ai-chat-reset" class="btn btn-sm btn-link text-white-50 hover-text-white p-0 border-0 me-2" title="Limpiar Conversación" style="text-decoration: none; transition: color 0.2s;">
+                    <i class="bi bi-trash3 fs-5"></i>
+                </button>
+                <button id="ai-chat-close" class="btn btn-sm btn-link text-white p-0 border-0" style="text-decoration: none;">
+                    <i class="bi bi-x-lg fs-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cuerpo del chat (Mensajes) -->
+        <div id="ai-chat-messages" class="ai-chat-body">
+            <!-- Mensaje de bienvenida inicial (se genera dinámicamente) -->
+        </div>
+
+        <!-- Área de Preguntas Rápidas (Atajos de Clic Rápido) -->
+        <div id="ai-quick-replies" class="ai-quick-replies-container border-top d-flex gap-2 align-items-center py-2 px-3 bg-white">
+            <!-- Botones inyectados dinámicamente por JS -->
+        </div>
+
+        <!-- Área de entrada -->
+        <div class="ai-chat-footer border-top">
+            <form id="ai-chat-form" class="d-flex gap-2 align-items-center">
+                <input type="text" id="ai-chat-input" class="form-control rounded-pill px-3 py-2 border-0 shadow-sm text-dark" placeholder="Pregúntame sobre tu cuota o crédito..." autocomplete="off" required>
+                <button type="submit" id="ai-chat-send" class="btn btn-emerald rounded-circle d-flex align-items-center justify-content-center shadow-md">
+                    <i class="bi bi-send-fill text-white"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos del Contenedor Flotante */
+    .ai-widget-container {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 1050;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Botón de Activación */
+    .ai-btn-trigger {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+    }
+    .ai-btn-trigger:hover {
+        transform: scale(1.08);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+    }
+    .ai-btn-content {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .ai-btn-pulse {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.4);
+        animation: ai-pulse 2s infinite;
+        z-index: -1;
+    }
+
+    /* Ventana de Chat */
+    .ai-chat-window {
+        position: absolute;
+        bottom: 75px;
+        right: 0;
+        width: 380px;
+        height: 540px;
+        border-radius: 1.25rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: ai-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1051;
+    }
+
+    /* Cabecera del Chat */
+    .ai-chat-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .hover-text-white:hover {
+        color: #ffffff !important;
+    }
+    .ai-avatar-header {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .ai-status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #10b981;
+        box-shadow: 0 0 8px #10b981;
+        display: inline-block;
+        animation: ai-blink 1.5s infinite;
+    }
+
+    /* Cuerpo del Chat */
+    .ai-chat-body {
+        flex: 1;
+        padding: 1.25rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background-color: rgba(248, 250, 252, 0.6);
+        scroll-behavior: smooth;
+    }
+
+    /* Burbujas de Mensaje */
+    .ai-message {
+        max-width: 88%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        animation: ai-fade-in 0.25s ease-out;
+        word-wrap: break-word;
+    }
+    .ai-message-system {
+        align-self: flex-start;
+        background-color: white;
+        color: #1e293b;
+        border-bottom-left-radius: 0.25rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+    .ai-message-user {
+        align-self: flex-end;
+        background-color: #10b981;
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+        box-shadow: 0 3px 6px rgba(16, 185, 129, 0.15);
+    }
+
+    /* Markdown Estilos en Burbujas del Sistema */
+    .ai-message-system p {
+        margin-bottom: 0.5rem;
+    }
+    .ai-message-system p:last-child {
+        margin-bottom: 0;
+    }
+    .ai-message-system ul, .ai-message-system ol {
+        margin-bottom: 0.5rem;
+        padding-left: 1.2rem;
+    }
+    .ai-message-system ul:last-child, .ai-message-system ol:last-child {
+        margin-bottom: 0;
+    }
+    .ai-message-system li {
+        margin-bottom: 0.25rem;
+    }
+    .ai-message-system a {
+        color: #10b981;
+        font-weight: 700;
+        text-decoration: underline;
+        transition: color 0.2s ease;
+    }
+    .ai-message-system a:hover {
+        color: #059669;
+    }
+    
+    /* Soporte Premium de Tablas en Markdown */
+    .ai-message-system table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.75rem 0;
+        font-size: 0.78rem;
+        background-color: #f8fafc;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .ai-message-system th {
+        background-color: #f1f5f9;
+        color: #475569;
+        padding: 6px 10px;
+        font-weight: 700;
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .ai-message-system td {
+        padding: 6px 10px;
+        border-bottom: 1px solid #edf2f7;
+        color: #334155;
+    }
+    .ai-message-system tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Preguntas Rápidas (Atajos) */
+    .ai-quick-replies-container {
+        overflow-x: auto;
+        white-space: nowrap;
+        background-color: #ffffff;
+        scrollbar-width: none; /* Ocultar scroll en Firefox */
+        -ms-overflow-style: none; /* Ocultar scroll en IE/Edge */
+    }
+    .ai-quick-replies-container::-webkit-scrollbar {
+        display: none; /* Ocultar scroll en Chrome/Safari */
+    }
+    .ai-quick-btn {
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .ai-quick-btn:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+    .ai-quick-btn:active {
+        transform: translateY(0);
+    }
+
+    /* Animación de Carga */
+    .ai-typing-indicator {
+        display: flex;
+        gap: 4px;
+        padding: 4px 6px;
+        align-items: center;
+        justify-content: center;
+    }
+    .ai-dot {
+        width: 6px;
+        height: 6px;
+        background-color: #94a3b8;
+        border-radius: 50%;
+        animation: ai-bounce-dots 1.4s infinite ease-in-out both;
+    }
+    .ai-dot:nth-child(1) { animation-delay: -0.32s; }
+    .ai-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    /* Footer del Chat */
+    .ai-chat-footer {
+        padding: 0.85rem 1.25rem;
+        background-color: white;
+    }
+    .ai-chat-footer input:focus {
+        box-shadow: none;
+        border: 1px solid #10b981 !important;
+    }
+    .btn-emerald {
+        background: #10b981;
+        border: none;
+        width: 38px;
+        height: 38px;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    .btn-emerald:hover {
+        background: #059669;
+        transform: scale(1.05);
+    }
+
+    /* Animaciones */
+    @keyframes ai-pulse {
+        0% { transform: scale(0.95); opacity: 0.5; }
+        50% { transform: scale(1.25); opacity: 0; }
+        100% { transform: scale(0.95); opacity: 0; }
+    }
+    @keyframes ai-slide-in {
+        from { transform: translateY(20px) scale(0.95); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    @keyframes ai-fade-in {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes ai-blink {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+    }
+    @keyframes ai-bounce-dots {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
+    .animate-bounce-subtle {
+        animation: ai-bounce-subtle 4s infinite ease-in-out;
+    }
+    @keyframes ai-bounce-subtle {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+
+    /* Adaptabilidad Móvil */
+    @media (max-width: 576px) {
+        .ai-widget-container {
+            bottom: 15px;
+            right: 15px;
+        }
+        .ai-chat-window {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            border: none;
+        }
+        .ai-chat-header {
+            padding: 1.25rem 1.5rem;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const aiBtn = document.getElementById('ai-assistant-btn');
+    const aiChat = document.getElementById('ai-assistant-chat');
+    const aiClose = document.getElementById('ai-chat-close');
+    const aiReset = document.getElementById('ai-chat-reset');
+    const aiMessages = document.getElementById('ai-chat-messages');
+    const aiForm = document.getElementById('ai-chat-form');
+    const aiInput = document.getElementById('ai-chat-input');
+    const aiSend = document.getElementById('ai-chat-send');
+    const aiQuickRepliesContainer = document.getElementById('ai-quick-replies');
+
+    // Nombre del cliente obtenido del EJS o por defecto
+    const clienteNombre = "<%= typeof cliente !== 'undefined' ? cliente.nombre : '' %>" || 'Cliente';
+
+    // Historial de la conversación almacenado localmente en memoria
+    let conversationHistory = [];
+
+    // Lista de atajos de preguntas rápidas (Quick Replies)
+    const quickReplies = [
+        { label: '📅 Mi Próxima Cuota', text: '¿Cuándo es mi próximo pago y cuánto debo?' },
+        { label: '💰 Saldo y Movimientos', text: '¿Cuál es el saldo de mi cuenta de ahorro y qué depósitos he hecho?' },
+        { label: '✍️ Contratos por Firmar', text: '¿Tengo algún contrato o pagaré pendiente de firma digital?' },
+        { label: '🏦 Canales de Pago', text: '¿Cuáles son los canales o números autorizados para hacer abonos?' }
+    ];
+
+    // Configurar marked para seguridad e inyección limpia
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            breaks: true,      // Interpretar saltos de línea sencillos
+            gfm: true,         // GitHub Flavored Markdown
+            headerIds: false,
+            mangle: false
+        });
+    }
+
+    // Inicializar chat con bienvenida
+    const mostrarBienvenida = () => {
+        const saludo = `¡Hola, ${clienteNombre}! 👋 Soy tu Asistente Virtual. 
+
+Estoy listo para resolver tus dudas sobre el sistema, tus créditos activos, cuotas, fechas de pago y tus cuentas de ahorro.
+
+¿En qué puedo ayudarte hoy?`;
+        
+        agregarMensaje('system', saludo);
+        renderizarPreguntasRapidas();
+    };
+
+    // Renderizar los botones rápidos
+    const renderizarPreguntasRapidas = () => {
+        aiQuickRepliesContainer.innerHTML = '';
+        quickReplies.forEach(reply => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ai-quick-btn shadow-xs';
+            btn.innerText = reply.label;
+            btn.addEventListener('click', () => {
+                enviarPreguntaAutomatica(reply.text);
+            });
+            aiQuickRepliesContainer.appendChild(btn);
+        });
+        aiQuickRepliesContainer.classList.remove('d-none');
+    };
+
+    // Procesar envío automático desde botones rápidos
+    const enviarPreguntaAutomatica = (textoPregunta) => {
+        aiInput.value = textoPregunta;
+        // Disparar el evento de submit del formulario de forma natural
+        aiForm.dispatchEvent(new Event('submit'));
+    };
+
+    // Alternar visibilidad de la ventana de chat
+    aiBtn.addEventListener('click', () => {
+        const isHidden = aiChat.classList.contains('d-none');
+        if (isHidden) {
+            aiChat.classList.remove('d-none');
+            // Auto-focus en el input en pantallas grandes
+            if (window.innerWidth > 576) {
+                aiInput.focus();
+            }
+            // Si el chat está vacío, iniciar la bienvenida
+            if (aiMessages.children.length === 0) {
+                mostrarBienvenida();
+            }
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        } else {
+            aiChat.classList.add('d-none');
+        }
+    });
+
+    // Cerrar el chat
+    aiClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        aiChat.classList.add('d-none');
+    });
+
+    // Limpiar y resetear conversación
+    aiReset.addEventListener('click', (e) => {
+        e.stopPropagation();
+        Swal.fire({
+            title: '¿Limpiar conversación?',
+            text: "Se borrará todo el historial de chat actual.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-danger rounded-pill px-3 py-2 fw-bold me-2',
+                cancelButton: 'btn btn-secondary rounded-pill px-3 py-2 fw-bold text-muted'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Borrar memoria del historial
+                conversationHistory = [];
+                // Vaciar los mensajes en la UI
+                aiMessages.innerHTML = '';
+                // Relanzar la bienvenida y atajos
+                mostrarBienvenida();
+                // Limpiar input por si estaba escribiendo
+                aiInput.value = '';
+                aiInput.disabled = false;
+                aiSend.disabled = false;
+            }
+        });
+    });
+
+    // Enviar formulario
+    aiForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = aiInput.value.trim();
+        if (!text) return;
+
+        // Limpiar entrada
+        aiInput.value = '';
+
+        // Ocultar temporalmente las preguntas rápidas durante la carga de respuestas
+        aiQuickRepliesContainer.classList.add('d-none');
+
+        // Agregar mensaje de usuario a la UI e historial
+        agregarMensaje('user', text);
+        conversationHistory.push({ role: 'user', content: text });
+
+        // Scroll al final
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+
+        // Deshabilitar inputs
+        aiInput.disabled = true;
+        aiSend.disabled = true;
+
+        // Agregar indicador de carga ("pensando...")
+        const typingId = agregarIndicadorEscritura();
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+
+        try {
+            const response = await fetch('/portal-cliente/ai-assistant/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mensajes: conversationHistory })
+            });
+
+            const data = await response.json();
+
+            // Eliminar indicador de carga
+            const indicatorEl = document.getElementById(typingId);
+            if (indicatorEl) indicatorEl.remove();
+
+            if (data.success && data.response) {
+                const aiText = data.response;
+                agregarMensaje('system', aiText);
+                conversationHistory.push({ role: 'assistant', content: aiText });
+            } else {
+                const errMsg = data.message || 'Lo siento, no he podido procesar tu solicitud en este momento.';
+                agregarMensaje('system', `⚠️ **Error:** ${errMsg}`);
+            }
+        } catch (error) {
+            console.error('Error al comunicarse con el backend del asistente:', error);
+            const indicatorEl = document.getElementById(typingId);
+            if (indicatorEl) indicatorEl.remove();
+            agregarMensaje('system', '⚠️ **Error de conexión:** No se pudo conectar con el asistente de IA. Por favor, revisa tu conexión a internet.');
+        } finally {
+            // Habilitar de nuevo los controles
+            aiInput.disabled = false;
+            aiSend.disabled = false;
+            if (window.innerWidth > 576) {
+                aiInput.focus();
+            }
+            
+            // Volver a renderizar/mostrar las preguntas rápidas para que el usuario tenga atajos
+            renderizarPreguntasRapidas();
+            
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+    });
+
+    /**
+     * Renderiza un mensaje en el contenedor del chat utilizando marcado HTML seguro
+     * @param {string} sender - 'user' o 'system' (el asistente)
+     * @param {string} text - El texto del mensaje (puede contener Markdown para 'system')
+     */
+    function agregarMensaje(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `ai-message ${sender === 'user' ? 'ai-message-user' : 'ai-message-system'}`;
+        
+        if (sender === 'user') {
+            // Escapar texto de usuario para seguridad
+            msgDiv.textContent = text;
+        } else {
+            // Usar marked para convertir Markdown en HTML enriquecido y seguro
+            if (typeof marked !== 'undefined') {
+                msgDiv.innerHTML = marked.parse(text);
+            } else {
+                // Fallback manual si marked no cargó
+                let formattedText = text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+                msgDiv.innerHTML = formattedText;
+            }
+        }
+        
+        aiMessages.appendChild(msgDiv);
+    }
+
+    /**
+     * Agrega un indicador visual de que la IA está escribiendo
+     * @returns {string} El ID del elemento creado para poder removerlo después
+     */
+    function agregarIndicadorEscritura() {
+        const id = 'ai-typing-' + Date.now();
+        const msgDiv = document.createElement('div');
+        msgDiv.id = id;
+        msgDiv.className = 'ai-message ai-message-system';
+        
+        msgDiv.innerHTML = `
+            <div class="ai-typing-indicator">
+                <span class="ai-dot"></span>
+                <span class="ai-dot"></span>
+                <span class="ai-dot"></span>
+            </div>
+        `;
+        
+        aiMessages.appendChild(msgDiv);
+        return id;
+    }
+});
+</script>
