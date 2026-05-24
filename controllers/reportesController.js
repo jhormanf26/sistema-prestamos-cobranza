@@ -10,6 +10,7 @@ const ReporteAvanzadoModel = require('../models/ReporteAvanzadoModel');
 const finance = require('../utils/finance');
 const { formatCurrency } = require('../utils/formatters');
 const pdfService = require('../utils/pdfService');
+const FlujoCajaProyeccionModel = require('../models/FlujoCajaProyeccionModel');
 
 const reportesController = {
 
@@ -286,6 +287,28 @@ const reportesController = {
         } catch (error) {
             console.error("Error Ticket Desembolso:", error);
             res.redirect('/prestamos');
+        }
+    },
+
+    // 10. MOSTRAR FLUJO DE CAJA PROYECTADO
+    mostrarFlujoProyectado: async (req, res) => {
+        try {
+            const dias = parseInt(req.query.dias) || 30;
+            const diasValidos = [15, 30, 45].includes(dias) ? dias : 30;
+
+            const proyeccion = await FlujoCajaProyeccionModel.calcularProyeccion(diasValidos);
+            const config = await ConfigModel.obtener() || { moneda: '$' };
+
+            res.render('reportes/flujoProyectado', {
+                title: 'Proyección de Flujo de Caja',
+                proyeccion,
+                empresa: config,
+                diasActivos: diasValidos
+            });
+        } catch (error) {
+            console.error("Error al calcular proyección de flujo de caja:", error);
+            req.flash('mensajeError', 'Ocurrió un error al calcular la proyección.');
+            res.redirect('/reportes/panel');
         }
     }
 };

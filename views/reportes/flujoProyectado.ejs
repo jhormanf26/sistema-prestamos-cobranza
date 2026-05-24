@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+
+            <div class="col py-0 py-md-3 main-content-wrapper" style="background-color: #f8fafc; min-height: 100vh;">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-4 py-3">
+                    <!-- Cabecera de Página -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                        <div>
+                            <h2 class="fw-bold text-dark my-0 fs-3">📈 Proyección de Flujo de Caja</h2>
+                            <p class="text-muted small mb-0">Simulación y proyección financiera basada en vencimientos de cuotas y promedio histórico de gastos.</p>
+                        </div>
+                        
+                        <!-- Selector de Días (Interactivo) -->
+                        <div class="bg-white p-1.5 rounded-pill shadow-sm border d-flex gap-1 align-self-start">
+                            <a href="/reportes/flujo-proyectado?dias=15" class="btn btn-sm rounded-pill px-3 fw-bold <%= diasActivos === 15 ? 'btn-info text-white' : 'btn-light text-dark' %>">15 días</a>
+                            <a href="/reportes/flujo-proyectado?dias=30" class="btn btn-sm rounded-pill px-3 fw-bold <%= diasActivos === 30 ? 'btn-info text-white' : 'btn-light text-dark' %>">30 días</a>
+                            <a href="/reportes/flujo-proyectado?dias=45" class="btn btn-sm rounded-pill px-3 fw-bold <%= diasActivos === 45 ? 'btn-info text-white' : 'btn-light text-dark' %>">45 días</a>
+                        </div>
+                    </div>
+
+                    <% if(mensajeExito && mensajeExito.length > 0) { %>
+                        <div class="alert alert-success"><%= mensajeExito %></div>
+                    <% } %>
+
+                    <% if(mensajeError && mensajeError.length > 0) { %>
+                        <div class="alert alert-danger"><%= mensajeError %></div>
+                    <% } %>
+
+                    <!-- Tarjetas de Indicadores Clave (KPIs) -->
+                    <div class="row g-3 mb-4">
+                        <!-- Saldo Inicial -->
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                                <div class="card-body p-4 d-flex align-items-center gap-3">
+                                    <div class="bg-primary-subtle text-primary rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                        <i class="bi bi-wallet2 fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Caja Hoy (Saldo Inicial)</span>
+                                        <h4 class="fw-bold text-dark mb-0"><%= empresa.moneda %> <%= formatCurrency(proyeccion.saldoInicial, 2) %></h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ingresos Proyectados -->
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                                <div class="card-body p-4 d-flex align-items-center gap-3">
+                                    <div class="bg-success-subtle text-success rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                        <i class="bi bi-graph-up-arrow fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Ingresos Proyectados</span>
+                                        <h4 class="fw-bold text-success mb-0">+ <%= empresa.moneda %> <%= formatCurrency(proyeccion.totalIngresosProyectados, 2) %></h4>
+                                        <small class="text-muted" style="font-size: 0.75rem;">Suma de cuotas por cobrar</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Egresos Proyectados -->
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                                <div class="card-body p-4 d-flex align-items-center gap-3">
+                                    <div class="bg-danger-subtle text-danger rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                        <i class="bi bi-graph-down-arrow fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Gastos Proyectados</span>
+                                        <h4 class="fw-bold text-danger mb-0">- <%= empresa.moneda %> <%= formatCurrency(proyeccion.totalEgresosProyectados, 2) %></h4>
+                                        <small class="text-muted" style="font-size: 0.75rem;">Media: <%= empresa.moneda %> <%= formatCurrency(proyeccion.gastoDiarioEstimado, 2) %>/día</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Saldo Proyectado Final -->
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-gradient border-top border-4 border-info" style="background-color: #ffffff;">
+                                <div class="card-body p-4 d-flex align-items-center gap-3">
+                                    <div class="bg-info-subtle text-info rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                                        <i class="bi bi-calculator-fill fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Caja Proyectada (Día <%= diasActivos %>)</span>
+                                        <h4 class="fw-bold text-dark mb-0"><%= empresa.moneda %> <%= formatCurrency(proyeccion.saldoFinalProyectado, 2) %></h4>
+                                        <small class="fw-bold <%= proyeccion.saldoFinalProyectado >= proyeccion.saldoInicial ? 'text-success' : 'text-danger' %>" style="font-size: 0.75rem;">
+                                            <%= proyeccion.saldoFinalProyectado >= proyeccion.saldoInicial ? '📈 Crecimiento' : '📉 Decremento' %> de <%= (((proyeccion.saldoFinalProyectado - proyeccion.saldoInicial) / (proyeccion.saldoInicial || 1)) * 100).toFixed(1) %>%
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos de Proyección -->
+                    <div class="row g-4 mb-4">
+                        <!-- Tendencia de Caja (Línea de Tendencia) -->
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                                <div class="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-activity text-info me-2"></i> Evolución de Saldo Proyectado</h5>
+                                    <span class="badge bg-light text-dark border">Simulación a <%= diasActivos %> días</span>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div style="height: 320px;">
+                                        <canvas id="chartSaldoProyectado"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ingresos vs Egresos Diarios -->
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+                                <div class="card-header bg-white border-0 pt-4 pb-0">
+                                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i> Ingresos vs Gastos Diarios</h5>
+                                </div>
+                                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                    <div style="height: 250px;">
+                                        <canvas id="chartIngresosEgresos"></canvas>
+                                    </div>
+                                    <div class="alert alert-light border small mb-0 py-2.5 mt-3">
+                                        <i class="bi bi-info-circle-fill text-info me-1"></i> Los picos de ingresos corresponden a fechas donde vencen cuotas de préstamos activos programados.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Desglose Diario -->
+                    <div class="card border-0 shadow-sm rounded-4 bg-white mb-4">
+                        <div class="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-list-columns-reverse text-warning me-2"></i> Proyección Detallada Día a Día</h5>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="exportarTablaAExcel()"><i class="bi bi-download me-1"></i> Exportar Vista</button>
+                        </div>
+                        <div class="card-body p-0 mt-3">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" id="tablaProyeccion">
+                                    <thead class="table-light text-uppercase small fw-bold">
+                                        <tr>
+                                            <th class="ps-4">Día</th>
+                                            <th>Fecha</th>
+                                            <th class="text-success">Ingresos Esperados (Cuotas)</th>
+                                            <th class="text-danger">Gastos Estimados</th>
+                                            <th>Balance del Día</th>
+                                            <th class="text-end pe-4">Saldo Acumulado Proyectado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% proyeccion.serie.forEach((item, index) => { %>
+                                            <tr class="<%= index === 0 ? 'table-info bg-opacity-25' : '' %>">
+                                                <td class="ps-4">
+                                                    <% if (index === 0) { %>
+                                                        <span class="badge bg-info text-white">HOY</span>
+                                                    <% } else { %>
+                                                        <span>Día <%= index %></span>
+                                                    <% } %>
+                                                </td>
+                                                <td><span class="fw-bold text-muted"><%= item.fechaFormateada %></span></td>
+                                                <td class="text-success fw-bold">
+                                                    <%= item.ingresos > 0 ? '+ ' + empresa.moneda + ' ' + formatCurrency(item.ingresos, 2) : '--' %>
+                                                </td>
+                                                <td class="text-danger">
+                                                    <%= item.egresos > 0 ? '- ' + empresa.moneda + ' ' + formatCurrency(item.egresos, 2) : '--' %>
+                                                </td>
+                                                <td class="fw-bold <%= item.saldoNeto > 0 ? 'text-success' : (item.saldoNeto < 0 ? 'text-danger' : 'text-dark') %>">
+                                                    <%= item.saldoNeto !== 0 ? (item.saldoNeto > 0 ? '+' : '') + empresa.moneda + ' ' + formatCurrency(item.saldoNeto, 2) : empresa.moneda + ' 0,00' %>
+                                                </td>
+                                                <td class="text-end pe-4 fw-bold text-dark">
+                                                    <%= empresa.moneda %> <%= formatCurrency(item.saldoProyectado, 2) %>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('../partials/footer') %>
+
+    <!-- Inyección de Gráficos mediante Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Obtener datos inyectados por EJS de la proyección
+            const datosProyeccion = <%- JSON.stringify(proyeccion) %>;
+            const moneda = '<%= empresa.moneda %>';
+
+            // Preparar etiquetas y series
+            const labels = datosProyeccion.serie.map(item => item.fechaFormateada);
+            const dataSaldo = datosProyeccion.serie.map(item => item.saldoProyectado);
+            const dataIngresos = datosProyeccion.serie.map(item => item.ingresos);
+            const dataEgresos = datosProyeccion.serie.map(item => item.egresos);
+
+            // --- GRÁFICO 1: EVOLUCIÓN SALDO PROYECTADO ---
+            const ctxSaldo = document.getElementById('chartSaldoProyectado').getContext('2d');
+            
+            // Gradiente para la línea de tendencia
+            const gradientBg = ctxSaldo.createLinearGradient(0, 0, 0, 300);
+            gradientBg.addColorStop(0, 'rgba(13, 202, 240, 0.4)');
+            gradientBg.addColorStop(1, 'rgba(13, 202, 240, 0.0)');
+
+            new Chart(ctxSaldo, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Saldo Proyectado',
+                        data: dataSaldo,
+                        borderColor: '#0dcaf0',
+                        borderWidth: 3,
+                        backgroundColor: gradientBg,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#0dcaf0',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 1.5,
+                        pointRadius: labels.length > 30 ? 2 : 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return moneda + ' ' + value.toLocaleString('es-CO');
+                                }
+                            },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // --- GRÁFICO 2: INGRESOS VS EGRESOS DIARIOS ---
+            const ctxIngEgr = document.getElementById('chartIngresosEgresos').getContext('2d');
+            new Chart(ctxIngEgr, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Ingresos',
+                            data: dataIngresos,
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Gastos',
+                            data: dataEgresos,
+                            backgroundColor: '#ef4444',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12 } }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return moneda + ' ' + value.toLocaleString('es-CO');
+                                }
+                            },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            display: false, // Ocultar etiquetas X para no amontonar las barras
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Exportar a Excel simple (CSV para descargar de inmediato en navegador)
+        function exportarTablaAExcel() {
+            const table = document.getElementById("tablaProyeccion");
+            let csv = [];
+            
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = [], cols = table.rows[i].cells;
+                for (let j = 0; j < cols.length; j++) {
+                    // Sanitizar comas y comillas en los textos
+                    let text = cols[j].innerText.trim().replace(/(\r\n|\n|\r)/gm, " ");
+                    text = text.replace(/"/g, '""');
+                    row.push('"' + text + '"');
+                }
+                csv.push(row.join(","));
+            }
+
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csv.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Proyeccion_Flujo_Caja_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
