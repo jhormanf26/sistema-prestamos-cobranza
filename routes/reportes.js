@@ -7,6 +7,7 @@ router.use(protegerRuta);
 
 // Panel Principal
 router.get('/panel', reportesController.mostrarPanel);
+router.get('/flujo-proyectado', reportesController.mostrarFlujoProyectado);
 
 // Excel Avanzado
 router.post('/excel/generar', reportesController.descargarReporteExcel);
