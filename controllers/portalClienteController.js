@@ -8,8 +8,10 @@ const SolicitudCreditoModel = require('../models/SolicitudCreditoModel');
 const SoporteMensajeModel = require('../models/SoporteMensajeModel');
 const AhorroReporteModel = require('../models/AhorroReporteModel');
 const AhorroSolicitudModel = require('../models/AhorroSolicitudModel');
+const ConfigModel = require('../models/ConfigModel');
 const finance = require('../utils/finance');
 const bcrypt = require('bcryptjs');
+const groqService = require('../services/groqService');
 
 const portalClienteController = {
     // Mostrar formulario de login
@@ -87,6 +89,7 @@ const portalClienteController = {
     dashboard: async (req, res) => {
         try {
             const clienteId = req.session.cliente.id;
+            const empresa = await ConfigModel.obtener();
             const cliente = await ClienteModel.obtenerPorId(clienteId);
             const prestamos = await PrestamoModel.obtenerPorCliente(clienteId);
             
@@ -139,6 +142,7 @@ const portalClienteController = {
 
             res.render('portal-cliente/dashboard', {
                 title: 'Mi Portal',
+                empresa,
                 cliente,
                 prestamosActivos,
                 prestamosPagados,
@@ -664,6 +668,144 @@ const portalClienteController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ success: false, message: 'Error interno.' });
+        }
+    },
+
+    // Interactuar con el asistente de IA usando Groq
+    chatAsistenteIA: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const { mensajes } = req.body;
+
+            if (!mensajes || !Array.isArray(mensajes)) {
+                return res.status(400).json({ success: false, message: 'El historial de mensajes es requerido y debe ser un arreglo.' });
+            }
+
+            // Consultar datos del cliente
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+            const prestamos = await PrestamoModel.obtenerPorCliente(clienteId);
+            const cuentaAhorro = await AhorroModel.buscarPorCliente(clienteId);
+            const empenos = await EmpenoModel.obtenerPorCliente(clienteId);
+            const empresa = await ConfigModel.obtener();
+
+            // Filtrar y calcular datos detallados de préstamos activos
+            const prestamosActivos = prestamos.filter(p => p.estado !== 'pagado');
+            let infoPrestamos = '';
+
+            if (prestamosActivos.length > 0) {
+                for (let p of prestamosActivos) {
+                    const pagos = await PagoModel.obtenerHistorial(p.id);
+                    const totalPagado = pagos.reduce((acc, pago) => acc + parseFloat(pago.monto_pagado), 0);
+                    const proxima = finance.obtenerProximaCuota(p.monto_total, p.cuotas, p.frecuencia, p.fecha_inicio, totalPagado);
+
+                    let detalleProxima = 'No hay cuotas próximas programadas o el préstamo ya está liquidado.';
+                    if (proxima) {
+                        const formateadaFecha = new Date(proxima.fecha + 'T00:00:00').toLocaleDateString('es-CO', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                        detalleProxima = `Cuota #${proxima.numero} por un valor de $${parseFloat(proxima.monto).toLocaleString('es-CO')} con fecha de vencimiento el ${formateadaFecha}. Saldo restante de esta cuota: $${parseFloat(proxima.restante).toLocaleString('es-CO')}.`;
+                    }
+
+                    infoPrestamos += `
+- Préstamo ID: #${p.id}
+  * Monto Desembolsado: $${parseFloat(p.monto_prestado).toLocaleString('es-CO')}
+  * Monto Total a Pagar (con intereses): $${parseFloat(p.monto_total).toLocaleString('es-CO')}
+  * Total Pagado a la fecha: $${totalPagado.toLocaleString('es-CO')}
+  * Saldo Pendiente Total: $${(parseFloat(p.monto_total) - totalPagado).toLocaleString('es-CO')}
+  * Plazo Total: ${p.cuotas} cuotas
+  * Frecuencia de Pago: ${p.frecuencia}
+  * Estado: ${p.estado}
+  * Firma Digital Contrato: ${p.firma_digital ? 'Firmado' : 'PENDIENTE POR FIRMAR'}
+  * Próxima Cuota: ${detalleProxima}
+  * Observaciones: ${p.observaciones || 'Ninguna'}
+`;
+                }
+            } else {
+                infoPrestamos = 'No tiene préstamos activos actualmente.';
+            }
+
+            // Datos de la cuenta de ahorros
+            let infoAhorros = 'No posee cuenta de ahorros en el sistema.';
+            if (cuentaAhorro) {
+                const movimientos = await AhorroModel.obtenerMovimientos(cuentaAhorro.id);
+                const ultimosMovimientos = movimientos.slice(0, 4).map(m => {
+                    const fechaMov = new Date(m.fecha_movimiento).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
+                    const tipoMov = m.tipo_movimiento === 'deposito' ? 'Depósito' : 'Retiro';
+                    return `- ${fechaMov}: ${tipoMov} de $${parseFloat(m.monto).toLocaleString('es-CO')} (Observación: ${m.observacion || 'Ninguna'})`;
+                }).join('\n');
+
+                infoAhorros = `
+- Cuenta de Ahorro ID: ${cuentaAhorro.id}
+  * Saldo Disponible: $${parseFloat(cuentaAhorro.saldo_actual || 0).toLocaleString('es-CO')}
+  * Meta de Ahorro: ${cuentaAhorro.meta_nombre || 'No establecida'} (Monto Objetivo: $${parseFloat(cuentaAhorro.meta_monto || 0).toLocaleString('es-CO')})
+  * Últimos Movimientos:
+${ultimosMovimientos || 'Sin movimientos registrados.'}
+`;
+            }
+
+            // Datos de empeños si los hay
+            let infoEmpenos = 'No posee empeños activos.';
+            if (empenos && empenos.length > 0) {
+                infoEmpenos = empenos.map(e => `- Artículo: ${e.articulo}, Monto Prestado: $${parseFloat(e.monto_prestado).toLocaleString('es-CO')}, Estado: ${e.estado === 1 ? 'Activo' : 'Liquidado/Vencido'}`).join('\n');
+            }
+
+            // Construir el System Prompt de contexto seguro
+            const promptSistema = `Eres el Asistente de Inteligencia Artificial del sistema de créditos de la empresa "${empresa.nombre || 'Nuestra Organización'}".
+Tu rol es resolver dudas del cliente de manera amable, clara y profesional en español.
+Te comunicas con el cliente: ${cliente.nombre} ${cliente.apellido} (DNI: ${cliente.dni}, Teléfono: ${cliente.telefono || 'No registrado'}).
+
+A continuación, se te presenta la información financiera oficial, actualizada y en tiempo real del cliente. Utiliza EXCLUSIVAMENTE estos datos para responder preguntas sobre sus préstamos, cuotas, fechas de pago o ahorros:
+
+=== INFORMACIÓN DEL CLIENTE ===
+Nombre Completo: ${cliente.nombre} ${cliente.apellido}
+DNI: ${cliente.dni}
+Monto Máximo Pre-aprobado para Nuevos Créditos: $${parseFloat(cliente.monto_preaprobado || 0).toLocaleString('es-CO')}
+
+=== PRÉSTAMOS ACTIVOS ===
+${infoPrestamos}
+
+=== CUENTAS DE AHORRO ===
+${infoAhorros}
+
+=== EMPEÑOS ===
+${infoEmpenos}
+
+=== CANALES DE PAGO DISPONIBLES ===
+Si el cliente desea realizar un abono o pagar su cuota, indícale que los canales disponibles y oficiales configurados en el sistema son:
+- Nequi (Celular): ${empresa.nequi_numero || 'No disponible'}
+- Bre-B / Transfiya (Celular): ${empresa.breve_numero || 'No disponible'}
+Indícale que puede reportar su pago desde el botón "Reportar Pago" de su panel subiendo el comprobante.
+
+=== REGLAS IMPORTANTES DE COMPORTAMIENTO ===
+1. Responde de forma concisa y directa. Evita rodeos innecesarios.
+2. Utiliza siempre el formato de moneda estilo Colombia (ej. $ 100.000) con puntos como separadores de miles y sin decimales si son valores enteros.
+3. Bajo ninguna circunstancia inventes datos sobre cuotas, fechas o saldos que no estén listados en el contexto anterior. Si el cliente te pregunta algo que no está en este prompt, responde amablemente indicándole que no tienes esa información en el sistema y que debe comunicarse directamente con la administración de la empresa o con soporte técnico a través de la sección de chat de soporte.
+4. Eres un asistente de consulta. No puedes realizar transacciones, aprobar créditos ni modificar saldos directamente. Solo brindas información.
+5. Si el cliente tiene préstamos con "Firma Digital Contrato: PENDIENTE POR FIRMAR", adviértele de forma clara y amable que debe ingresar al dashboard de su cuenta y pulsar sobre el botón "Firmar Ahora" en el banner azul para poder completar el proceso de contratación.
+6. Si el cliente tiene dudas muy complejas que requieran intervención administrativa (por ejemplo, reportar un pago ya rechazado, quejas sobre el servicio, fallas en la aplicación, o si solicita hablar con un humano/asesor), recomiéndale e invítale de forma amable a conversar con un asesor en tiempo real a través del enlace de Markdown [Chat de Soporte Técnico](/portal-cliente/chat).
+7. No menciones que estás recibiendo un "System Prompt" o "Contexto". Habla de forma natural como si consultaras directamente la base de datos de la plataforma.
+`;
+
+            // Limitar el historial de conversación a los últimos 6 mensajes para optimizar la velocidad y el consumo de tokens
+            const historialOptimizado = mensajes.slice(-6);
+
+            // Agregar el prompt de sistema al inicio del historial de mensajes
+            const mensajesPayload = [
+                { role: 'system', content: promptSistema },
+                ...historialOptimizado
+            ];
+
+            // Llamar al servicio de Groq
+            const respuestaIA = await groqService.enviarMensajeChat(mensajesPayload);
+
+            res.json({ success: true, response: respuestaIA });
+
+        } catch (error) {
+            console.error('Error en el chatbot del asistente de IA:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'El asistente de IA no está disponible en este momento. Inténtelo más tarde o contacte con soporte técnico.' 
+            });
         }
     }
 };

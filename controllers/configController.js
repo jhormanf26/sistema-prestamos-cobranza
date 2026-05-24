@@ -42,8 +42,8 @@ const configController = {
             await ConfigModel.actualizar({
                 nombre_empresa, ruc, direccion, telefono, email_contacto, moneda, logo,
                 modulos_activos: JSON.stringify(modulos_activos),
-                nequi_numero: nequi_numero || '3123456789',
-                breve_numero: breve_numero || '3123456789'
+                nequi_numero: nequi_numero || '--',
+                breve_numero: breve_numero || '--'
             });
 
             req.flash('mensajeExito', 'Configuración actualizada correctamente');

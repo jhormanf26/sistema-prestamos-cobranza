@@ -33,6 +33,9 @@ router.post('/chat/enviar-imagen', uploadImage.single('imagen'), portalClienteCo
 // Endpoint para polling de estado en tiempo real (Chat y Reportes)
 router.get('/estado-actual', portalClienteController.estadoActual);
 
+// Ruta Asistente de IA (Chatbot)
+router.post('/ai-assistant/chat', portalClienteController.chatAsistenteIA);
+
 // Rutas Contrato Digital
 router.get('/contrato/:id', portalClienteController.verContrato);
 router.post('/firmar-contrato/:id', portalClienteController.firmarContrato);
