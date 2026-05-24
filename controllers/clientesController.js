@@ -3,6 +3,7 @@ const PrestamoModel = require('../models/PrestamoModel'); // Asegúrate de tener
 const EmpenoModel = require('../models/EmpenoModel');    // Asegúrate de tener este modelo
 const AhorroModel = require('../models/AhorroModel');    // Asegúrate de tener este modelo
 const ConfigModel = require('../models/ConfigModel');    // Asegúrate de tener este modelo
+const ClienteDocumentoModel = require('../models/ClienteDocumentoModel');
 const emailService = require('../utils/emailService');
 
 const clientesController = {
@@ -91,12 +92,13 @@ const clientesController = {
         try {
             // Usamos Promise.all para cargar todo rápido
             // Nota: Si no tienes alguno de estos modelos importados arriba, coméntalo para que no falle
-            const [cliente, prestamos, empenos, cuentaAhorro, config] = await Promise.all([
+            const [cliente, prestamos, empenos, cuentaAhorro, config, documentos] = await Promise.all([
                 ClienteModel.obtenerPorId(id),
                 PrestamoModel ? PrestamoModel.obtenerPorCliente(id) : [],
                 EmpenoModel ? EmpenoModel.obtenerPorCliente(id) : [],
                 AhorroModel ? AhorroModel.buscarPorCliente(id) : null,
-                ConfigModel ? ConfigModel.obtener() : {}
+                ConfigModel ? ConfigModel.obtener() : {},
+                ClienteDocumentoModel.obtenerPorCliente(id)
             ]);
 
             if (!cliente) {
@@ -112,7 +114,8 @@ const clientesController = {
                 prestamos: prestamos || [],
                 empenos: empenos || [],
                 cuentaAhorro,
-                empresa: empresaConfig
+                empresa: empresaConfig,
+                documentos: documentos || []
             });
 
         } catch (error) {
