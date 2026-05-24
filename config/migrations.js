@@ -307,6 +307,26 @@ async function runMigrations() {
         if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [ip_firma]:', e.message);
     }
 
+    // 14. Tabla para documentos de clientes (genérica)
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS clientes_documentos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cliente_id INT NOT NULL,
+                nombre_documento VARCHAR(100) NOT NULL,
+                archivo_url VARCHAR(255) NOT NULL,
+                subido_por ENUM('cliente', 'administrador') DEFAULT 'cliente',
+                estado ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+                motivo_rechazo TEXT NULL,
+                fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [clientes_documentos] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [clientes_documentos]:', e.message);
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 

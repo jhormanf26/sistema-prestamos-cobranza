@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const portalClienteController = require('../controllers/portalClienteController');
+const clienteDocumentosController = require('../controllers/clienteDocumentosController');
 const authCliente = require('../middleware/authCliente');
 const upload = require('../middleware/upload');
+const uploadDocumento = require('../middleware/uploadDocumento');
 
 // Rutas Públicas (Login)
 router.get('/login', portalClienteController.mostrarLogin);
@@ -39,5 +41,9 @@ router.post('/ai-assistant/chat', portalClienteController.chatAsistenteIA);
 // Rutas Contrato Digital
 router.get('/contrato/:id', portalClienteController.verContrato);
 router.post('/firmar-contrato/:id', portalClienteController.firmarContrato);
+
+// Rutas de Gestión de Documentos del Cliente
+router.get('/documentos', clienteDocumentosController.mostrarDocumentos);
+router.post('/documentos/subir', uploadDocumento.single('documento'), clienteDocumentosController.subirDocumento);
 
 module.exports = router;

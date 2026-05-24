@@ -801,6 +801,19 @@ CREATE TABLE IF NOT EXISTS `soporte_mensajes` (
   FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Volcando estructura para tabla sistema_prestamos.clientes_documentos
+CREATE TABLE IF NOT EXISTS `clientes_documentos` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `cliente_id` INT NOT NULL,
+  `nombre_documento` VARCHAR(100) NOT NULL,
+  `archivo_url` VARCHAR(255) NOT NULL,
+  `subido_por` ENUM('cliente', 'administrador') DEFAULT 'cliente',
+  `estado` ENUM('pendiente', 'aprobado', 'rechazado') DEFAULT 'pendiente',
+  `motivo_rechazo` TEXT NULL,
+  `fecha_subida` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;

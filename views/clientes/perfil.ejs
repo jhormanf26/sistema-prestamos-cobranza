@@ -110,6 +110,12 @@
                                         <i class="bi bi-star-fill text-warning"></i> Pre-aprobados
                                     </button>
                                 </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="documentos-tab" data-bs-toggle="tab"
+                                        data-bs-target="#documentos" type="button">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i> Documentos (<%= documentos.length %>)
+                                    </button>
+                                </li>
                             </ul>
 
                             <div class="tab-content" id="clientTabsContent">
@@ -263,6 +269,111 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Tab Documentos (NUEVA PESTAÑA) -->
+                                <div class="tab-pane fade" id="documentos" role="tabpanel">
+                                    <div class="card card-box border-0 shadow-sm p-4">
+                                        <div class="row g-4">
+                                            <!-- Listado de Documentos -->
+                                            <div class="col-md-7">
+                                                <h5 class="fw-bold mb-3"><i class="bi bi-folder-fill text-warning me-2"></i> Expediente Digital</h5>
+                                                
+                                                <% if (documentos && documentos.length > 0) { %>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-hover align-middle">
+                                                            <thead class="table-light text-uppercase small fw-bold">
+                                                                <tr>
+                                                                    <th>Documento</th>
+                                                                    <th>Origen</th>
+                                                                    <th>Fecha</th>
+                                                                    <th>Estado</th>
+                                                                    <th class="text-end">Acciones</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <% documentos.forEach(doc => { %>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div class="d-flex align-items-center gap-2">
+                                                                                <i class="bi <%= doc.archivo_url.toLowerCase().endsWith('.pdf') ? 'bi-file-pdf text-danger' : 'bi-image text-primary' %> fs-4"></i>
+                                                                                <div>
+                                                                                    <span class="fw-bold d-block"><%= doc.nombre_documento %></span>
+                                                                                    <a href="<%= doc.archivo_url %>" target="_blank" class="small text-decoration-none">Abrir archivo <i class="bi bi-box-arrow-up-right"></i></a>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <span class="badge bg-light text-dark border">
+                                                                                <%= doc.subido_por === 'cliente' ? 'Cliente' : 'Administrador' %>
+                                                                            </span>
+                                                                        </td>
+                                                                        <td><span class="small text-muted"><%= new Date(doc.fecha_subida).toLocaleDateString() %></span></td>
+                                                                        <td>
+                                                                            <% if (doc.estado === 'pendiente') { %>
+                                                                                <span class="badge bg-warning text-dark px-2 rounded-pill">PENDIENTE</span>
+                                                                            <% } else if (doc.estado === 'aprobado') { %>
+                                                                                <span class="badge bg-success px-2 rounded-pill animate-pulse">APROBADO</span>
+                                                                            <% } else { %>
+                                                                                <span class="badge bg-danger px-2 rounded-pill" title="Motivo: <%= doc.motivo_rechazo %>">RECHAZADO</span>
+                                                                                <% if (doc.motivo_rechazo) { %>
+                                                                                    <div class="small text-danger mt-1" style="font-size: 0.75rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= doc.motivo_rechazo %></div>
+                                                                                <% } %>
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td class="text-end">
+                                                                            <div class="d-flex gap-1 justify-content-end">
+                                                                                <% if (doc.estado !== 'aprobado') { %>
+                                                                                    <button onclick="aprobarDoc(<%= doc.id %>)" class="btn btn-sm btn-outline-success" title="Aprobar"><i class="bi bi-check-lg"></i></button>
+                                                                                <% } %>
+                                                                                <% if (doc.estado !== 'rechazado') { %>
+                                                                                    <button onclick="rechazarDoc(<%= doc.id %>)" class="btn btn-sm btn-outline-danger" title="Rechazar"><i class="bi bi-x-lg"></i></button>
+                                                                                <% } %>
+                                                                                <button onclick="eliminarDoc(<%= doc.id %>)" class="btn btn-sm btn-outline-secondary" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                <% }) %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                <% } else { %>
+                                                    <div class="text-center py-5 border rounded-4 bg-light">
+                                                        <i class="bi bi-folder2-open display-6 text-muted mb-2"></i>
+                                                        <p class="text-muted small mb-0">No hay documentos en el expediente de este cliente.</p>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+
+                                            <!-- Subir Documento desde Admin -->
+                                            <div class="col-md-5 border-start">
+                                                <h5 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i> Añadir al Expediente</h5>
+                                                <p class="text-muted small">Puedes cargar documentos digitalizados directamente al expediente del cliente. Estos se marcarán como aprobados automáticamente.</p>
+                                                
+                                                <form action="/admin/documentos/subir/<%= cliente.id %>" method="POST" enctype="multipart/form-data" class="bg-light p-3 rounded-4 border">
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold small text-muted">Tipo de Documento</label>
+                                                        <select name="nombre_documento" class="form-select" required>
+                                                            <option value="Cédula de Identidad">Cédula de Ciudadanía / Identidad</option>
+                                                            <option value="Comprobante de Domicilio">Comprobante de Domicilio</option>
+                                                            <option value="Certificación Laboral">Certificación Laboral</option>
+                                                            <option value="Historial Crediticio">Historial Crediticio</option>
+                                                            <option value="Otro Documento">Otro</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold small text-muted">Seleccionar Archivo (PDF/Imagen)</label>
+                                                        <input type="file" name="documento" class="form-control" accept="application/pdf, image/*" required>
+                                                    </div>
+                                                    
+                                                    <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill">
+                                                        <i class="bi bi-upload me-2"></i> CARGAR Y APROBAR
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                         </div>
@@ -396,6 +507,132 @@
                             } else {
                                 Swal.fire('Error', data.mensaje, 'error');
                             }
+                        });
+                    }
+                });
+            }
+
+            // --- GESTIÓN DE DOCUMENTOS ---
+            function aprobarDoc(docId) {
+                Swal.fire({
+                    title: '¿Aprobar Documento?',
+                    text: "El cliente será notificado de la aprobación de su documento.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, aprobar ahora',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Procesando...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        fetch(`/admin/documentos/estado/${docId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estado: 'aprobado' })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('¡Aprobado!', 'El documento ha sido aprobado.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', data.error, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Conexión fallida.', 'error');
+                        });
+                    }
+                });
+            }
+
+            function rechazarDoc(docId) {
+                Swal.fire({
+                    title: '¿Rechazar Documento?',
+                    input: 'textarea',
+                    inputLabel: 'Ingresa el motivo del rechazo para notificar al cliente',
+                    inputPlaceholder: 'Ej: El documento está borroso o incompleto...',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Rechazar',
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: (value) => {
+                        if (!value || value.trim().length === 0) {
+                            return '¡Debes ingresar un motivo para el rechazo!';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Procesando...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        fetch(`/admin/documentos/estado/${docId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ estado: 'rechazado', motivo_rechazo: result.value })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Rechazado', 'El documento ha sido rechazado y el cliente notificado.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', data.error, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Conexión fallida.', 'error');
+                        });
+                    }
+                });
+            }
+
+            function eliminarDoc(docId) {
+                Swal.fire({
+                    title: '¿Eliminar Documento?',
+                    text: "Esta acción no se puede deshacer. Se borrará el archivo de forma definitiva.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Eliminando...',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        fetch(`/admin/documentos/eliminar/${docId}`, {
+                            method: 'DELETE'
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('¡Eliminado!', 'El documento ha sido borrado.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', data.error, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Conexión fallida.', 'error');
                         });
                     }
                 });

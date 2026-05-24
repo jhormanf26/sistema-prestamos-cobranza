@@ -158,6 +158,7 @@ cargarRuta('/portal-cliente', './routes/portalCliente');
 cargarRuta('/admin/soporte', './routes/soporte');
 cargarRuta('/admin/comprobantes', './routes/comprobantes');
 cargarRuta('/admin/solicitudes', './routes/solicitudes');
+cargarRuta('/admin/documentos', './routes/documentos');
 
 // 5. Reportes
 cargarRuta('/reportes', './routes/reportes');
