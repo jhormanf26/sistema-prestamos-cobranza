@@ -5,6 +5,7 @@ const AhorroModel = require('../models/AhorroModel');    // Asegúrate de tener 
 const ConfigModel = require('../models/ConfigModel');    // Asegúrate de tener este modelo
 const ClienteDocumentoModel = require('../models/ClienteDocumentoModel');
 const emailService = require('../utils/emailService');
+const scoringService = require('../utils/scoringService');
 
 const clientesController = {
 
@@ -108,9 +109,21 @@ const clientesController = {
 
             const empresaConfig = config || { moneda: '$' };
 
+            // Calcular Score Crediticio
+            let scoreData = null;
+            try {
+                scoreData = await scoringService.calcularScore(id);
+                await ClienteModel.actualizarScore(id, scoreData.score);
+                cliente.score = scoreData.score;
+                cliente.score_fecha = scoreData.fechaCalculo;
+            } catch (scoreErr) {
+                console.error("Error al calcular score del cliente en perfil administrativo:", scoreErr);
+            }
+
             res.render('clientes/perfil', {
                 title: `Perfil de ${cliente.nombre}`,
                 cliente,
+                scoreData,
                 prestamos: prestamos || [],
                 empenos: empenos || [],
                 cuentaAhorro,
@@ -241,6 +254,19 @@ const clientesController = {
         } catch (error) {
             console.error(error);
             res.json({ success: false, mensaje: 'Error al actualizar el cupo.' });
+        }
+    },
+
+    // 10. Recalcular Score Crediticio de Cliente desde Administración (AJAX)
+    recalcularScoreAdmin: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const scoreData = await scoringService.calcularScore(id);
+            await ClienteModel.actualizarScore(id, scoreData.score);
+            res.json({ success: true, scoreData });
+        } catch (error) {
+            console.error("Error en recalcularScoreAdmin:", error);
+            res.status(500).json({ success: false, mensaje: 'Error al recalcular el score.' });
         }
     }
 };

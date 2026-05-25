@@ -28,4 +28,7 @@ router.get('/enviar-preaprobado/:id', clientesController.enviarCorreoPreaprobado
 // (NUEVO) Actualizar Monto Pre-aprobado
 router.post('/actualizar-preaprobado/:id', clientesController.actualizarPreaprobado);
 
+// (NUEVO) Recalcular Score Crediticio
+router.post('/recalcular-score/:id', clientesController.recalcularScoreAdmin);
+
 module.exports = router;

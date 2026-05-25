@@ -434,6 +434,29 @@ async function runMigrations() {
         console.error('❌ Error al inyectar plantilla de código OTP:', e.message);
     }
 
+    // 18. Agregar columnas score y score_fecha a clientes para Scoring Crediticio
+    try {
+        await db.query("ALTER TABLE clientes ADD COLUMN score INT DEFAULT 500 AFTER monto_preaprobado;");
+        console.log('✅ Columna [score] agregada a la tabla [clientes]');
+    } catch (e) {
+        if (e.code === 'ER_DUP_FIELDNAME') {
+            console.log('ℹ️ La columna [score] ya existe en [clientes]');
+        } else {
+            console.error('❌ Error al agregar [score] a [clientes]:', e.message);
+        }
+    }
+
+    try {
+        await db.query("ALTER TABLE clientes ADD COLUMN score_fecha DATETIME NULL DEFAULT NULL AFTER score;");
+        console.log('✅ Columna [score_fecha] agregada a la tabla [clientes]');
+    } catch (e) {
+        if (e.code === 'ER_DUP_FIELDNAME') {
+            console.log('ℹ️ La columna [score_fecha] ya existe en [clientes]');
+        } else {
+            console.error('❌ Error al agregar [score_fecha] a [clientes]:', e.message);
+        }
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 

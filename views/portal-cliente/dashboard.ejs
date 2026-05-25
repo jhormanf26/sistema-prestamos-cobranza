@@ -222,6 +222,114 @@
                         </div>
                     <% } %>
 
+                    <!-- Scoring Crediticio Interno (Glassmorphism Premium) -->
+                    <% if (typeof scoreData !== 'undefined' && scoreData) { %>
+                        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden position-relative" style="background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4) !important;">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <!-- Sección Gráfica Círculo SVG -->
+                                    <div class="col-md-4 col-lg-3 text-center d-flex flex-column align-items-center justify-content-center mb-3 mb-md-0 position-relative">
+                                        <div class="score-ring-container position-relative" style="width: 160px; height: 160px;">
+                                            <svg width="160" height="160" class="score-ring-svg">
+                                                <!-- Círculo de fondo gris -->
+                                                <circle stroke="#e2e8f0" stroke-width="10" fill="transparent" r="68" cx="80" cy="80" />
+                                                <!-- Círculo de progreso de color dinámico -->
+                                                <circle id="scoreProgressRing" stroke="<%= scoreData.circularColor %>" stroke-width="12" stroke-linecap="round" fill="transparent" r="68" cx="80" cy="80" style="stroke-dasharray: 427; stroke-dashoffset: <%= 427 - (427 * scoreData.score / 1000) %>; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 1.5s ease;" />
+                                            </svg>
+                                            <!-- Contenedor del valor del score actual -->
+                                            <div class="position-absolute top-50 start-50 translate-middle text-center" id="scoreValueContainer" style="transition: all 0.3s ease; z-index: 1;">
+                                                <h2 class="fw-bold mb-0 text-dark fs-3" id="scoreText"><%= scoreData.score %></h2>
+                                                <span class="text-muted small text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Puntos</span>
+                                            </div>
+                                            <!-- Contenedor del spinner de carga premium -->
+                                            <div class="position-absolute top-50 start-50 translate-middle text-center d-flex flex-column align-items-center justify-content-center" id="scoreLoaderContainer" style="opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 2; transform: translate(-50%, -50%) scale(0.7);">
+                                        <div class="spinner-border text-success" role="status" style="width: 2.2rem; height: 2.2rem; border-width: 0.2em;">
+                                                    <span class="visually-hidden">Calculando...</span>
+                                                </div>
+                                                <span class="text-success fw-bold mt-1" style="font-size: 0.6rem; letter-spacing: 0.5px; text-uppercase;">Calculando</span>
+                                            </div>
+                                        <div class="mt-3 d-flex align-items-center justify-content-center gap-2">
+                                            <span class="badge <%= scoreData.badgeBg %> text-white px-3 py-1.5 rounded-pill shadow-sm" id="scoreNivel">
+                                                Score: <%= scoreData.nivel %> (<%= scoreData.categoria %>)
+                                            </span>
+                                            <button onclick="mostrarAyudaScore()" class="btn btn-sm btn-link text-muted p-0 d-inline-flex align-items-center justify-content-center" title="Ver clasificación de scores" style="text-decoration: none; font-size: 1.15rem; transition: color 0.2s ease;">
+                                                <i class="bi bi-info-circle-fill text-success opacity-75"></i>
+                                            </button>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Sección de Textos y Consejos -->
+                                    <div class="col-md-8 col-lg-9 ps-md-4">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1 fw-bold text-uppercase" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-shield-check-fill me-1"></i> Mi Score Crediticio
+                                                </span>
+                                                <h4 class="fw-bold text-dark mt-2 mb-1">Tu Salud Financiera Interna</h4>
+                                                <p class="text-muted small mb-0">Evaluamos tu historial de pagos, ahorros y estabilidad en la plataforma.</p>
+                                            </div>
+                                            <button class="btn btn-light rounded-circle shadow-sm p-2 d-flex align-items-center justify-content-center" id="btnRecalcularScore" onclick="recalcularScore()" style="width: 40px; height: 40px; transition: all 0.3s ease;">
+                                                <i class="bi bi-arrow-clockwise text-success fs-5" id="iconRecalcularScore"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Consejos -->
+                                        <div class="consejos-container mt-3">
+                                            <h6 class="fw-bold text-dark small mb-2"><i class="bi bi-lightbulb-fill text-warning me-1"></i> Consejos para mejorar tu score:</h6>
+                                            <ul class="list-unstyled small text-muted mb-0" id="scoreConsejosList">
+                                                <% scoreData.consejos.forEach((consejo, idx) => { %>
+                                                    <li class="mb-1 d-flex align-items-start">
+                                                        <i class="bi bi-chevron-right text-success small me-2 mt-1" style="font-size: 0.75rem;"></i>
+                                                        <span><%= consejo %></span>
+                                                    </li>
+                                                <% }) %>
+                                            </ul>
+                                        </div>
+                                        
+                                        <!-- Desglose de puntos -->
+                                        <div class="mt-3">
+                                            <a class="text-success small fw-bold text-decoration-none d-inline-flex align-items-center cursor-pointer" data-bs-toggle="collapse" href="#collapseDesgloseScore" role="button" aria-expanded="false" aria-controls="collapseDesgloseScore">
+                                                <span>Ver desglose de mi puntaje</span> <i class="bi bi-chevron-down ms-1"></i>
+                                            </a>
+                                            
+                                            <div class="collapse mt-2" id="collapseDesgloseScore">
+                                                <div class="card border-0 bg-white bg-opacity-60 rounded-3 p-3 shadow-sm">
+                                                    <div class="row g-2 small text-dark">
+                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1">
+                                                            <span class="text-muted">Puntaje Base:</span>
+                                                            <span class="fw-bold">500 pts</span>
+                                                        </div>
+                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3">
+                                                            <span class="text-muted">Pagos a Tiempo:</span>
+                                                            <span class="fw-bold text-success" id="desglosePagos">+<%= scoreData.desglose.pagadosATiempo %> pts</span>
+                                                        </div>
+                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1">
+                                                            <span class="text-muted">Ahorros Activos:</span>
+                                                            <span class="fw-bold text-success" id="desgloseAhorros">+<%= scoreData.desglose.ahorros %> pts</span>
+                                                        </div>
+                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3">
+                                                            <span class="text-muted">Antigüedad Cuenta:</span>
+                                                            <span class="fw-bold text-success" id="desgloseAntiguedad">+<%= scoreData.desglose.antiguedad %> pts</span>
+                                                        </div>
+                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1">
+                                                            <span class="text-muted">Préstamos Vencidos:</span>
+                                                            <span class="fw-bold <%= scoreData.desglose.prestamosVencidos < 0 ? 'text-danger' : 'text-muted' %>" id="desgloseVencidos"><%= scoreData.desglose.prestamosVencidos %> pts</span>
+                                                        </div>
+                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3">
+                                                            <span class="text-muted">Cuotas Vencidas:</span>
+                                                            <span class="fw-bold <%= scoreData.desglose.cuotasVencidas < 0 ? 'text-danger' : 'text-muted' %>" id="desgloseCuotas"><%= scoreData.desglose.cuotasVencidas %> pts</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+
                     <!-- Préstamos Activos -->
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-activity text-success me-2"></i> Préstamos Activos</h5>
                     <div class="row g-3 mb-5">
@@ -2030,6 +2138,250 @@
                 }
 
         });
+    </script>
+
+    <script>
+        async function recalcularScore() {
+            const icon = document.getElementById('iconRecalcularScore');
+            const btn = document.getElementById('btnRecalcularScore');
+            const circle = document.getElementById('scoreProgressRing');
+            const scoreElement = document.getElementById('scoreText');
+            const valContainer = document.getElementById('scoreValueContainer');
+            const loaderContainer = document.getElementById('scoreLoaderContainer');
+            
+            if (btn.disabled) return;
+            
+            // Deshabilitar botón
+            btn.disabled = true;
+            
+            // Animación del botón de recarga (giro infinito)
+            icon.style.animation = 'spin 1s linear infinite';
+            
+            // Guardar valores originales
+            const originalOffset = circle.style.strokeDashoffset;
+            const originalColor = circle.getAttribute('stroke');
+            
+            // Inyectar estilo de spin para el icono si no existe
+            if (!document.getElementById('spinStyle')) {
+                const style = document.createElement('style');
+                style.id = 'spinStyle';
+                style.innerHTML = `
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // 1. Ocultar el valor actual con transición de escala y opacidad
+            valContainer.style.opacity = '0';
+            valContainer.style.transform = 'translate(-50%, -50%) scale(0.7)';
+            
+            // 2. Vaciar el círculo de progreso de forma fluida
+            circle.style.transition = 'stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            circle.style.strokeDashoffset = '427';
+            
+            // 3. Mostrar el loader central premium
+            setTimeout(() => {
+                if (btn.disabled) {
+                    loaderContainer.style.opacity = '1';
+                    loaderContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+                }
+            }, 150);
+
+            try {
+                const response = await fetch('/portal-cliente/recalcular-score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                // Esperar un mínimo de 1.2 segundos para que la animación de carga sea apreciable y fluida
+                await new Promise(resolve => setTimeout(resolve, 1200));
+
+                if (data.success) {
+                    const sd = data.scoreData;
+                    
+                    // 1. Ocultar el loader central
+                    loaderContainer.style.opacity = '0';
+                    loaderContainer.style.transform = 'translate(-50%, -50%) scale(0.7)';
+                    
+                    // Esperar a que se oculte el loader antes de mostrar el nuevo valor
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    
+                    // 2. Preparar y mostrar el valor definitivo desde escala reducida
+                    scoreElement.textContent = '0';
+                    valContainer.style.transform = 'translate(-50%, -50%) scale(0.7)';
+                    valContainer.getBoundingClientRect(); // Reflow
+                    valContainer.style.opacity = '1';
+                    valContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+                    
+                    // 3. Rellenar el círculo al nuevo valor con un efecto elástico premium
+                    circle.style.transition = 'stroke-dashoffset 1.8s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 1s ease';
+                    circle.setAttribute('stroke', sd.circularColor);
+                    const newOffset = 427 - (427 * sd.score / 1000);
+                    circle.style.strokeDashoffset = newOffset;
+
+                    // 4. Animación interactiva del texto: De 0 al valor definitivo
+                    const startScore = 0;
+                    const endScore = sd.score;
+                    const duration = 1500;
+                    const startTime = performance.now();
+
+                    function animateScore(now) {
+                        const elapsed = now - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeProgress = 1 - Math.pow(1 - progress, 3); // Cubic Out
+                        const currentScore = Math.floor(startScore + easeProgress * (endScore - startScore));
+                        scoreElement.textContent = currentScore;
+                        if (progress < 1) {
+                            requestAnimationFrame(animateScore);
+                        } else {
+                            scoreElement.textContent = endScore;
+                        }
+                    }
+                    requestAnimationFrame(animateScore);
+
+                    // Actualizar badge del nivel y categoría
+                    const badge = document.getElementById('scoreNivel');
+                    badge.className = `badge ${sd.badgeBg} text-white px-3 py-1.5 rounded-pill shadow-sm`;
+                    badge.textContent = `Score: ${sd.nivel} (${sd.categoria})`;
+
+                    // Actualizar desglose de puntos
+                    document.getElementById('desglosePagos').textContent = `+${sd.desglose.pagadosATiempo} pts`;
+                    document.getElementById('desgloseAhorros').textContent = `+${sd.desglose.ahorros} pts`;
+                    document.getElementById('desgloseAntiguedad').textContent = `+${sd.desglose.antiguedad} pts`;
+                    
+                    const dVencidos = document.getElementById('desgloseVencidos');
+                    dVencidos.textContent = `${sd.desglose.prestamosVencidos} pts`;
+                    dVencidos.className = `fw-bold ${sd.desglose.prestamosVencidos < 0 ? 'text-danger' : 'text-muted'}`;
+
+                    const dCuotas = document.getElementById('desgloseCuotas');
+                    dCuotas.textContent = `${sd.desglose.cuotasVencidas} pts`;
+                    dCuotas.className = `fw-bold ${sd.desglose.cuotasVencidas < 0 ? 'text-danger' : 'text-muted'}`;
+
+                    // Actualizar consejos
+                    const consejosList = document.getElementById('scoreConsejosList');
+                    consejosList.innerHTML = '';
+                    sd.consejos.forEach(consejo => {
+                        const li = document.createElement('li');
+                        li.className = 'mb-1 d-flex align-items-start';
+                        li.innerHTML = `<i class="bi bi-chevron-right text-success small me-2 mt-1" style="font-size: 0.75rem;"></i><span>${consejo}</span>`;
+                        consejosList.appendChild(li);
+                    });
+
+                    // Toast SweetAlert2 de éxito
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
+                        icon: 'success',
+                        title: '¡Score Crediticio recalculado!'
+                    });
+
+                } else {
+                    // Restaurar valores anteriores si falla
+                    loaderContainer.style.opacity = '0';
+                    loaderContainer.style.transform = 'translate(-50%, -50%) scale(0.7)';
+                    valContainer.style.opacity = '1';
+                    valContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+                    
+                    circle.style.transition = 'stroke-dashoffset 0.8s ease';
+                    circle.style.strokeDashoffset = originalOffset;
+                    circle.setAttribute('stroke', originalColor);
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.mensaje || 'No se pudo recalcular el score.'
+                    });
+                }
+            } catch (err) {
+                console.error('Error al recalcular score:', err);
+                // Restaurar
+                loaderContainer.style.opacity = '0';
+                loaderContainer.style.transform = 'translate(-50%, -50%) scale(0.7)';
+                valContainer.style.opacity = '1';
+                valContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+                
+                circle.style.transition = 'stroke-dashoffset 0.8s ease';
+                circle.style.strokeDashoffset = originalOffset;
+                circle.setAttribute('stroke', originalColor);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Red',
+                    text: 'Hubo un error de comunicación con el servidor.'
+                });
+            } finally {
+                // Restaurar estado del botón
+                btn.disabled = false;
+                icon.style.animation = '';
+            }
+        }
+
+        function mostrarAyudaScore() {
+            Swal.fire({
+                title: 'Clasificación del Score Crediticio',
+                html: `
+                    <div class="table-responsive text-start small mt-2">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Rango Puntos</th>
+                                    <th>Nivel de Riesgo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background-color: rgba(16, 185, 129, 0.08);">
+                                    <td><span class="badge bg-success px-2 py-1">Categoría A</span></td>
+                                    <td class="fw-bold text-success">900 - 1000 pts</td>
+                                    <td class="fw-bold text-success">Excelente</td>
+                                </tr>
+                                <tr style="background-color: rgba(59, 130, 246, 0.08);">
+                                    <td><span class="badge bg-info px-2 py-1">Categoría B</span></td>
+                                    <td class="fw-bold text-primary">700 - 899 pts</td>
+                                    <td class="fw-bold text-primary">Bueno</td>
+                                </tr>
+                                <tr style="background-color: rgba(245, 158, 11, 0.08);">
+                                    <td><span class="badge bg-warning text-dark px-2 py-1">Categoría C</span></td>
+                                    <td class="fw-bold text-warning">500 - 699 pts</td>
+                                    <td class="fw-bold text-warning">Regular</td>
+                                </tr>
+                                <tr style="background-color: rgba(248, 113, 113, 0.08);">
+                                    <td><span class="badge px-2 py-1 text-white" style="background-color: #f87171;">Categoría D</span></td>
+                                    <td class="fw-bold text-danger">300 - 499 pts</td>
+                                    <td class="fw-bold text-danger">Malo</td>
+                                </tr>
+                                <tr style="background-color: rgba(220, 38, 38, 0.08);">
+                                    <td><span class="badge bg-danger px-2 py-1">Categoría E</span></td>
+                                    <td class="fw-bold text-danger" style="color: #dc2626 !important;">0 - 299 pts</td>
+                                    <td class="fw-bold text-danger" style="color: #dc2626 !important;">Crítico</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small text-muted text-start mt-3 mb-0">
+                        <i class="bi bi-info-circle text-success me-1"></i>
+                        Tu puntaje base inicia en <strong>500 puntos</strong>. Sube pagando a tiempo (+100 c/u, máx 300), manteniendo saldo en tu cuenta de ahorros (+10 por cada $100.000, máx 100) y por antigüedad (+50). Baja por cuotas en mora (-50/-100) y créditos vencidos (-200 c/u).
+                    </p>
+                `,
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#10b981',
+                customClass: {
+                    popup: 'rounded-4'
+                }
+            });
+        }
     </script>
     <%- include('partials/asistente-ia') %>
 </body>

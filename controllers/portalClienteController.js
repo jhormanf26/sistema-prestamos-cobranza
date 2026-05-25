@@ -13,6 +13,7 @@ const finance = require('../utils/finance');
 const bcrypt = require('bcryptjs');
 const groqService = require('../services/groqService');
 const OtpService = require('../utils/otpService');
+const scoringService = require('../utils/scoringService');
 
 const portalClienteController = {
     // Mostrar formulario de login
@@ -142,10 +143,22 @@ const portalClienteController = {
                 p.pagos = await PagoModel.obtenerHistorial(p.id);
             }
 
+            // Calcular Score Crediticio Interno
+            let scoreData = null;
+            try {
+                scoreData = await scoringService.calcularScore(clienteId);
+                await ClienteModel.actualizarScore(clienteId, scoreData.score);
+                cliente.score = scoreData.score;
+                cliente.score_fecha = scoreData.fechaCalculo;
+            } catch (scoreErr) {
+                console.error("Error al calcular score del cliente en dashboard:", scoreErr);
+            }
+
             res.render('portal-cliente/dashboard', {
                 title: 'Mi Portal',
                 empresa,
                 cliente,
+                scoreData,
                 prestamosActivos,
                 prestamosPagados,
                 prestamos, // Enviamos todos para compatibilidad si la vista lo requiere
@@ -751,6 +764,19 @@ const portalClienteController = {
 
             await PrestamoModel.guardarFirma(id, firma, ip, otp);
 
+            // Notificar a los administradores que el contrato ha sido firmado digitalmente
+            try {
+                const { sendPushToAdmins } = require('../utils/pushService');
+                sendPushToAdmins({
+                    title: `✍️ Contrato Firmado Digitalmente`,
+                    body: `${req.session.cliente.nombre} ${req.session.cliente.apellido} ha firmado el contrato del préstamo #${id} por $${parseFloat(prestamo.monto_prestado || 0).toLocaleString('es-CO')}.`,
+                    icon: '/img/icon-192.png',
+                    url: `/prestamos/cronograma/${id}`
+                }).catch(e => console.error('Error enviando push de contrato firmado:', e));
+            } catch (pushErr) {
+                console.error('Error al enviar la notificación push de contrato firmado:', pushErr.message);
+            }
+
             res.json({ success: true });
         } catch (error) {
             console.error(error);
@@ -931,6 +957,19 @@ Indícale que puede reportar su pago desde el botón "Reportar Pago" de su panel
                 success: false, 
                 message: 'El asistente de IA no está disponible en este momento. Inténtelo más tarde o contacte con soporte técnico.' 
             });
+        }
+    },
+
+    // Recalcular Score Crediticio (AJAX)
+    recalcularScore: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const scoreData = await scoringService.calcularScore(clienteId);
+            await ClienteModel.actualizarScore(clienteId, scoreData.score);
+            res.json({ success: true, scoreData });
+        } catch (error) {
+            console.error("Error en recalcularScore del cliente:", error);
+            res.status(500).json({ success: false, mensaje: 'Error al recalcular el score.' });
         }
     }
 };

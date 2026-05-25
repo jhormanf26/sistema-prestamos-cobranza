@@ -20,6 +20,7 @@ router.get('/', portalClienteController.dashboard);
 router.get('/perfil', portalClienteController.perfil);
 router.post('/perfil/password', portalClienteController.actualizarPassword);
 router.post('/registrar-instalacion', portalClienteController.registrarInstalacion);
+router.post('/recalcular-score', portalClienteController.recalcularScore);
 
 const uploadAudio = require('../middleware/uploadAudio');
 const uploadImage = require('../middleware/uploadImage');

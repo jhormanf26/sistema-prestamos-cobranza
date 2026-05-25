@@ -183,6 +183,23 @@ class ClienteModel {
             throw error;
         }
     }
+
+    /**
+     * Actualiza el Score Crediticio interno del cliente y registra la fecha de cálculo.
+     * @param {number|string} id - ID del cliente.
+     * @param {number} score - Puntuación calculada (0-1000).
+     * @returns {Promise<object>} Resultado de la actualización.
+     */
+    static async actualizarScore(id, score) {
+        try {
+            const query = "UPDATE clientes SET score = ?, score_fecha = NOW() WHERE id = ?";
+            const [result] = await db.query(query, [score, id]);
+            return result;
+        } catch (error) {
+            console.error("Error en ClienteModel.actualizarScore:", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = ClienteModel;
