@@ -324,6 +324,35 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        
+                                        <!-- ★ Tarjeta de Tasa Preferencial según Score ★ -->
+                                        <% if (typeof tasaInfoPortal !== 'undefined' && tasaInfoPortal) {
+                                            const tasaIconoPortal = {A:'🏆',B:'🎖️',C:'📊',D:'⚠️',E:'🔴'}[tasaInfoPortal.categoria] || '📊';
+                                            const tasaBgPortal = {A:'#d1fae5',B:'#dbeafe',C:'#fef9c3',D:'#fee2e2',E:'#f3f4f6'}[tasaInfoPortal.categoria] || '#f3f4f6';
+                                            const tasaColorPortal = {A:'#065f46',B:'#1e40af',C:'#854d0e',D:'#991b1b',E:'#374151'}[tasaInfoPortal.categoria] || '#374151';
+                                            const tasaBorderPortal = {A:'#6ee7b7',B:'#93c5fd',C:'#fde047',D:'#fca5a5',E:'#d1d5db'}[tasaInfoPortal.categoria] || '#d1d5db';
+                                        %>
+                                        <div class="mt-3 rounded-3 p-3 d-flex align-items-center gap-3" style="background-color:<%= tasaBgPortal %>; border: 1px solid <%= tasaBorderPortal %>;">
+                                            <span style="font-size: 2rem; line-height:1;"><%= tasaIconoPortal %></span>
+                                            <div class="flex-grow-1">
+                                                <span class="fw-bold small" style="color:<%= tasaColorPortal %>;">Beneficio de Tasa — Score <%= tasaInfoPortal.categoria %></span>
+                                                <p class="mb-0 small" style="color:<%= tasaColorPortal %>; opacity:0.85;">
+                                                    Con tu puntaje actual accedes a préstamos desde <strong><%= tasaInfoPortal.tasaMensual %>% mensual</strong>.
+                                                    <% if (tasaInfoPortal.categoria === 'A' || tasaInfoPortal.categoria === 'B') { %>
+                                                        ¡Sigue así para mantener tu tasa preferencial! 🌟
+                                                    <% } else { %>
+                                                        Mejora tu score para acceder a tasas más bajas.
+                                                    <% } %>
+                                                </p>
+                                            </div>
+                                            <div class="text-end flex-shrink-0">
+                                                <span class="fw-bold fs-5 d-block" style="color:<%= tasaColorPortal %>;"><%= tasaInfoPortal.tasaMensual %>%</span>
+                                                <small style="color:<%= tasaColorPortal %>; opacity:0.7;">mensual</small>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                                        <!-- ★★★ -->
+
                                     </div>
                                 </div>
                             </div>
@@ -1054,11 +1083,12 @@
                             <textarea name="observaciones" class="form-control rounded-3" rows="2" placeholder="Ej. Abono cuota #3 de este mes."></textarea>
                         </div>
 
-                    </div>
-                                                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
-                            <i class="bi bi-send-fill me-1"></i> Enviar Reporte
-                        </button>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
+                                <i class="bi bi-send-fill me-1"></i> Enviar Reporte
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -1073,6 +1103,12 @@
         const subtituloMonto = tieneCupo 
             ? `Límite disponible: $${parseFloat(cliente.monto_preaprobado).toLocaleString('es-CO')}` 
             : 'Límite máximo general: $3.000.000';
+
+        // Determinar tasa según score crediticio del cliente (se calcula en el controlador)
+        const _tieneScoreReal = (typeof tasaInfoPortal !== 'undefined' && tasaInfoPortal !== null);
+        const tasaModalEjs    = _tieneScoreReal ? tasaInfoPortal.tasaMensual : (typeof empresa !== 'undefined' && empresa.interes_global ? parseFloat(empresa.interes_global) : 2.0);
+        const tasaCatModal    = _tieneScoreReal ? tasaInfoPortal.categoria : null;
+        const tasaDescModal   = _tieneScoreReal ? tasaInfoPortal.descripcion : 'Tasa Estándar';
     %>
     <div class="modal fade" id="modalSolicitarCupo" tabindex="-1" aria-labelledby="modalSolicitarCupoLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1147,7 +1183,11 @@
                                         </div>
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted small">Interés Mensual:</span>
-                                            <span class="fw-bold text-primary font-monospace" id="simTasa">2.0 %</span>
+                                            <span class="fw-bold text-primary font-monospace" id="simTasa"><%= tasaModalEjs.toFixed(1) %> %
+                                                <% if (tasaCatModal) { %>
+                                                    <span class="badge bg-primary bg-opacity-15 text-primary rounded-pill ms-1" style="font-size:0.65rem;">Score <%= tasaCatModal %></span>
+                                                <% } %>
+                                            </span>
                                         </div>
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted small">Plazo de Pago:</span>
@@ -1178,6 +1218,7 @@
                 </form>
             </div>
         </div>
+    </div>
 
     <!-- MODAL: REPORTAR APORTE AHORRO -->
     <div class="modal fade" id="modalReportarAporte" tabindex="-1" aria-labelledby="modalReportarAporteLabel" aria-hidden="true">
@@ -1628,8 +1669,8 @@
                 const cuotas = parseInt(formCupoCuotas.value) || 1;
                 const frecuencia = formCupoFrecuencia.value;
 
-                // Tasa mensual base del interés global configurado en el sistema
-                const tasaMensual = 2.0;
+                // Tasa mensual dinámica basada en el Score Crediticio del cliente
+                const tasaMensual = <%= tasaModalEjs %>;  // Score <%= tasaCatModal %> — <%= tasaDescModal %>
 
                 let factor = 1;
                 if (frecuencia === 'diario') factor = 1/30;
@@ -2339,6 +2380,7 @@
                                     <th>Categoría</th>
                                     <th>Rango Puntos</th>
                                     <th>Nivel de Riesgo</th>
+                                    <th>Tasa (Int. / Mora)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2346,26 +2388,31 @@
                                     <td><span class="badge bg-success px-2 py-1">Categoría A</span></td>
                                     <td class="fw-bold text-success">900 - 1000 pts</td>
                                     <td class="fw-bold text-success">Excelente</td>
+                                    <td class="fw-bold text-success">1.5% / 2.5%</td>
                                 </tr>
                                 <tr style="background-color: rgba(59, 130, 246, 0.08);">
                                     <td><span class="badge bg-info px-2 py-1">Categoría B</span></td>
                                     <td class="fw-bold text-primary">700 - 899 pts</td>
                                     <td class="fw-bold text-primary">Bueno</td>
+                                    <td class="fw-bold text-primary">2.0% / 3.0%</td>
                                 </tr>
                                 <tr style="background-color: rgba(245, 158, 11, 0.08);">
                                     <td><span class="badge bg-warning text-dark px-2 py-1">Categoría C</span></td>
                                     <td class="fw-bold text-warning">500 - 699 pts</td>
                                     <td class="fw-bold text-warning">Regular</td>
+                                    <td class="fw-bold text-warning">2.5% / 3.5%</td>
                                 </tr>
                                 <tr style="background-color: rgba(248, 113, 113, 0.08);">
                                     <td><span class="badge px-2 py-1 text-white" style="background-color: #f87171;">Categoría D</span></td>
                                     <td class="fw-bold text-danger">300 - 499 pts</td>
                                     <td class="fw-bold text-danger">Malo</td>
+                                    <td class="fw-bold text-danger">3.0% / 4.0%</td>
                                 </tr>
                                 <tr style="background-color: rgba(220, 38, 38, 0.08);">
                                     <td><span class="badge bg-danger px-2 py-1">Categoría E</span></td>
                                     <td class="fw-bold text-danger" style="color: #dc2626 !important;">0 - 299 pts</td>
                                     <td class="fw-bold text-danger" style="color: #dc2626 !important;">Crítico</td>
+                                    <td class="fw-bold text-danger" style="color: #dc2626 !important;">3.5% / 4.5%</td>
                                 </tr>
                             </tbody>
                         </table>

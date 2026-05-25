@@ -27,29 +27,41 @@
                                                         <h5 class="text-primary mb-3">Detalles Financieros</h5>
 
                                                         <div class="mb-3">
-                                                            <label class="form-label fw-bold">Seleccionar
-                                                                Cliente</label>
-                                                            <select name="cliente_id" class="form-select" required>
+                                                            <label class="form-label fw-bold">Seleccionar Cliente</label>
+                                                            <select name="cliente_id" id="selectCliente" class="form-select" required>
                                                                 <option value="">-- Buscador de Clientes --</option>
                                                                 <% clientes.forEach(c=> { %>
                                                                     <option value="<%= c.id %>">
-                                                                        <%= c.dni %> - <%= c.nombre %>
-                                                                                <%= c.apellido %>
+                                                                        <%= c.dni %> - <%= c.nombre %> <%= c.apellido %>
                                                                     </option>
-                                                                    <% }) %>
+                                                                <% }) %>
                                                             </select>
+                                                        </div>
+
+                                                        <!-- Badge de Score Crediticio del Cliente -->
+                                                        <div id="scoreBadgeContainer" class="mb-3" style="display:none;">
+                                                            <div id="scoreBadge" class="alert d-flex align-items-center gap-2 py-2 mb-0" role="alert" style="border-radius:10px;">
+                                                                <span id="scoreBadgeIcon" style="font-size:1.4rem;"></span>
+                                                                <div>
+                                                                    <span class="fw-bold" id="scoreBadgeTitle"></span>
+                                                                    <small class="d-block" id="scoreBadgeDesc"></small>
+                                                                </div>
+                                                                <span id="scoreBadgePuntos" class="ms-auto badge fs-6"></span>
+                                                            </div>
                                                         </div>
 
                                                         <div class="row">
                                                             <div class="col-md-4 mb-3">
-                                                                <label class="form-label">Monto a Prestar (<%=
-                                                                        empresa.moneda %>)</label>
+                                                                <label class="form-label">Monto a Prestar (<%= empresa.moneda %>)</label>
                                                                 <input type="text" name="monto" id="inputMonto"
                                                                     class="form-control currency-input" required
                                                                     placeholder="0">
                                                             </div>
                                                             <div class="col-md-4 mb-3">
-                                                                <label class="form-label">Interés Mensual (%)</label>
+                                                                <label class="form-label d-flex align-items-center gap-2">
+                                                                    Interés Mensual (%)
+                                                                    <span id="badgeTasaPersonalizada" class="badge bg-secondary rounded-pill" style="font-size:0.7rem;display:none;">✏️ Personalizado</span>
+                                                                </label>
                                                                 <input type="number" step="0.01" name="interes"
                                                                     id="inputInteres" class="form-control" required
                                                                     placeholder="2">
@@ -284,5 +296,84 @@
 
                     // Ejecutar cálculo inicial
                     calcular();
+
+                    // ── AUTO-LLENADO DE TASAS POR SCORE CREDITICIO ──────────────────
+                    const selectCliente      = document.getElementById('selectCliente');
+                    const badgeContainer     = document.getElementById('scoreBadgeContainer');
+                    const scoreBadge         = document.getElementById('scoreBadge');
+                    const scoreBadgeIcon     = document.getElementById('scoreBadgeIcon');
+                    const scoreBadgeTitle    = document.getElementById('scoreBadgeTitle');
+                    const scoreBadgeDesc     = document.getElementById('scoreBadgeDesc');
+                    const scoreBadgePuntos   = document.getElementById('scoreBadgePuntos');
+                    const badgeTasaPersonal  = document.getElementById('badgeTasaPersonalizada');
+
+                    // Mapa de estilos por categoría
+                    const estilosPorCategoria = {
+                        A: { alertClass: 'alert-success', badgeClass: 'bg-success', icono: '🏆', color: '#10b981' },
+                        B: { alertClass: 'alert-info',    badgeClass: 'bg-info',    icono: '🟦', color: '#3b82f6' },
+                        C: { alertClass: 'alert-warning', badgeClass: 'bg-warning text-dark', icono: '🟡', color: '#f59e0b' },
+                        D: { alertClass: 'alert-danger',  badgeClass: 'bg-danger',  icono: '🔴', color: '#f87171' },
+                        E: { alertClass: 'alert-danger',  badgeClass: 'bg-dark',    icono: '⚫', color: '#dc2626' }
+                    };
+
+                    // Valor de tasa original sugerida para detectar si el admin la modificó
+                    let tasaSugeridaOriginal = null;
+
+                    /**
+                     * Consulta el score del cliente seleccionado vía AJAX y pre-llena los campos de tasa.
+                     */
+                    async function cargarScoreCliente() {
+                        const clienteId = selectCliente.value;
+                        if (!clienteId) {
+                            badgeContainer.style.display = 'none';
+                            tasaSugeridaOriginal = null;
+                            return;
+                        }
+
+                        try {
+                            const resp = await fetch(`/clientes/score/${clienteId}`);
+                            if (!resp.ok) throw new Error('Sin score disponible');
+                            const data = await resp.json();
+
+                            if (!data.success) throw new Error(data.mensaje || 'Sin score');
+
+                            const cat = data.categoria || 'C';
+                            const estilos = estilosPorCategoria[cat] || estilosPorCategoria['C'];
+
+                            // Actualizar badge visual
+                            scoreBadge.className = `alert d-flex align-items-center gap-2 py-2 mb-0 ${estilos.alertClass}`;
+                            scoreBadgeIcon.textContent = estilos.icono;
+                            scoreBadgeTitle.textContent = `Score ${cat} — ${data.descripcion}`;
+                            scoreBadgeDesc.textContent  = `Tasa sugerida: ${data.tasaSugerida}% mensual / Mora: ${data.tasaMoraSugerida}%`;
+                            scoreBadgePuntos.textContent = `${data.score} pts`;
+                            scoreBadgePuntos.className  = `ms-auto badge fs-6 ${estilos.badgeClass}`;
+                            badgeContainer.style.display = 'block';
+
+                            // Pre-llenar los campos de tasa
+                            tasaSugeridaOriginal = data.tasaSugerida;
+                            inputInteres.value      = data.tasaSugerida;
+                            inputInteresMora.value  = data.tasaMoraSugerida;
+                            badgeTasaPersonal.style.display = 'none';
+
+                            // Recalcular simulación con los nuevos valores
+                            calcular();
+                        } catch (e) {
+                            // Si el cliente aún no tiene score, ocultamos el badge pero no bloqueamos
+                            badgeContainer.style.display = 'none';
+                            tasaSugeridaOriginal = null;
+                        }
+                    }
+
+                    // Detectar si el admin modifica manualmente la tasa sugerida
+                    inputInteres.addEventListener('input', function () {
+                        if (tasaSugeridaOriginal !== null && parseFloat(this.value) !== tasaSugeridaOriginal) {
+                            badgeTasaPersonal.style.display = 'inline-block';
+                        } else {
+                            badgeTasaPersonal.style.display = 'none';
+                        }
+                    });
+
+                    selectCliente.addEventListener('change', cargarScoreCliente);
+                    // ────────────────────────────────────────────────────────────────
                 });
             </script>

@@ -116,6 +116,8 @@ async function ejecutarPruebasAsistenteIA() {
         assert.ok(promptRecibido.includes(dniPrueba), 'El prompt de sistema debería contener el DNI del cliente.');
         assert.ok(promptRecibido.includes('Monto Máximo Pre-aprobado'), 'El prompt de sistema debería contener la información del cupo pre-aprobado.');
         assert.ok(promptRecibido.includes('Firma Digital Contrato'), 'El prompt de sistema debería contener el estado de la firma digital del contrato.');
+        assert.ok(promptRecibido.includes('=== SCORE CREDITICIO Y BENEFICIOS ==='), 'El prompt de sistema debería contener la sección de score crediticio y beneficios.');
+        assert.ok(promptRecibido.includes('=== TABLA OFICIAL DE TASAS Y BENEFICIOS SEGÚN SCORE ==='), 'El prompt de sistema debería contener la tabla oficial de tasas según score.');
         console.log('✅ Respuestas del controlador y contexto inyectado validados con éxito.');
         console.log('🎉 Pruebas TDD del Asistente de IA COMPLETADAS CON ÉXITO.');
 

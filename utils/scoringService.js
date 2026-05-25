@@ -230,6 +230,44 @@ const scoringService = {
             console.error("Error al calcular el Score Crediticio del cliente:", error);
             throw error;
         }
+    },
+
+    /**
+     * Determina la tasa de interés y de mora sugeridas según el score crediticio.
+     * Las tasas son mensuales y sirven como guía al administrador; siempre son editables.
+     * Regla: tasaMora = tasaMensual + 1% (mora siempre 1 punto porcentual mayor al interés).
+     *
+     * | Categoría | Score     | Tasa mensual | Tasa mora |
+     * |-----------|-----------|-------------|-----------|
+     * | A         | 900-1000  | 1.5 %       | 2.5 %     |
+     * | B         | 700-899   | 2.0 %       | 3.0 %     |
+     * | C         | 500-699   | 2.5 %       | 3.5 %     |
+     * | D         | 300-499   | 3.0 %       | 4.0 %     |
+     * | E         | 0-299     | 3.5 %       | 4.5 %     |
+     *
+     * @param {number} score - Puntaje crediticio del cliente (0-1000).
+     * @returns {{ tasaMensual: number, tasaMora: number, categoria: string, descripcion: string }}
+     */
+    obtenerTasaPorScore: (score) => {
+        /** @type {{ tasaMensual: number, categoria: string, descripcion: string }} */
+        let resultado;
+
+        if (score >= 900) {
+            resultado = { tasaMensual: 1.5, categoria: 'A', descripcion: 'Tasa Preferencial (Score Excelente)' };
+        } else if (score >= 700) {
+            resultado = { tasaMensual: 2.0, categoria: 'B', descripcion: 'Tasa Estándar Reducida (Score Bueno)' };
+        } else if (score >= 500) {
+            resultado = { tasaMensual: 2.5, categoria: 'C', descripcion: 'Tasa Estándar (Score Regular)' };
+        } else if (score >= 300) {
+            resultado = { tasaMensual: 3.0, categoria: 'D', descripcion: 'Tasa Elevada (Score Malo)' };
+        } else {
+            resultado = { tasaMensual: 3.5, categoria: 'E', descripcion: 'Tasa Máxima (Score Crítico)' };
+        }
+
+        // Mora siempre 1 punto porcentual mayor a la tasa mensual
+        resultado.tasaMora = parseFloat((resultado.tasaMensual + 1).toFixed(2));
+
+        return resultado;
     }
 };
 
