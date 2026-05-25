@@ -67,6 +67,11 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
 61. **[HECHO]** Implementar Datos Estructurados avanzados (Schema.org) en formato JSON-LD en la Landing Page, detallando el servicio financiero localizado (FinancialService) e inyectando el marcado de Preguntas Frecuentes (FAQPage) para que Google muestre resultados enriquecidos con acordeones directos en sus búsquedas, aumentando el CTR.
 62. **[HECHO]** Servir de manera nativa los archivos robots.txt y sitemap.xml desde la raíz del servidor Express (app.js), lo que soluciona el error de indexación 'No se ha podido obtener' de Google Search Console cuando el buscador los solicita en la raíz del dominio principal.
 63. **[HECHO]** Corregir un bug en el control de tasa de peticiones (app.js) removiendo el rate limit (analyticsLimiter) de la carpeta estática de la landing page. Esto previene que Googlebot (el crawler de Google) sea bloqueado bajo el código HTTP 429 al rastrear la landing page, sus imágenes o el archivo sitemap.xml, resolviendo por completo el error 'No se ha podido obtener'.
+64. **[HECHO]** Implementar la configuración de favicon (`clientes.png`) tanto en la Landing Page (`landing/index.html`) como en las vistas dinámicas (`views/partials/head.ejs`), garantizando que los buscadores (Google Search Console / Google SERP) e interfaces de usuario reconozcan y muestren correctamente el logotipo corporativo en los resultados de búsqueda.
+65. **[HECHO]** Optimizar drásticamente el rendimiento móvil y el tiempo de carga en la Landing Page (`/promocion`):
+    - Comprimir y convertir las imágenes principales del hero y de los logotipos financieros de formato PNG a JPG con calidad 80% y fondo unificado (`#f8fafc`), logrando reducir el peso de descarga global en más de **725 KB** (reducción de un 84% de peso).
+    - Modificar la carga de fuentes de Google, Bootstrap Icons y el CSS de AOS en `landing/index.html` para cargarse de manera asíncrona no bloqueante, eliminando el bloqueo del hilo de renderizado inicial (FCP y LCP).
+    - Instalar y configurar el middleware global de compresión `compression` (Gzip/Deflate) en `app.js` para optimizar la velocidad de transferencia de todos los assets de texto del servidor Express.
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 

@@ -73,18 +73,30 @@
     }
     </script>
 
-    <!-- Fonts -->
+    <!-- Fonts Precarga y Asíncrona -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700;800&display=swap"
-        rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700;800&display=swap" rel="stylesheet">
+    </noscript>
 
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Icons CSS Asíncrono -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </noscript>
 
-    <!-- AOS Animation -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- AOS Animation CSS Asíncrono -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    </noscript>
+
+    <!-- Favicon / Icono del Sitio para Google Search y Navegadores -->
+    <link rel="icon" href="/img/clientes.png" type="image/png" sizes="192x192">
+    <link rel="shortcut icon" href="/img/clientes.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/img/clientes.png">
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -139,7 +151,7 @@
                     </div>
                 </div>
                 <div class="image-wrapper" data-aos="zoom-in">
-                    <img src="hero_finanzas_tech.png" alt="Finanzas Pro" class="main-hero-img" fetchpriority="high" decoding="async">
+                    <img src="hero_finanzas_tech.jpg" alt="Finanzas Pro" class="main-hero-img" fetchpriority="high" decoding="async">
                     <div class="glass-card g-1" data-aos="fade-right" data-aos-delay="500">
                         <i class="bi bi-check-circle-fill"></i>
                         <div>
@@ -194,35 +206,35 @@
                 <!-- Nequi -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="nequi.png" alt="Nequi" loading="lazy">
+                        <img src="nequi.jpg" alt="Nequi" loading="lazy">
                     </div>
                     <span class="pill-text">Nequi</span>
                 </div>
                 <!-- Daviplata -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="daviplata.png" alt="DaviPlata" loading="lazy">
+                        <img src="daviplata.jpg" alt="DaviPlata" loading="lazy">
                     </div>
                     <span class="pill-text">DaviPlata</span>
                 </div>
                 <!-- Bancolombia -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="bancolombia.png" alt="Bancolombia" loading="lazy">
+                        <img src="bancolombia.jpg" alt="Bancolombia" loading="lazy">
                     </div>
                     <span class="pill-text">Bancolombia</span>
                 </div>
                 <!-- Banco de Bogotá -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="bogota.png" alt="Banco de Bogotá" loading="lazy">
+                        <img src="bogota.jpg" alt="Banco de Bogotá" loading="lazy">
                     </div>
                     <span class="pill-text">Banco de Bogotá</span>
                 </div>
                 <!-- Bre-B -->
                 <div class="logo-pill">
                     <div class="pill-icon bre-b-special">
-                        <img src="breve.png" alt="Bre-B" loading="lazy">
+                        <img src="breve.jpg" alt="Bre-B" loading="lazy">
                     </div>
                     <span class="pill-text">Bre-B</span>
                 </div>
