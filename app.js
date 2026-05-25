@@ -29,6 +29,10 @@ const analyticsLimiter = rateLimit({
 });
 
 const app = express();
+const compression = require('compression');
+
+// Comprimir todas las respuestas HTTP para optimizar el rendimiento en móviles
+app.use(compression());
 
 // Confiar en el proxy para obtener la IP real del cliente (necesario en Dockploy/Docker/Nginx)
 app.set('trust proxy', true);
