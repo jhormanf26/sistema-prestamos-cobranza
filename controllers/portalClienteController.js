@@ -111,6 +111,7 @@ const portalClienteController = {
             const reportesPago = await ReportePagoModel.obtenerPorCliente(clienteId);
             const reportesAporte = await AhorroReporteModel.obtenerPorCliente(clienteId);
             const solicitudesRetiro = await AhorroSolicitudModel.obtenerPorCliente(clienteId);
+            const solicitudesCredito = await SolicitudCreditoModel.obtenerPorCliente(clienteId);
             const movimientosAhorro = cuentaAhorro ? await AhorroModel.obtenerMovimientos(cuentaAhorro.id) : [];
             
             // Separar préstamos por estado para facilidad
@@ -153,6 +154,7 @@ const portalClienteController = {
                 reportesPago,
                 reportesAporte,
                 solicitudesRetiro,
+                solicitudesCredito,
                 movimientosAhorro,
                 manifestPath: '/manifest-cliente.json',
                 themeColor: '#10b981'
@@ -272,7 +274,7 @@ const portalClienteController = {
         }
     },
 
-    // 2. Solicitar préstamo usando cupo pre-aprobado (Fidelización)
+    // 2. Solicitar préstamo usando cupo pre-aprobado u ordinario
     solicitarCupo: async (req, res) => {
         try {
             const clienteId = req.session.cliente.id;
@@ -299,33 +301,51 @@ const portalClienteController = {
             }
 
             const cupoDisponible = parseFloat(cliente.monto_preaprobado || 0);
+            const tieneCupo = cupoDisponible > 0;
+            const limiteMaximoOrdinario = 3000000; // Límite general $3.000.000
 
-            if (cleanMonto > cupoDisponible) {
-                req.flash('mensajeError', `El monto solicitado excede tu cupo pre-aprobado disponible ($ ${cupoDisponible.toLocaleString('es-CO')}).`);
-                return res.redirect('/portal-cliente');
+            if (tieneCupo) {
+                if (cleanMonto > cupoDisponible) {
+                    req.flash('mensajeError', `El monto solicitado excede tu cupo pre-aprobado disponible ($ ${cupoDisponible.toLocaleString('es-CO')}).`);
+                    return res.redirect('/portal-cliente');
+                }
+            } else {
+                if (cleanMonto > limiteMaximoOrdinario) {
+                    req.flash('mensajeError', `El monto solicitado excede el límite máximo permitido para solicitudes ordinarias ($ ${limiteMaximoOrdinario.toLocaleString('es-CO')}).`);
+                    return res.redirect('/portal-cliente');
+                }
             }
 
             await SolicitudCreditoModel.crear({
                 cliente_id: clienteId,
                 monto_solicitado: cleanMonto,
                 cuotas: parseInt(cuotas),
-                frecuencia: frecuencia || 'quincenal' // por defecto
+                frecuencia: frecuencia || 'quincenal'
             });
 
             // Notificar a los administradores
             const { sendPushToAdmins } = require('../utils/pushService');
+            const tituloPush = tieneCupo ? `🚀 Nueva Solicitud de Desembolso (Cupo)` : `📝 Nueva Solicitud de Crédito Ordinario`;
+            const detallePush = tieneCupo 
+                ? `${req.session.cliente.nombre || 'Un cliente'} ha solicitado un cupo rápido por $${cleanMonto.toLocaleString('es-CO')}.`
+                : `${req.session.cliente.nombre || 'Un cliente'} ha enviado una solicitud de crédito ordinario por $${cleanMonto.toLocaleString('es-CO')}.`;
+
             sendPushToAdmins({
-                title: `🚀 Nueva Solicitud de Desembolso`,
-                body: `${req.session.cliente.nombre || 'Un cliente'} ha solicitado un cupo rápido por $${cleanMonto.toLocaleString('es-CO')}.`,
+                title: tituloPush,
+                body: detallePush,
                 icon: '/img/icon-192.png',
                 url: '/solicitudes'
             }).catch(e => console.error('Error enviando push de solicitud:', e));
 
-            req.flash('mensajeExito', 'Tu solicitud de desembolso ha sido enviada con éxito. Un asesor la revisará pronto.');
+            const mensajeExito = tieneCupo
+                ? 'Tu solicitud de desembolso rápido por cupo pre-aprobado ha sido enviada con éxito. Un asesor la revisará pronto.'
+                : 'Tu solicitud de crédito ordinario ha sido enviada con éxito. Nuestro equipo de riesgos la evaluará pronto.';
+
+            req.flash('mensajeExito', mensajeExito);
             res.redirect('/portal-cliente');
         } catch (error) {
             console.error("Error en portalClienteController.solicitarCupo:", error);
-            req.flash('mensajeError', 'Error al procesar tu solicitud de cupo.');
+            req.flash('mensajeError', 'Error al procesar tu solicitud de crédito.');
             res.redirect('/portal-cliente');
         }
     },
