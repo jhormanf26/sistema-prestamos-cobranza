@@ -374,6 +374,11 @@
 </style>
 
 <script>
+    // Inyectar datos financieros predictivos del cliente cargados por el middleware en res.locals
+    window.AI_PREDICTIVE_DATA = <%- JSON.stringify(typeof datosPredictivos !== 'undefined' ? datosPredictivos : null) %>;
+</script>
+
+<script>
 document.addEventListener('DOMContentLoaded', () => {
     const aiBtn = document.getElementById('ai-assistant-btn');
     const aiChat = document.getElementById('ai-assistant-chat');
@@ -391,13 +396,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // Historial de la conversación almacenado localmente en memoria
     let conversationHistory = [];
 
-    // Lista de atajos de preguntas rápidas (Quick Replies)
-    const quickReplies = [
-        { label: '📅 Mi Próxima Cuota', text: '¿Cuándo es mi próximo pago y cuánto debo?' },
-        { label: '💰 Saldo y Movimientos', text: '¿Cuál es el saldo de mi cuenta de ahorro y qué depósitos he hecho?' },
-        { label: '✍️ Contratos por Firmar', text: '¿Tengo algún contrato o pagaré pendiente de firma digital?' },
-        { label: '🏦 Canales de Pago', text: '¿Cuáles son los canales o números autorizados para hacer abonos?' }
-    ];
+    // Obtener los datos predictivos cargados por el servidor
+    const predictiveData = window.AI_PREDICTIVE_DATA || { tieneMora: false, cuotaCercana: null, contratoPendiente: null, cupoPreaprobado: 0, ahorroMeta: null };
+    
+    let saludoDinamico = '';
+    let quickRepliesDinamicos = [];
+
+    // Formateador dinámico de moneda local para pesos colombianos
+    const formatCOP = (val) => '$ ' + parseFloat(val).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    // Determinar la prioridad predictiva y estructurar el saludo inicial y las respuestas rápidas
+    if (predictiveData.tieneMora) {
+        saludoDinamico = `¡Hola, ${clienteNombre}! ⚠️ Noto que tienes un saldo vencido en tu cuenta. Es muy importante ponerse al día para evitar cargos por mora o afectaciones a tu historial. \n\n¿Quieres ver los canales autorizados para reportar un abono o prefieres comunicarte con soporte?`;
+        quickRepliesDinamicos = [
+            { label: '🏦 Ver Canales de Pago', text: '¿Cuáles son los canales autorizados para hacer abonos?' },
+            { label: '✍️ Reportar un Pago', text: 'Quiero reportar un pago que ya realicé.' },
+            { label: '📞 Hablar con un Asesor', text: 'Deseo hablar con soporte técnico para refinanciar mi deuda.' }
+        ];
+    } else if (predictiveData.contratoPendiente) {
+        saludoDinamico = `¡Hola, ${clienteNombre}! ✍️ Tienes una solicitud de crédito aprobada por **${formatCOP(predictiveData.contratoPendiente.monto)}**, pero aún está pendiente la firma digital de tu contrato.\n\n¿Quieres que te explique las cláusulas principales o prefieres ir a firmarlo de inmediato para proceder con el desembolso?`;
+        quickRepliesDinamicos = [
+            { label: '✍️ Firmar Contrato Ahora', text: '¿Cómo firmo digitalmente mi contrato pendiente?' },
+            { label: '📜 Ver Cláusulas Legales', text: 'Explícame las cláusulas y condiciones principales del préstamo.' },
+            { label: '📞 Soporte de Firma', text: 'Tengo problemas para firmar mi contrato, necesito ayuda.' }
+        ];
+    } else if (predictiveData.cuotaCercana) {
+        const d = predictiveData.cuotaCercana;
+        const diasMsg = d.diasRestantes === 0 ? 'vence hoy' : (d.diasRestantes === 1 ? 'vence mañana' : `vence en ${d.diasRestantes} días`);
+        saludoDinamico = `¡Hola, ${clienteNombre}! ⏰ Te recuerdo de manera amistosa que tu cuota #${d.numero} de **${formatCOP(d.monto)}** ${diasMsg}.\n\n¿Deseas conocer los números de Nequi/Bre-B para realizar el pago o prefieres reportar un abono?`;
+        quickRepliesDinamicos = [
+            { label: '🏦 Canales Nequi/Bre-B', text: '¿Cuáles son los números autorizados de Nequi y Bre-B?' },
+            { label: '✍️ Reportar Abono', text: 'Ya pagué mi cuota y quiero subir el comprobante.' },
+            { label: '📊 Simular Ampliación', text: '¿Puedo solicitar una refinanciación o ampliación de plazo?' }
+        ];
+    } else if (predictiveData.cupoPreaprobado > 0) {
+        saludoDinamico = `¡Hola, ${clienteNombre}! 🎉 ¡Excelentes noticias! Tienes un cupo pre-aprobado de **${formatCOP(predictiveData.cupoPreaprobado)}** listo para desembolso inmediato.\n\n¿Te gustaría simular cómo quedarían tus cuotas o solicitarlo ya?`;
+        quickRepliesDinamicos = [
+            { label: '🚀 Solicitar Cupo Pre-aprobado', text: 'Quiero solicitar mi cupo pre-aprobado disponible.' },
+            { label: '📈 Simular mis Cuotas', text: 'Simular préstamo del cupo pre-aprobado.' },
+            { label: '❓ ¿Cómo funciona el cupo?', text: '¿Qué condiciones tiene el cupo de crédito pre-aprobado?' }
+        ];
+    } else if (predictiveData.ahorroMeta) {
+        const m = predictiveData.ahorroMeta;
+        saludoDinamico = `¡Hola, ${clienteNombre}! 💰 Tu ahorro para la meta **"${m.metaNombre}"** va en el **${m.porcentaje}%** (${formatCOP(m.saldoActual)} de ${formatCOP(m.metaMonto)}).\n\n¡Vas por un excelente camino! ¿Quieres reportar un nuevo depósito para tu meta u obtener ayuda para retirar saldo?`;
+        quickRepliesDinamicos = [
+            { label: '💵 Depositar a mi Ahorro', text: 'Quiero realizar un depósito en mi cuenta de ahorros.' },
+            { label: '🎯 Cambiar mi Meta', text: '¿Cómo edito el monto objetivo o nombre de mi meta?' },
+            { label: '💸 Solicitar un Retiro', text: 'Deseo retirar saldo de mis ahorros.' }
+        ];
+    } else {
+        saludoDinamico = `¡Hola, ${clienteNombre}! 👋 Soy tu Asistente Virtual.\n\nEstoy listo para resolver tus dudas sobre el sistema, tus créditos activos, cuotas, fechas de pago y tus cuentas de ahorro.\n\n¿En qué puedo ayudarte hoy?`;
+        quickRepliesDinamicos = [
+            { label: '📅 Mi Próxima Cuota', text: '¿Cuándo es mi próximo pago y cuánto debo?' },
+            { label: '💰 Saldo y Movimientos', text: '¿Cuál es el saldo de mi cuenta de ahorro y qué depósitos he hecho?' },
+            { label: '🏦 Canales de Pago', text: '¿Cuáles son los canales o números autorizados para hacer abonos?' }
+        ];
+    }
 
     // Configurar marked para seguridad e inyección limpia
     if (typeof marked !== 'undefined') {
@@ -411,36 +465,108 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializar chat con bienvenida
     const mostrarBienvenida = () => {
-        const saludo = `¡Hola, ${clienteNombre}! 👋 Soy tu Asistente Virtual. 
-
-Estoy listo para resolver tus dudas sobre el sistema, tus créditos activos, cuotas, fechas de pago y tus cuentas de ahorro.
-
-¿En qué puedo ayudarte hoy?`;
-        
-        agregarMensaje('system', saludo);
+        agregarMensaje('system', saludoDinamico);
         renderizarPreguntasRapidas();
     };
 
     // Renderizar los botones rápidos
     const renderizarPreguntasRapidas = () => {
         aiQuickRepliesContainer.innerHTML = '';
-        quickReplies.forEach(reply => {
+        quickRepliesDinamicos.forEach(reply => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'ai-quick-btn shadow-xs';
             btn.innerText = reply.label;
             btn.addEventListener('click', () => {
-                enviarPreguntaAutomatica(reply.text);
+                // Interceptar localmente acciones directas en la interfaz del portal
+                const interceptado = ejecutarAccionLocal(reply.text.toLowerCase());
+                if (!interceptado) {
+                    enviarPreguntaAutomatica(reply.text);
+                }
             });
             aiQuickRepliesContainer.appendChild(btn);
         });
         aiQuickRepliesContainer.classList.remove('d-none');
     };
 
+    // Interceptar acciones locales del portal (apertura de modales o redirecciones)
+    const ejecutarAccionLocal = (texto) => {
+        const triggers = {
+            'reportar-pago': { modalId: 'modalReportarPago', hash: '#abrir-reportar-pago' },
+            'solicitar-cupo': { modalId: 'modalSolicitarCupo', hash: '#abrir-solicitar-cupo' },
+            'reportar-aporte': { modalId: 'modalReportarAporte', hash: '#abrir-reportar-aporte' },
+            'solicitar-retiro': { modalId: 'modalSolicitarRetiro', hash: '#abrir-solicitar-retiro' }
+        };
+
+        let actionFound = null;
+        if (texto.includes('reportar un pago') || texto.includes('subir el comprobante') || texto.includes('reportar un abono') || texto.includes('reportar abono')) {
+            actionFound = 'reportar-pago';
+        } else if (texto.includes('solicitar mi cupo') || texto.includes('solicitar cupo pre-aprobado') || texto.includes('solicitar cupo')) {
+            actionFound = 'solicitar-cupo';
+        } else if (texto.includes('depósito') || texto.includes('depositar a mi ahorro') || texto.includes('depositar')) {
+            actionFound = 'reportar-aporte';
+        } else if (texto.includes('retirar saldo') || texto.includes('solicitar un retiro') || texto.includes('retiro')) {
+            actionFound = 'solicitar-retiro';
+        } else if (texto.includes('firmar digitalmente mi contrato') || texto.includes('firmar contrato ahora') || texto.includes('firmar mi contrato')) {
+            if (predictiveData.contratoPendiente) {
+                window.location.href = `/portal-cliente/contrato/${predictiveData.contratoPendiente.id}`;
+                return true;
+            }
+        }
+
+        if (actionFound) {
+            const act = triggers[actionFound];
+            const modalEl = document.getElementById(act.modalId);
+            if (modalEl) {
+                // Cerrar el chat temporalmente para que el modal se vea bien
+                aiChat.classList.add('d-none');
+                
+                // Inicializar y abrir modal
+                try {
+                    const modalObj = new bootstrap.Modal(modalEl);
+                    modalObj.show();
+                } catch (e) {
+                    // Fallback si ya tiene un data-bs-toggle o se abre con jQuery
+                    const triggerBtn = document.querySelector(`[data-bs-target="#${act.modalId}"]`);
+                    if (triggerBtn) triggerBtn.click();
+                }
+                return true;
+            } else {
+                // Redirigir al dashboard con hash para abrir el modal desde allí
+                window.location.href = `/portal-cliente${act.hash}`;
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // Procesar hashes al cargar la página para abrir los modales correspondientes
+    const hash = window.location.hash;
+    const hashToModal = {
+        '#abrir-reportar-pago': 'modalReportarPago',
+        '#abrir-solicitar-cupo': 'modalSolicitarCupo',
+        '#abrir-reportar-aporte': 'modalReportarAporte',
+        '#abrir-solicitar-retiro': 'modalSolicitarRetiro'
+    };
+    if (hash && hashToModal[hash]) {
+        setTimeout(() => {
+            const modalEl = document.getElementById(hashToModal[hash]);
+            if (modalEl) {
+                try {
+                    const modalObj = new bootstrap.Modal(modalEl);
+                    modalObj.show();
+                    // Limpiar el hash para no abrir en F5 sucesivo
+                    history.replaceState("", document.title, window.location.pathname);
+                } catch(e) {
+                    console.error("Error al abrir modal por hash:", e);
+                }
+            }
+        }, 500);
+    }
+
     // Procesar envío automático desde botones rápidos
     const enviarPreguntaAutomatica = (textoPregunta) => {
         aiInput.value = textoPregunta;
-        // Disparar el evento de submit del formulario de forma natural
         aiForm.dispatchEvent(new Event('submit'));
     };
 
@@ -449,11 +575,9 @@ Estoy listo para resolver tus dudas sobre el sistema, tus créditos activos, cuo
         const isHidden = aiChat.classList.contains('d-none');
         if (isHidden) {
             aiChat.classList.remove('d-none');
-            // Auto-focus en el input en pantallas grandes
             if (window.innerWidth > 576) {
                 aiInput.focus();
             }
-            // Si el chat está vacío, iniciar la bienvenida
             if (aiMessages.children.length === 0) {
                 mostrarBienvenida();
             }
@@ -486,13 +610,9 @@ Estoy listo para resolver tus dudas sobre el sistema, tus créditos activos, cuo
             buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
-                // Borrar memoria del historial
                 conversationHistory = [];
-                // Vaciar los mensajes en la UI
                 aiMessages.innerHTML = '';
-                // Relanzar la bienvenida y atajos
                 mostrarBienvenida();
-                // Limpiar input por si estaba escribiendo
                 aiInput.value = '';
                 aiInput.disabled = false;
                 aiSend.disabled = false;

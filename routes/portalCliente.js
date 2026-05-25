@@ -13,6 +13,8 @@ router.get('/logout', portalClienteController.logout);
 
 // Rutas Protegidas
 router.use(authCliente);
+const cargarDatosPredictivosCliente = require('../middleware/cargarDatosPredictivosCliente');
+router.use(cargarDatosPredictivosCliente);
 
 router.get('/', portalClienteController.dashboard);
 router.get('/perfil', portalClienteController.perfil);
