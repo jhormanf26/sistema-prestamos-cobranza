@@ -29,6 +29,7 @@ router.post('/reportar-pago', upload.single('comprobante'), portalClienteControl
 router.post('/solicitar-cupo', portalClienteController.solicitarCupo);
 router.post('/reportar-aporte', upload.single('comprobante'), portalClienteController.reportarAporte);
 router.post('/solicitar-retiro', portalClienteController.solicitarRetiro);
+router.post('/ahorros/otp/solicitar', portalClienteController.solicitarOtpRetiro);
 router.get('/chat', portalClienteController.verChat);
 router.post('/chat/enviar', portalClienteController.enviarMensajeChat);
 router.post('/chat/enviar-audio', uploadAudio.single('audio'), portalClienteController.enviarAudioChat);
@@ -43,6 +44,7 @@ router.post('/ai-assistant/chat', portalClienteController.chatAsistenteIA);
 // Rutas Contrato Digital
 router.get('/contrato/:id', portalClienteController.verContrato);
 router.post('/firmar-contrato/:id', portalClienteController.firmarContrato);
+router.post('/contrato/otp/solicitar/:id', portalClienteController.solicitarOtpFirma);
 
 // Rutas de Gestión de Documentos del Cliente
 router.get('/documentos', clienteDocumentosController.mostrarDocumentos);

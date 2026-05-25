@@ -823,6 +823,20 @@ CREATE TABLE IF NOT EXISTS `clientes_documentos` (
   FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Volcando estructura para tabla sistema_prestamos.codigos_otp
+CREATE TABLE IF NOT EXISTS `codigos_otp` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `cliente_id` INT NOT NULL,
+  `codigo_hash` VARCHAR(255) NOT NULL,
+  `accion` VARCHAR(50) NOT NULL COMMENT 'firma_contrato o retiro_ahorro',
+  `referencia_id` INT DEFAULT NULL COMMENT 'ID del Préstamo o Cuenta Ahorro',
+  `intentos` INT DEFAULT 0 COMMENT 'Para control de fuerza bruta (máx 3)',
+  `expiracion` DATETIME NOT NULL,
+  `estado` ENUM('pendiente', 'usado', 'bloqueado') DEFAULT 'pendiente',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;

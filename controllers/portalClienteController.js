@@ -12,6 +12,7 @@ const ConfigModel = require('../models/ConfigModel');
 const finance = require('../utils/finance');
 const bcrypt = require('bcryptjs');
 const groqService = require('../services/groqService');
+const OtpService = require('../utils/otpService');
 
 const portalClienteController = {
     // Mostrar formulario de login
@@ -556,10 +557,17 @@ const portalClienteController = {
     solicitarRetiro: async (req, res) => {
         try {
             const clienteId = req.session.cliente.id;
-            const { cuenta_id, monto_solicitado, comentarios } = req.body;
+            const { cuenta_id, monto_solicitado, comentarios, otp } = req.body;
 
-            if (!cuenta_id || !monto_solicitado) {
-                req.flash('mensajeError', 'El monto es requerido.');
+            if (!cuenta_id || !monto_solicitado || !otp) {
+                req.flash('mensajeError', 'La cuenta, el monto y el código OTP son requeridos.');
+                return res.redirect('/portal-cliente');
+            }
+
+            // Validar OTP primero
+            const validacionOtp = await OtpService.verificar(clienteId, 'retiro_ahorro', parseInt(cuenta_id), otp);
+            if (!validacionOtp.success) {
+                req.flash('mensajeError', validacionOtp.message);
                 return res.redirect('/portal-cliente');
             }
 
@@ -601,12 +609,53 @@ const portalClienteController = {
                 url: '/ahorros/solicitudes'
             }).catch(e => console.error('Error enviando push de solicitud de retiro:', e));
 
-            req.flash('mensajeExito', 'Tu solicitud de retiro de ahorro ha sido enviada con éxito. Un asesor la revisará pronto.');
+            req.flash('mensajeExito', 'Tu solicitud de retiro de ahorro ha sido verificada y enviada con éxito. Un asesor la revisará pronto.');
             res.redirect('/portal-cliente');
         } catch (error) {
             console.error("Error en portalClienteController.solicitarRetiro:", error);
             req.flash('mensajeError', 'Error al procesar tu solicitud de retiro.');
             res.redirect('/portal-cliente');
+        }
+    },
+
+    // Solicitar OTP para retiro de ahorros
+    solicitarOtpRetiro: async (req, res) => {
+        try {
+            const clienteId = req.session.cliente.id;
+            const { cuenta_id, monto_solicitado } = req.body;
+
+            if (!cuenta_id || !monto_solicitado) {
+                return res.status(400).json({ success: false, message: 'La cuenta y el monto son requeridos.' });
+            }
+
+            // Limpiar formato de moneda estilo Colombia (quitar puntos)
+            const cleanMonto = parseFloat(monto_solicitado.toString().replace(/\./g, '').replace(/,/g, '.').trim());
+
+            if (isNaN(cleanMonto) || cleanMonto <= 0) {
+                return res.status(400).json({ success: false, message: 'Monto solicitado inválido.' });
+            }
+
+            const cuenta = await AhorroModel.obtenerPorId(cuenta_id);
+            if (!cuenta || cuenta.cliente_id !== clienteId) {
+                return res.status(403).json({ success: false, message: 'Cuenta de ahorros no encontrada o no pertenece al cliente.' });
+            }
+
+            const saldoDisponible = parseFloat(cuenta.saldo_actual || 0);
+            if (cleanMonto > saldoDisponible) {
+                return res.status(400).json({ success: false, message: `El monto solicitado excede tu saldo disponible ($ ${saldoDisponible.toLocaleString('es-CO')}).` });
+            }
+
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+            if (!cliente || !cliente.email) {
+                return res.status(400).json({ success: false, message: 'No tienes un correo electrónico configurado para verificación.' });
+            }
+
+            await OtpService.generarYEnviar(clienteId, cliente.email, 'retiro_ahorro', parseInt(cuenta_id));
+
+            return res.json({ success: true, message: `Código de verificación enviado al correo ${cliente.email}.` });
+        } catch (error) {
+            console.error('Error en solicitarOtpRetiro:', error);
+            return res.status(500).json({ success: false, message: 'Ocurrió un error al enviar el código de verificación.' });
         }
     },
 
@@ -644,7 +693,7 @@ const portalClienteController = {
     firmarContrato: async (req, res) => {
         try {
             const { id } = req.params;
-            const { firma } = req.body;
+            const { firma, otp } = req.body;
             const prestamo = await PrestamoModel.obtenerPorId(id);
 
             if (!prestamo || prestamo.cliente_id !== req.session.cliente.id) {
@@ -653,6 +702,16 @@ const portalClienteController = {
 
             if (prestamo.firma_digital) {
                 return res.status(400).json({ success: false, message: 'Ya firmado.' });
+            }
+
+            if (!otp) {
+                return res.status(400).json({ success: false, message: 'El código de seguridad OTP es requerido.' });
+            }
+
+            // Validar OTP
+            const validacionOtp = await OtpService.verificar(req.session.cliente.id, 'firma_contrato', parseInt(id), otp);
+            if (!validacionOtp.success) {
+                return res.status(400).json({ success: false, message: validacionOtp.message });
             }
 
             // Obtener IP de manera más robusta detrás de Nginx/Deploy
@@ -668,6 +727,35 @@ const portalClienteController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ success: false, message: 'Error interno.' });
+        }
+    },
+
+    // Solicitar OTP para la firma de contrato digital
+    solicitarOtpFirma: async (req, res) => {
+        try {
+            const { id } = req.params; // ID del préstamo
+            const clienteId = req.session.cliente.id;
+            
+            const prestamo = await PrestamoModel.obtenerPorId(id);
+            if (!prestamo || prestamo.cliente_id !== clienteId) {
+                return res.status(403).json({ success: false, message: 'Préstamo no encontrado o sin permisos.' });
+            }
+
+            if (prestamo.firma_digital) {
+                return res.status(400).json({ success: false, message: 'El contrato ya se encuentra firmado.' });
+            }
+
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+            if (!cliente || !cliente.email) {
+                return res.status(400).json({ success: false, message: 'El cliente no tiene un correo electrónico configurado para verificación.' });
+            }
+
+            await OtpService.generarYEnviar(clienteId, cliente.email, 'firma_contrato', parseInt(id));
+
+            return res.json({ success: true, message: `Código de verificación enviado al correo ${cliente.email}.` });
+        } catch (error) {
+            console.error('Error en solicitarOtpFirma:', error);
+            return res.status(500).json({ success: false, message: 'Ocurrió un error al enviar el código de verificación.' });
         }
     },
 

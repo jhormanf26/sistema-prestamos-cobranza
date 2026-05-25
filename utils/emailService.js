@@ -331,6 +331,28 @@ const emailService = {
             portal_url: portalUrl
         }, fallback);
         return res;
+    },
+
+    plantillaOtp: async (cliente, codigo, accion, minutos = 5) => {
+        const fallback = `
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #10b981;">
+                <div style="background-color: #0f172a; padding: 25px; text-align: center; color: white;">
+                    <h2 style="margin: 0; font-size: 20px;">Código de Verificación</h2>
+                </div>
+                <div style="padding: 30px; background-color: #ffffff; text-align: center;">
+                    <p style="font-size: 16px; color: #475569; margin-bottom: 25px;">Hola <strong>${cliente}</strong>, usa el siguiente código de seguridad de un solo uso para autorizar tu operación de <strong>${accion}</strong>:</p>
+                    <div style="background-color: #f1f5f9; border-radius: 8px; padding: 15px 30px; display: inline-block; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #10b981; font-family: monospace;">${codigo}</div>
+                    <p style="font-size: 13px; color: #94a3b8; margin-top: 25px;">Este código es de un solo uso y expirará en <strong>${minutos} minutos</strong>. Si no solicitaste este código, por favor ignora este mensaje.</p>
+                </div>
+            </div>
+        `;
+        const res = await renderizar('codigo_otp', {
+            cliente,
+            codigo,
+            accion,
+            minutos
+        }, fallback);
+        return res;
     }
 };
 
