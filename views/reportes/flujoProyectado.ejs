@@ -14,7 +14,7 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                         <div>
                             <h2 class="fw-bold text-dark my-0 fs-3">📈 Proyección de Flujo de Caja</h2>
-                            <p class="text-muted small mb-0">Simulación y proyección financiera basada en vencimientos de cuotas y promedio histórico de gastos.</p>
+                            <p class="text-muted small mb-0">Simulación y proyección financiera basada en vencimientos de cuotas de préstamos activos.</p>
                         </div>
                         
                         <!-- Selector de Días (Interactivo) -->
@@ -36,7 +36,7 @@
                     <!-- Tarjetas de Indicadores Clave (KPIs) -->
                     <div class="row g-3 mb-4">
                         <!-- Saldo Inicial -->
-                        <div class="col-sm-6 col-xl-3">
+                        <div class="col-md-4 col-sm-6 col-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
                                 <div class="card-body p-4 d-flex align-items-center gap-3">
                                     <div class="bg-primary-subtle text-primary rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
@@ -51,7 +51,7 @@
                         </div>
 
                         <!-- Ingresos Proyectados -->
-                        <div class="col-sm-6 col-xl-3">
+                        <div class="col-md-4 col-sm-6 col-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
                                 <div class="card-body p-4 d-flex align-items-center gap-3">
                                     <div class="bg-success-subtle text-success rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
@@ -66,24 +66,8 @@
                             </div>
                         </div>
 
-                        <!-- Egresos Proyectados -->
-                        <div class="col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                                <div class="card-body p-4 d-flex align-items-center gap-3">
-                                    <div class="bg-danger-subtle text-danger rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
-                                        <i class="bi bi-graph-down-arrow fs-3"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-muted small fw-bold text-uppercase d-block mb-1">Gastos Proyectados</span>
-                                        <h4 class="fw-bold text-danger mb-0">- <%= empresa.moneda %> <%= formatCurrency(proyeccion.totalEgresosProyectados, 2) %></h4>
-                                        <small class="text-muted" style="font-size: 0.75rem;">Media: <%= empresa.moneda %> <%= formatCurrency(proyeccion.gastoDiarioEstimado, 2) %>/día</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Saldo Proyectado Final -->
-                        <div class="col-sm-6 col-xl-3">
+                        <div class="col-md-4 col-sm-12 col-12">
                             <div class="card border-0 shadow-sm rounded-4 h-100 bg-gradient border-top border-4 border-info" style="background-color: #ffffff;">
                                 <div class="card-body p-4 d-flex align-items-center gap-3">
                                     <div class="bg-info-subtle text-info rounded-4 p-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
@@ -118,18 +102,18 @@
                             </div>
                         </div>
 
-                        <!-- Ingresos vs Egresos Diarios -->
+                        <!-- Ingresos Diarios Proyectados -->
                         <div class="col-lg-4">
                             <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
                                 <div class="card-header bg-white border-0 pt-4 pb-0">
-                                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i> Ingresos vs Gastos Diarios</h5>
+                                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i> Ingresos Diarios Proyectados</h5>
                                 </div>
                                 <div class="card-body p-4 d-flex flex-column justify-content-between">
                                     <div style="height: 250px;">
                                         <canvas id="chartIngresosEgresos"></canvas>
                                     </div>
                                     <div class="alert alert-light border small mb-0 py-2.5 mt-3">
-                                        <i class="bi bi-info-circle-fill text-info me-1"></i> Los picos de ingresos corresponden a fechas donde vencen cuotas de préstamos activos programados.
+                                        <i class="bi bi-info-circle-fill text-info me-1"></i> Los picos corresponden a fechas donde vencen cuotas de préstamos activos programados.
                                     </div>
                                 </div>
                             </div>
@@ -150,8 +134,6 @@
                                             <th class="ps-4">Día</th>
                                             <th>Fecha</th>
                                             <th class="text-success">Ingresos Esperados (Cuotas)</th>
-                                            <th class="text-danger">Gastos Estimados</th>
-                                            <th>Balance del Día</th>
                                             <th class="text-end pe-4">Saldo Acumulado Proyectado</th>
                                         </tr>
                                     </thead>
@@ -168,12 +150,6 @@
                                                 <td><span class="fw-bold text-muted"><%= item.fechaFormateada %></span></td>
                                                 <td class="text-success fw-bold">
                                                     <%= item.ingresos > 0 ? '+ ' + empresa.moneda + ' ' + formatCurrency(item.ingresos, 2) : '--' %>
-                                                </td>
-                                                <td class="text-danger">
-                                                    <%= item.egresos > 0 ? '- ' + empresa.moneda + ' ' + formatCurrency(item.egresos, 2) : '--' %>
-                                                </td>
-                                                <td class="fw-bold <%= item.saldoNeto > 0 ? 'text-success' : (item.saldoNeto < 0 ? 'text-danger' : 'text-dark') %>">
-                                                    <%= item.saldoNeto !== 0 ? (item.saldoNeto > 0 ? '+' : '') + empresa.moneda + ' ' + formatCurrency(item.saldoNeto, 2) : empresa.moneda + ' 0,00' %>
                                                 </td>
                                                 <td class="text-end pe-4 fw-bold text-dark">
                                                     <%= empresa.moneda %> <%= formatCurrency(item.saldoProyectado, 2) %>
@@ -204,7 +180,6 @@
             const labels = datosProyeccion.serie.map(item => item.fechaFormateada);
             const dataSaldo = datosProyeccion.serie.map(item => item.saldoProyectado);
             const dataIngresos = datosProyeccion.serie.map(item => item.ingresos);
-            const dataEgresos = datosProyeccion.serie.map(item => item.egresos);
 
             // --- GRÁFICO 1: EVOLUCIÓN SALDO PROYECTADO ---
             const ctxSaldo = document.getElementById('chartSaldoProyectado').getContext('2d');
@@ -255,7 +230,7 @@
                 }
             });
 
-            // --- GRÁFICO 2: INGRESOS VS EGRESOS DIARIOS ---
+            // --- GRÁFICO 2: INGRESOS DIARIOS ---
             const ctxIngEgr = document.getElementById('chartIngresosEgresos').getContext('2d');
             new Chart(ctxIngEgr, {
                 type: 'bar',
@@ -267,12 +242,6 @@
                             data: dataIngresos,
                             backgroundColor: '#10b981',
                             borderRadius: 4
-                        },
-                        {
-                            label: 'Gastos',
-                            data: dataEgresos,
-                            backgroundColor: '#ef4444',
-                            borderRadius: 4
                         }
                     ]
                 },
@@ -280,7 +249,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12 } }
+                        legend: { display: false }
                     },
                     scales: {
                         y: {

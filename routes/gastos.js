@@ -12,7 +12,10 @@ router.get('/', gastosController.listar);
 // 2. Guardar Gasto
 router.post('/guardar', gastosController.guardar);
 
-// 3. Eliminar Gasto
+// 3. Editar Gasto
+router.post('/editar', gastosController.actualizar);
+
+// 4. Eliminar Gasto
 router.get('/eliminar/:id', gastosController.eliminar);
 
 module.exports = router;

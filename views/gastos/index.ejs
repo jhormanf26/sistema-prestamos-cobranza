@@ -93,9 +93,30 @@
                                                                             </td>
 
                                                                             <td class="text-center">
+                                                                                <% 
+                                                                                    const dG = new Date(g.fecha_gasto);
+                                                                                    const yG = dG.getFullYear();
+                                                                                    const mG = String(dG.getMonth() + 1).padStart(2, '0');
+                                                                                    const dD = String(dG.getDate()).padStart(2, '0');
+                                                                                    const fechaYMD = `${yG}-${mG}-${dD}`;
+                                                                                %>
+                                                                                <button type="button" 
+                                                                                    class="btn btn-sm btn-outline-primary"
+                                                                                    data-bs-toggle="modal" 
+                                                                                    data-bs-target="#modalEditarGasto"
+                                                                                    data-id="<%= g.id %>"
+                                                                                    data-descripcion="<%= g.descripcion %>"
+                                                                                    data-fecha="<%= fechaYMD %>"
+                                                                                    data-monto="<%= g.monto %>"
+                                                                                    data-categoria="<%= g.categoria %>"
+                                                                                    data-observacion="<%= g.observacion || '' %>"
+                                                                                    title="Editar Gasto">
+                                                                                    <i class="bi bi-pencil"></i>
+                                                                                </button>
                                                                                 <a href="/gastos/eliminar/<%= g.id %>"
-                                                                                    class="btn btn-sm btn-outline-danger"
-                                                                                    onclick="return confirm('¿Eliminar este gasto?');">
+                                                                                    class="btn btn-sm btn-outline-danger ms-1"
+                                                                                    onclick="return confirm('¿Eliminar este gasto?');"
+                                                                                    title="Eliminar Gasto">
                                                                                     <i class="bi bi-trash"></i>
                                                                                 </a>
                                                                             </td>
@@ -189,11 +210,67 @@
             </div>
         </div>
 
+        <!-- MODAL EDITAR GASTO -->
+        <div class="modal fade" id="modalEditarGasto" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Editar Gasto</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <form action="/gastos/editar" method="POST">
+                        <input type="hidden" name="id" id="editarGastoId">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Descripción</label>
+                                <input type="text" name="descripcion" id="editarDescripcion" class="form-control" required
+                                    placeholder="Ej: Pago de luz, Artículos de oficina...">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 col-12 mb-3">
+                                    <label class="form-label">Fecha</label>
+                                    <input type="date" name="fecha_gasto" id="editarFecha" class="form-control" required>
+                                </div>
+                                <div class="col-md-4 col-6 mb-3">
+                                    <label class="form-label">Monto (<%= empresa.moneda %>)</label>
+                                    <input type="text" name="monto" id="editarMonto" class="form-control currency-input"
+                                        required placeholder="0">
+                                </div>
+                                <div class="col-md-4 col-6 mb-3">
+                                    <label class="form-label">Categoría</label>
+                                        <select name="categoria" id="editarCategoria" class="form-select">
+                                            <option value="Servicios">Servicios</option>
+                                            <option value="Alquiler">Alquiler</option>
+                                            <option value="Sueldos">Sueldos</option>
+                                            <option value="Mantenimiento">Mantenimiento</option>
+                                            <option value="Carro">Carro</option>
+                                            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                                            <option value="Otros">Otros</option>
+                                        </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Observación (Opcional)</label>
+                                <textarea name="observacion" id="editarObservacion" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <%- include('../partials/footer') %>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
+                    // Inicializar máscaras de miles globales
                     window.applyCurrencyMask('.currency-input');
 
+                    // Lógica de fecha por defecto para creación
                     const fechaInput = document.getElementById('fechaGasto');
                     if (fechaInput && !fechaInput.value) {
                         const hoy = new Date();
@@ -203,10 +280,46 @@
                         fechaInput.value = `${yyyy}-${mm}-${dd}`;
                     }
 
-                    const form = document.querySelector('form[action="/gastos/guardar"]');
-                    if (form) {
-                        form.addEventListener('submit', function () {
+                    // Limpiar máscara antes de enviar formulario de creación
+                    const formCrear = document.querySelector('form[action="/gastos/guardar"]');
+                    if (formCrear) {
+                        formCrear.addEventListener('submit', function () {
                             const input = document.getElementById('montoGasto');
+                            input.value = input.value.replace(/\D/g, '');
+                        });
+                    }
+
+                    // Lógica para rellenar el modal de edición
+                    const modalEditar = document.getElementById('modalEditarGasto');
+                    if (modalEditar) {
+                        modalEditar.addEventListener('show.bs.modal', function (event) {
+                            const button = event.relatedTarget;
+                            const id = button.getAttribute('data-id');
+                            const descripcion = button.getAttribute('data-descripcion');
+                            const fecha = button.getAttribute('data-fecha');
+                            const monto = button.getAttribute('data-monto');
+                            const categoria = button.getAttribute('data-categoria');
+                            const observacion = button.getAttribute('data-observacion');
+
+                            modalEditar.querySelector('#editarGastoId').value = id;
+                            modalEditar.querySelector('#editarDescripcion').value = descripcion;
+                            modalEditar.querySelector('#editarFecha').value = fecha;
+                            
+                            const inputMonto = modalEditar.querySelector('#editarMonto');
+                            inputMonto.value = monto;
+                            // Forzar actualización de la máscara en tiempo real
+                            inputMonto.dispatchEvent(new Event('input'));
+
+                            modalEditar.querySelector('#editarCategoria').value = categoria;
+                            modalEditar.querySelector('#editarObservacion').value = observacion;
+                        });
+                    }
+
+                    // Limpiar máscara antes de enviar formulario de edición
+                    const formEditar = document.querySelector('form[action="/gastos/editar"]');
+                    if (formEditar) {
+                        formEditar.addEventListener('submit', function () {
+                            const input = document.getElementById('editarMonto');
                             input.value = input.value.replace(/\D/g, '');
                         });
                     }
