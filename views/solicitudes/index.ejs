@@ -281,9 +281,36 @@
                 const cleanMonto = parseFloat(reviewMonto.value.replace(/\./g, "").replace(/,/g, "."));
                 
                 if (isNaN(cleanMonto) || cleanMonto <= 0) {
-                    alert("Por favor, ingresa un monto válido mayor a cero.");
+                    Swal.fire({
+                        title: 'Monto Inválido',
+                        text: 'Por favor, ingresa un monto válido mayor a cero.',
+                        icon: 'warning',
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            confirmButton: 'btn btn-warning rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
                     return;
                 }
+
+                // Confirmación elegante de aprobación (estilo neobanco premium consistente)
+                const formattedMonto = parseFloat(cleanMonto).toLocaleString("es-CO");
+                const confirmacion = await Swal.fire({
+                    title: '¿Confirmar desembolso?',
+                    html: `¿Estás seguro de que deseas aprobar esta solicitud y desembolsar un monto de <strong>$${formattedMonto} COP</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, aprobar y desembolsar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        confirmButton: 'btn btn-success rounded-pill px-4 fw-bold me-2',
+                        cancelButton: 'btn btn-outline-secondary rounded-pill px-4 fw-bold'
+                    },
+                    buttonsStyling: false
+                });
+
+                if (!confirmacion.isConfirmed) return;
 
                 btnAprobar.disabled = true;
                 btnRechazar.disabled = true;
@@ -309,15 +336,43 @@
                     const resData = await response.json();
                     
                     if (resData.success) {
-                        alert("¡Solicitud aprobada y crédito desembolsado correctamente!");
-                        modal.hide();
-                        removerFilaSolicitud(activeSolicitudId);
+                        Swal.fire({
+                            title: '¡Aprobado!',
+                            text: '¡Solicitud aprobada y crédito desembolsado correctamente!',
+                            icon: 'success',
+                            confirmButtonText: 'Excelente',
+                            customClass: {
+                                confirmButton: 'btn btn-success rounded-pill px-4 fw-bold'
+                            },
+                            buttonsStyling: false
+                        }).then(() => {
+                            modal.hide();
+                            removerFilaSolicitud(activeSolicitudId);
+                        });
                     } else {
-                        alert("Error: " + resData.error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: resData.error,
+                            icon: 'error',
+                            confirmButtonText: 'Entendido',
+                            customClass: {
+                                confirmButton: 'btn btn-danger rounded-pill px-4 fw-bold'
+                            },
+                            buttonsStyling: false
+                        });
                     }
                 } catch (err) {
                     console.error("Error al procesar aprobación de crédito:", err);
-                    alert("Ocurrió un error de red al procesar el desembolso.");
+                    Swal.fire({
+                        title: 'Error de Red',
+                        text: 'Ocurrió un error de red al procesar el desembolso.',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            confirmButton: 'btn btn-danger rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
                 } finally {
                     btnAprobar.disabled = false;
                     btnRechazar.disabled = false;
@@ -330,11 +385,34 @@
                 
                 const comentariosVal = reviewComentarios.value.trim();
                 if (comentariosVal.length === 0) {
-                    alert("Debes ingresar obligatoriamente un motivo de rechazo en los comentarios.");
+                    Swal.fire({
+                        title: 'Motivo requerido',
+                        text: 'Debes ingresar obligatoriamente un motivo de rechazo en los comentarios.',
+                        icon: 'warning',
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            confirmButton: 'btn btn-warning rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
                     return;
                 }
 
-                if (!confirm("¿Estás seguro de que deseas declinar esta solicitud de crédito? El cliente recibirá una alerta.")) {
+                const confirmacion = await Swal.fire({
+                    title: '¿Rechazar esta solicitud?',
+                    text: '¿Estás seguro de que deseas rechazar esta solicitud de crédito? El cliente será notificado con tu motivo.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, rechazar',
+                    cancelButtonText: 'Cancelar',
+                    customClass: {
+                        confirmButton: 'btn btn-danger rounded-pill px-4 fw-bold me-2',
+                        cancelButton: 'btn btn-outline-secondary rounded-pill px-4 fw-bold'
+                    },
+                    buttonsStyling: false
+                });
+
+                if (!confirmacion.isConfirmed) {
                     return;
                 }
 
@@ -356,15 +434,43 @@
                     const resData = await response.json();
                     
                     if (resData.success) {
-                        alert("Solicitud declinada correctamente.");
-                        modal.hide();
-                        removerFilaSolicitud(activeSolicitudId);
+                        Swal.fire({
+                            title: 'Declinada',
+                            text: 'Solicitud declinada correctamente.',
+                            icon: 'success',
+                            confirmButtonText: 'Entendido',
+                            customClass: {
+                                confirmButton: 'btn btn-success rounded-pill px-4 fw-bold'
+                            },
+                            buttonsStyling: false
+                        }).then(() => {
+                            modal.hide();
+                            removerFilaSolicitud(activeSolicitudId);
+                        });
                     } else {
-                        alert("Error: " + resData.error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: resData.error,
+                            icon: 'error',
+                            confirmButtonText: 'Entendido',
+                            customClass: {
+                                confirmButton: 'btn btn-danger rounded-pill px-4 fw-bold'
+                            },
+                            buttonsStyling: false
+                        });
                     }
                 } catch (err) {
                     console.error("Error al declinar solicitud:", err);
-                    alert("Ocurrió un error de red al procesar el rechazo.");
+                    Swal.fire({
+                        title: 'Error de Red',
+                        text: 'Ocurrió un error de red al procesar el rechazo.',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            confirmButton: 'btn btn-danger rounded-pill px-4 fw-bold'
+                        },
+                        buttonsStyling: false
+                    });
                 } finally {
                     btnAprobar.disabled = false;
                     btnRechazar.disabled = false;

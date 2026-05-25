@@ -167,7 +167,7 @@
                         </div>
                     <% } %>
 
-                    <!-- Banner de Fidelización - Cupo Pre-aprobado -->
+                    <!-- Banner de Fidelización - Cupo Pre-aprobado u Ordinario -->
                     <% if (cliente.monto_preaprobado && parseFloat(cliente.monto_preaprobado) > 0) { %>
                         <div class="card border-0 shadow-lg rounded-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #6366f1 0%, #10b981 100%);">
                             <div class="position-absolute top-0 end-0 opacity-10" style="font-size: 8rem; transform: translate(20%, -20%); pointer-events: none;">
@@ -189,6 +189,32 @@
                                     <div class="col-md-4 col-lg-3 text-md-end mt-3 mt-md-0">
                                         <button class="btn btn-light text-success fw-bold rounded-pill px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSolicitarCupo" style="transition: all 0.3s ease;">
                                             <i class="bi bi-cash-coin me-1"></i> Retirar Cupo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="card border-0 shadow-lg rounded-4 mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                            <div class="position-absolute top-0 end-0 opacity-10" style="font-size: 8rem; transform: translate(20%, -20%); pointer-events: none;">
+                                <i class="bi bi-wallet2"></i>
+                            </div>
+                            <div class="card-body p-4 position-relative">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8 col-lg-9">
+                                        <span class="badge bg-white bg-opacity-25 text-white mb-2 rounded-pill px-3 py-1 fw-bold text-uppercase" style="font-size: 0.75rem;">
+                                            <i class="bi bi-rocket-takeoff me-1"></i> Créditos del Portal
+                                        </span>
+                                        <h4 class="text-white fw-bold mb-1"><i class="bi bi-cash-coin me-2"></i> ¿Necesitas financiamiento rápido?</h4>
+                                        <p class="mb-0 text-white-50 small">
+                                            Simula y envía tu solicitud de crédito ordinario de hasta 
+                                            <strong class="text-white">$ 3.000.000</strong> desde la plataforma. 
+                                            Nuestro departamento de riesgos evaluará tu caso de inmediato.
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 col-lg-3 text-md-end mt-3 mt-md-0">
+                                        <button class="btn btn-light text-primary fw-bold rounded-pill px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSolicitarCupo" style="transition: all 0.3s ease;">
+                                            <i class="bi bi-sliders me-1"></i> Solicitar Crédito
                                         </button>
                                     </div>
                                 </div>
@@ -694,6 +720,73 @@
                     </div>
                     <% } %>
 
+                    <!-- Mis Solicitudes de Crédito -->
+                    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-rocket-takeoff-fill text-primary me-2"></i> Mis Solicitudes de Crédito</h5>
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">ID</th>
+                                            <th>Monto Solicitado</th>
+                                            <th>Plazo</th>
+                                            <th>Fecha</th>
+                                            <th class="text-end pe-4">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if(locals.solicitudesCredito && solicitudesCredito.length > 0) { %>
+                                            <% solicitudesCredito.forEach(sc => { %>
+                                                <tr>
+                                                    <td class="ps-4 fw-bold">#<%= sc.id %></td>
+                                                    <td>
+                                                        <h6 class="fw-bold text-primary mb-0 font-monospace">
+                                                            $<%= parseFloat(sc.monto_solicitado).toLocaleString('es-CO') %>
+                                                        </h6>
+                                                    </td>
+                                                    <td>
+                                                        <span class="small text-dark fw-bold">
+                                                            <%= sc.cuotas %> Cuotas (<%= sc.frecuencia %>)
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted d-block">
+                                                            <%= new Date(sc.fecha_solicitud).toLocaleDateString() %>
+                                                        </small>
+                                                    </td>
+                                                    <td class="text-end pe-4">
+                                                        <% if(sc.estado === 'pendiente') { %>
+                                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                            </span>
+                                                        <% } else if(sc.estado === 'aprobado') { %>
+                                                            <button class="btn btn-sm btn-link text-success p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= sc.comentarios || 'Solicitud aprobada y desembolsada.' %>" style="text-decoration: none;">
+                                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                                    <i class="bi bi-check-circle-fill me-1"></i> Aprobado (Ver detalle)
+                                                                </span>
+                                                            </button>
+                                                        <% } else if(sc.estado === 'rechazado') { %>
+                                                            <button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= sc.comentarios || 'No se especificó un motivo de rechazo.' %>" style="text-decoration: none;">
+                                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                                    <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                                </span>
+                                                            </button>
+                                                        <% } %>
+                                                    </td>
+                                                </tr>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4 text-muted">Aún no has solicitado ningún préstamo.</td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Préstamos Históricos -->
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-secondary me-2"></i> Historial (Pagados)</h5>
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
@@ -854,8 +947,7 @@
                         </div>
 
                     </div>
-                    <div class="modal-footer bg-light border-0 py-3">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
                             <i class="bi bi-send-fill me-1"></i> Enviar Reporte
                         </button>
@@ -865,14 +957,21 @@
         </div>
     </div>
 
-    <!-- 2. MODAL: SOLICITAR PRESTAMO CUPO PRE-APROBADO -->
-    <% if (cliente.monto_preaprobado && parseFloat(cliente.monto_preaprobado) > 0) { %>
+    <!-- 2. MODAL: SOLICITAR PRESTAMO -->
+    <% 
+        const tieneCupo = cliente.monto_preaprobado && parseFloat(cliente.monto_preaprobado) > 0;
+        const limiteMaximo = tieneCupo ? parseFloat(cliente.monto_preaprobado) : 3000000;
+        const tituloModal = tieneCupo ? 'Solicitar Desembolso Rápido' : 'Solicitar Crédito Ordinario';
+        const subtituloMonto = tieneCupo 
+            ? `Límite disponible: $${parseFloat(cliente.monto_preaprobado).toLocaleString('es-CO')}` 
+            : 'Límite máximo general: $3.000.000';
+    %>
     <div class="modal fade" id="modalSolicitarCupo" tabindex="-1" aria-labelledby="modalSolicitarCupoLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-header bg-primary text-white py-3">
                     <h5 class="modal-title fw-bold" id="modalSolicitarCupoLabel">
-                        <i class="bi bi-rocket-takeoff me-2"></i> Solicitar Desembolso Rápido
+                        <i class="bi bi-rocket-takeoff me-2"></i> <%= tituloModal %>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -887,12 +986,12 @@
                                 <div class="mb-4">
                                     <label class="form-label d-flex justify-content-between">
                                         <span class="text-muted small">¿Cuánto necesitas?</span>
-                                        <span class="text-primary fw-bold small">Límite disponible: $<%= parseFloat(cliente.monto_preaprobado).toLocaleString('es-CO') %></span>
+                                        <span class="text-primary fw-bold small"><%= subtituloMonto %></span>
                                     </label>
                                     <h2 class="text-center fw-extrabold text-success mb-3 font-monospace py-2 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25" id="sliderAmountDisplay" style="font-size: 2.2rem; letter-spacing: -1px;">
                                         $ 50.000
                                     </h2>
-                                    <input type="range" class="form-range custom-slider" id="cupoSlider" min="50000" max="<%= cliente.monto_preaprobado %>" step="10000" value="50000">
+                                    <input type="range" class="form-range custom-slider" id="cupoSlider" min="50000" max="<%= limiteMaximo %>" step="10000" value="50000">
                                     <input type="hidden" name="monto_solicitado" id="formCupoMonto" value="50000">
                                 </div>
 
@@ -971,8 +1070,6 @@
                 </form>
             </div>
         </div>
-    </div>
-    <% } %>
 
     <!-- MODAL: REPORTAR APORTE AHORRO -->
     <div class="modal fade" id="modalReportarAporte" tabindex="-1" aria-labelledby="modalReportarAporteLabel" aria-hidden="true">
@@ -1423,7 +1520,7 @@
                 const cuotas = parseInt(formCupoCuotas.value) || 1;
                 const frecuencia = formCupoFrecuencia.value;
 
-                // Tasa mensual base del 2.0%
+                // Tasa mensual base del interés global configurado en el sistema
                 const tasaMensual = 2.0;
 
                 let factor = 1;
