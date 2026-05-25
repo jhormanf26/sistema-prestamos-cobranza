@@ -12,6 +12,30 @@ const ClienteModel = require('../models/ClienteModel');
 class OtpService {
     
     /**
+     * Obtiene un código OTP pendiente que aún no ha expirado y tiene intentos disponibles.
+     * 
+     * @param {number} clienteId - ID del cliente.
+     * @param {string} accion - Acción crítica a verificar.
+     * @param {number} referenciaId - ID de referencia asociado.
+     * @returns {Promise<object|null>} Retorna el objeto del OTP si está activo y vigente, o null.
+     */
+    static async obtenerPendienteVigente(clienteId, accion, referenciaId) {
+        const [rows] = await db.query(
+            "SELECT * FROM codigos_otp WHERE cliente_id = ? AND accion = ? AND referencia_id = ? AND estado = 'pendiente' ORDER BY id DESC LIMIT 1",
+            [clienteId, accion, referenciaId]
+        );
+
+        if (rows.length > 0) {
+            const otp = rows[0];
+            // Validar que no haya expirado y que no esté bloqueado por exceso de intentos
+            if (new Date() < new Date(otp.expiracion) && otp.intentos < 3) {
+                return otp;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Genera un nuevo código OTP de 6 dígitos, invalida los pendientes anteriores,
      * almacena el hash del nuevo código de seguridad y lo envía por correo electrónico al cliente.
      * 

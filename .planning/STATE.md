@@ -72,6 +72,11 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
     - Comprimir y convertir las imágenes principales del hero y de los logotipos financieros de formato PNG a JPG con calidad 80% y fondo unificado (`#f8fafc`), logrando reducir el peso de descarga global en más de **725 KB** (reducción de un 84% de peso).
     - Modificar la carga de fuentes de Google, Bootstrap Icons y el CSS de AOS en `landing/index.html` para cargarse de manera asíncrona no bloqueante, eliminando el bloqueo del hilo de renderizado inicial (FCP y LCP).
     - Instalar y configurar el middleware global de compresión `compression` (Gzip/Deflate) en `app.js` para optimizar la velocidad de transferencia de todos los assets de texto del servidor Express.
+66. **[HECHO]** Optimizar el flujo y la UX del Sistema de Verificación de Seguridad por OTP:
+    - Implementar validación en `utils/otpService.js` mediante el método `obtenerPendienteVigente` para verificar si ya existe un código OTP pendiente y activo en base de datos, evitando reenviar y saturar la bandeja de correo del cliente si recarga o cierra el modal.
+    - Modificar los controladores de solicitud de OTP en `controllers/portalClienteController.js` para reutilizar códigos vigentes, obligando a generar uno nuevo únicamente si expira o si el cliente hace clic en el botón de reenvío (enviando el parámetro `force: true`). Se incorporó un fallback defensivo `req.body || {}` para evitar errores `TypeError` en peticiones POST iniciales con cuerpo vacío.
+    - Rediseñar los mensajes y textos informativos del modal SweetAlert2 de ingreso de código en el Portal de Clientes (`dashboard.ejs` y `contrato.ejs`), especificando que el código es válido por 5 minutos y aclarando que el temporizador indica el tiempo de espera para poder solicitar otro correo en caso de que no haya llegado.
+    - Ampliar la suite de pruebas unitarias TDD (`tests/otpSeguridad.test.js`) con un caso 4 de prueba completo para validar la detección, expiración y descarte de OTPs activos y vigentes, completada al 100%.
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 

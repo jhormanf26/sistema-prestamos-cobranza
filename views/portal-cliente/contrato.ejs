@@ -195,7 +195,8 @@
                     title: 'Verificación OTP',
                     html: `
                         <div class="text-center p-2">
-                            <p class="text-muted small">Ingresa el código de 6 dígitos que hemos enviado a tu correo registrado.</p>
+                            <p class="text-dark fw-bold mb-2">Te hemos enviado un código de verificación por correo electrónico.</p>
+                            <p class="text-muted small mb-3">El código es válido por <strong>5 minutos</strong>. Revisa tu bandeja de entrada o correo no deseado (spam).</p>
                             <div class="d-flex justify-content-center gap-2 my-4" id="otp-input-container">
                                 <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
                                 <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
@@ -205,7 +206,7 @@
                                 <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
                             </div>
                             <div class="mt-3" style="min-height: 30px;">
-                                <span class="text-muted small" id="otp-timer-text">Reenviar código en <strong id="otp-timer-count">30</strong>s</span>
+                                <span class="text-muted small" id="otp-timer-text">Si no te llega el correo, podrás solicitar otro en <strong id="otp-timer-count">30</strong>s.</span>
                                 <button type="button" class="btn btn-link btn-sm d-none fw-bold text-decoration-none text-primary" id="btn-reenviar-otp" style="font-size: 0.85rem;">Reenviar Código</button>
                             </div>
                         </div>
@@ -311,7 +312,11 @@
 
                             // Llamada Fetch de reenvío
                             fetch('/portal-cliente/contrato/otp/solicitar/' + prestamoId, {
-                                method: 'POST'
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ force: true })
                             })
                             .then(response => response.json())
                             .then(data => {

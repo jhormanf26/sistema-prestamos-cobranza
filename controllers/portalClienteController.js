@@ -642,7 +642,7 @@ const portalClienteController = {
     solicitarOtpRetiro: async (req, res) => {
         try {
             const clienteId = req.session.cliente.id;
-            const { cuenta_id, monto_solicitado } = req.body;
+            const { cuenta_id, monto_solicitado, force } = req.body || {};
 
             if (!cuenta_id || !monto_solicitado) {
                 return res.status(400).json({ success: false, message: 'La cuenta y el monto son requeridos.' });
@@ -668,6 +668,14 @@ const portalClienteController = {
             const cliente = await ClienteModel.obtenerPorId(clienteId);
             if (!cliente || !cliente.email) {
                 return res.status(400).json({ success: false, message: 'No tienes un correo electrónico configurado para verificación.' });
+            }
+
+            // Validar si existe un OTP pendiente y vigente para evitar múltiples envíos de correo
+            if (force !== true) {
+                const otpVigente = await OtpService.obtenerPendienteVigente(clienteId, 'retiro_ahorro', parseInt(cuenta_id));
+                if (otpVigente) {
+                    return res.json({ success: true, message: 'Código de verificación previamente enviado al correo y aún vigente.' });
+                }
             }
 
             await OtpService.generarYEnviar(clienteId, cliente.email, 'retiro_ahorro', parseInt(cuenta_id));
@@ -754,6 +762,7 @@ const portalClienteController = {
     solicitarOtpFirma: async (req, res) => {
         try {
             const { id } = req.params; // ID del préstamo
+            const { force } = req.body || {};
             const clienteId = req.session.cliente.id;
             
             const prestamo = await PrestamoModel.obtenerPorId(id);
@@ -768,6 +777,14 @@ const portalClienteController = {
             const cliente = await ClienteModel.obtenerPorId(clienteId);
             if (!cliente || !cliente.email) {
                 return res.status(400).json({ success: false, message: 'El cliente no tiene un correo electrónico configurado para verificación.' });
+            }
+
+            // Validar si existe un OTP pendiente y vigente para evitar múltiples envíos de correo
+            if (force !== true) {
+                const otpVigente = await OtpService.obtenerPendienteVigente(clienteId, 'firma_contrato', parseInt(id));
+                if (otpVigente) {
+                    return res.json({ success: true, message: 'Código de verificación previamente enviado al correo y aún vigente.' });
+                }
             }
 
             await OtpService.generarYEnviar(clienteId, cliente.email, 'firma_contrato', parseInt(id));
