@@ -313,8 +313,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1000);
     };
 
+    // Función auxiliar para cargar jsPDF y AutoTable dinámicamente bajo demanda
+    const loadJsPdf = () => {
+        return new Promise((resolve, reject) => {
+            if (window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API && window.jspdf.jsPDF.API.autoTable) {
+                resolve();
+                return;
+            }
+            if (window.jspdf) {
+                cargarAutoTable(resolve, reject);
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script.onload = () => {
+                cargarAutoTable(resolve, reject);
+            };
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+    };
+
+    const cargarAutoTable = (resolve, reject) => {
+        const scriptAutoTable = document.createElement('script');
+        scriptAutoTable.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js';
+        scriptAutoTable.onload = () => {
+            resolve();
+        };
+        scriptAutoTable.onerror = reject;
+        document.body.appendChild(scriptAutoTable);
+    };
+
     // PDF Generation
-    btnPdf.onclick = () => {
+    btnPdf.onclick = async () => {
         trackEvent('click_ver_pdf_plan_pagos');
 
         // Confeti suave para el PDF
@@ -330,6 +362,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             spread: 55,
             origin: { x: 1 }
         });
+
+        // Deshabilitar botón temporalmente y mostrar estado de carga
+        btnPdf.disabled = true;
+        const originalHtml = btnPdf.innerHTML;
+        btnPdf.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i>';
+
+        try {
+            await loadJsPdf();
+        } catch (err) {
+            console.error("Error al cargar jsPDF:", err);
+            // Notificación flotante elegante no intrusiva
+            const notification = document.createElement('div');
+            notification.style.cssText = "position: fixed; bottom: 20px; right: 20px; background: #dc3545; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-family: sans-serif;";
+            notification.textContent = "Error de red al generar el PDF. Reintenta.";
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+            
+            btnPdf.disabled = false;
+            btnPdf.innerHTML = originalHtml;
+            return;
+        }
+
+        btnPdf.disabled = false;
+        btnPdf.innerHTML = originalHtml;
         
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();

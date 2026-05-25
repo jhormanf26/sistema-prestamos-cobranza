@@ -27,9 +27,49 @@
       "@context": "https://schema.org",
       "@type": "FinancialService",
       "name": "Préstamos Pro",
-      "description": "Servicios de crédito rápido y préstamos personales con desembolso inmediato.",
+      "description": "Servicios de crédito rápido y préstamos personales con desembolso inmediato en Colombia.",
       "url": "https://prestamos.desarollo.site/promocion/",
-      "telephone": "+573158572338"
+      "telephone": "+573158572338",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Bogotá",
+        "addressCountry": "CO"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "Colombia"
+      }
+    }
+    </script>
+
+    <!-- Datos Estructurados de Preguntas Frecuentes (FAQPage Schema) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "¿Cuánto tiempo tardan en desembolsar?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Una vez aprobada tu solicitud, el desembolso se realiza en un plazo máximo de 24 horas hábiles a tu cuenta bancaria."
+        }
+      }, {
+        "@type": "Question",
+        "name": "¿Qué requisitos mínimos piden?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Solo necesitas ser mayor de edad, tener cédula colombiana vigente y un número de celular activo con WhatsApp."
+        }
+      }, {
+        "@type": "Question",
+        "name": "¿Puedo pagar mi crédito antes de tiempo?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "¡Claro que sí! Puedes realizar abonos a capital o liquidar tu deuda en cualquier momento sin penalizaciones adicionales."
+        }
+      }]
     }
     </script>
 
@@ -77,9 +117,8 @@
             <div class="hero-grid">
                 <div class="hero-content" data-aos="fade-right">
                     <span class="badge">Rápido • Seguro • Confiable</span>
-                    <h1>Transforma tus Sueños en <span>Realidad</span></h1>
-                    <p>Ofrecemos préstamos a medida con las tasas más competitivas del mercado. Sin letras pequeñas y
-                        con aprobación en tiempo récord.</p>
+                    <h1>Préstamos Rápidos en Línea con <span>Desembolso Inmediato</span></h1>
+                    <p>Simula tu crédito rápido en Colombia hoy mismo de forma 100% segura. Sin papeleos complejos, sin codeudor y con desembolso directo a tu cuenta en menos de 24 horas.</p>
                     <div class="hero-btns">
                         <a href="#simulador" class="btn-primary">Calcular Mi Préstamo</a>
                         <a href="#beneficios" class="btn-secondary">Saber Más</a>
@@ -100,7 +139,7 @@
                     </div>
                 </div>
                 <div class="image-wrapper" data-aos="zoom-in">
-                    <img src="hero_finanzas_tech.png" alt="Finanzas Pro" class="main-hero-img">
+                    <img src="hero_finanzas_tech.png" alt="Finanzas Pro" class="main-hero-img" fetchpriority="high" decoding="async">
                     <div class="glass-card g-1" data-aos="fade-right" data-aos-delay="500">
                         <i class="bi bi-check-circle-fill"></i>
                         <div>
@@ -155,35 +194,35 @@
                 <!-- Nequi -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="nequi.png" alt="Nequi">
+                        <img src="nequi.png" alt="Nequi" loading="lazy">
                     </div>
                     <span class="pill-text">Nequi</span>
                 </div>
                 <!-- Daviplata -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="daviplata.png" alt="DaviPlata">
+                        <img src="daviplata.png" alt="DaviPlata" loading="lazy">
                     </div>
                     <span class="pill-text">DaviPlata</span>
                 </div>
                 <!-- Bancolombia -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="bancolombia.png" alt="Bancolombia">
+                        <img src="bancolombia.png" alt="Bancolombia" loading="lazy">
                     </div>
                     <span class="pill-text">Bancolombia</span>
                 </div>
                 <!-- Banco de Bogotá -->
                 <div class="logo-pill">
                     <div class="pill-icon">
-                        <img src="bogota.png" alt="Banco de Bogotá">
+                        <img src="bogota.png" alt="Banco de Bogotá" loading="lazy">
                     </div>
                     <span class="pill-text">Banco de Bogotá</span>
                 </div>
                 <!-- Bre-B -->
                 <div class="logo-pill">
                     <div class="pill-icon bre-b-special">
-                        <img src="breve.png" alt="Bre-B">
+                        <img src="breve.png" alt="Bre-B" loading="lazy">
                     </div>
                     <span class="pill-text">Bre-B</span>
                 </div>
@@ -486,11 +525,9 @@
         </div>
     </footer>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-    <script src="script.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js" defer></script>
+    <script src="script.js" defer></script>
     <!-- Modal Seguridad / Rate Limit -->
     <div id="securityModal" class="modal-overlay" style="z-index: 9999; display: none; background: rgba(15, 23, 42, 0.9);">
         <div class="modal-content text-center" style="max-width: 500px; padding: 50px 30px; border-top: 5px solid #ffb703;">

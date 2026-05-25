@@ -100,10 +100,18 @@ app.use(async (req, res, next) => {
 // Archivos Estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Servir robots.txt y sitemap.xml en la raíz para indexación nativa en buscadores (Google Search Console)
+app.get('/robots.txt', (req, res) => {
+    res.sendFile(path.join(__dirname, 'landing', 'robots.txt'));
+});
+app.get('/sitemap.xml', (req, res) => {
+    res.sendFile(path.join(__dirname, 'landing', 'sitemap.xml'));
+});
+
 // 6. Analytics API & Log (Se aplica limiter solo a tracking y landing público)
 app.use('/promocion/track', analyticsLimiter); 
 app.use('/promocion', require('./routes/analytics')); // /detalle está aquí y NO tendrá el limiter
-app.use('/promocion', analyticsLimiter, express.static(path.join(__dirname, 'landing')));
+app.use('/promocion', express.static(path.join(__dirname, 'landing')));
 
 
 // Inyección del Validador de Licencia Offline
