@@ -82,6 +82,55 @@ class GastoModel {
             throw error;
         }
     }
+
+    // 7. Obtener Gasto por ID
+    /**
+     * Obtiene un gasto operativo específico por su ID.
+     * @async
+     * @method obtenerPorId
+     * @param {number|string} id - ID del gasto a buscar.
+     * @returns {Promise<Object|null>} El objeto del gasto si se encuentra, o null en caso contrario.
+     */
+    static async obtenerPorId(id) {
+        try {
+            const query = 'SELECT * FROM gastos WHERE id = ?';
+            const [rows] = await db.query(query, [id]);
+            return rows.length > 0 ? rows[0] : null;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // 8. Actualizar Gasto
+    /**
+     * Actualiza un gasto operativo en la base de datos.
+     * @async
+     * @method actualizar
+     * @param {number|string} id - ID del gasto a actualizar.
+     * @param {Object} datos - Nuevos datos del gasto.
+     * @param {string} datos.descripcion - Nueva descripción.
+     * @param {number} datos.monto - Nuevo monto.
+     * @param {string} datos.categoria - Nueva categoría.
+     * @param {string} datos.fecha_gasto - Nueva fecha.
+     * @param {string} datos.observacion - Nueva observación.
+     * @returns {Promise<Object>} El resultado de la consulta SQL.
+     */
+    static async actualizar(id, datos) {
+        try {
+            const { descripcion, monto, categoria, fecha_gasto, observacion } = datos;
+            const fechaValue = fecha_gasto ? `${fecha_gasto} 12:00:00` : new Date();
+            const query = `
+                UPDATE gastos 
+                SET descripcion = ?, monto = ?, categoria = ?, fecha_gasto = ?, observacion = ? 
+                WHERE id = ?
+            `;
+            const [result] = await db.query(query, [descripcion, monto, categoria, fechaValue, observacion, id]);
+            return result;
+        } catch (error) {
+            console.error("Error SQL al actualizar gasto:", error);
+            throw error;
+        }
+    }
 }
 
 module.exports = GastoModel;

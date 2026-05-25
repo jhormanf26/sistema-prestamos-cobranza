@@ -85,15 +85,16 @@ class DashboardModel {
             const [pagos] = await db.query("SELECT SUM(monto_pagado) as total FROM pagos");
             const [totalPrestadoHistorico] = await db.query("SELECT SUM(monto_prestado) as total FROM prestamos");
             const [mora] = await db.query(`
-                SELECT COUNT(*) as total, SUM(monto_total) as montoRiesgo FROM (
-                    SELECT p.monto_total, 
-                    CASE p.frecuencia
-                        WHEN 'Diario' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 DAY)
-                        WHEN 'Semanal' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 WEEK)
-                        WHEN 'Quincenal' THEN DATE_ADD(p.fecha_inicio, INTERVAL (FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1) * 15 DAY)
-                        WHEN 'Mensual' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
-                        ELSE DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
-                    END as proxima_fecha
+                SELECT COUNT(*) as total, SUM(saldo_pendiente) as montoRiesgo FROM (
+                    SELECT 
+                        (p.monto_total - IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0)) as saldo_pendiente,
+                        CASE p.frecuencia
+                            WHEN 'Diario' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 DAY)
+                            WHEN 'Semanal' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 WEEK)
+                            WHEN 'Quincenal' THEN DATE_ADD(p.fecha_inicio, INTERVAL (FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1) * 15 DAY)
+                            WHEN 'Mensual' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
+                            ELSE DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
+                        END as proxima_fecha
                     FROM prestamos p WHERE p.estado = 'pendiente'
                 ) as calc
                 WHERE proxima_fecha < CURDATE()

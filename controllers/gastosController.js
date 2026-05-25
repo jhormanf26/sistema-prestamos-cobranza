@@ -80,6 +80,45 @@ const gastosController = {
         }
     },
 
+    actualizar: async (req, res) => {
+        try {
+            const { id, descripcion, monto, categoria, observacion, fecha_gasto } = req.body;
+            const registrado_por = (req.session.usuario && req.session.usuario.nombre) ? req.session.usuario.nombre : 'Administrador';
+
+            if (!id || !descripcion || !monto || !fecha_gasto) {
+                req.flash('mensajeError', 'ID, Descripción, Monto y Fecha son obligatorios');
+                return res.redirect('/gastos');
+            }
+
+            // Sanitizar monto eliminando caracteres no numéricos por seguridad
+            const montoSanitizado = parseFloat(String(monto).replace(/\D/g, ''));
+
+            // 1. Actualizar el Gasto
+            await GastoModel.actualizar(id, {
+                descripcion,
+                monto: montoSanitizado,
+                categoria,
+                observacion,
+                fecha_gasto
+            });
+
+            // 2. REGISTRAR EN AUDITORÍA
+            await BitacoraModel.registrar(
+                registrado_por, 
+                'EDITAR_GASTO', 
+                `Se editó el gasto con ID: ${id}. Nueva descripción: ${descripcion}, monto: ${montoSanitizado} (${categoria})`
+            );
+
+            req.flash('mensajeExito', 'Gasto actualizado correctamente');
+            res.redirect('/gastos');
+
+        } catch (error) {
+            console.error(error);
+            req.flash('mensajeError', 'Error al actualizar el gasto');
+            res.redirect('/gastos');
+        }
+    },
+
     eliminar: async (req, res) => {
         const { id } = req.params;
         try {

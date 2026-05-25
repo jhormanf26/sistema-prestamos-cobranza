@@ -42,18 +42,12 @@ class FlujoCajaProyeccionModel {
 
     /**
      * Calcula el promedio de gastos diarios reales registrados en los últimos 30 días.
+     * Retorna 0 según las especificaciones del usuario de omitir gastos.
      * 
-     * @returns {Promise<number>} Gasto promedio diario.
+     * @returns {Promise<number>} Gasto promedio diario (siempre 0).
      */
     static async obtenerPromedioGastosDiarios() {
-        const query = `
-            SELECT COALESCE(SUM(monto), 0) as total_gastos 
-            FROM gastos 
-            WHERE fecha_gasto >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-        `;
-        const [rows] = await db.query(query);
-        const total = parseFloat(rows[0].total_gastos || 0);
-        return total / 30; // Proyección basada en promedio de 30 días
+        return 0;
     }
 
     /**
