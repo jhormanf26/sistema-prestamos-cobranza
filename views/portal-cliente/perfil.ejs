@@ -70,6 +70,10 @@
                                         <label class="form-label text-muted small fw-bold">Dirección</label>
                                         <input type="text" class="form-control bg-light" value="<%= cliente.direccion || 'No registrada' %>" readonly>
                                     </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small fw-bold">Correo Electrónico (para notificaciones y OTP)</label>
+                                        <input type="text" class="form-control bg-light" value="<%= cliente.email || 'No registrado' %>" readonly>
+                                    </div>
                                     
                                     <div class="alert alert-info mt-4 mb-0 py-2" style="font-size: 0.85rem;">
                                         <i class="bi bi-info-circle me-1"></i> Para actualizar tus datos personales, por favor contacta a administración.

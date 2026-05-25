@@ -383,6 +383,50 @@ async function runMigrations() {
         console.error('❌ Error al inyectar plantillas de documentos:', e.message);
     }
 
+    // 16. Tabla para códigos de verificación OTP (Firma y Retiro de Ahorros)
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS codigos_otp (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cliente_id INT NOT NULL,
+                codigo_hash VARCHAR(255) NOT NULL,
+                accion VARCHAR(50) NOT NULL COMMENT 'firma_contrato o retiro_ahorro',
+                referencia_id INT DEFAULT NULL COMMENT 'ID del Préstamo o Cuenta Ahorro',
+                intentos INT DEFAULT 0 COMMENT 'Para control de fuerza bruta (máx 3)',
+                expiracion DATETIME NOT NULL,
+                estado ENUM('pendiente', 'usado', 'bloqueado') DEFAULT 'pendiente',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [codigos_otp] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [codigos_otp]:', e.message);
+    }
+
+    // 17. Inserción de plantilla de correo para OTP
+    try {
+        const [rows] = await db.query('SELECT id FROM plantillas_correo WHERE slug = ?', ['codigo_otp']);
+        if (rows.length === 0) {
+            await db.query(`
+                INSERT INTO plantillas_correo (nombre, slug, asunto, descripcion, variables_disponibles, html_content)
+                VALUES (
+                    'Código de Seguridad OTP',
+                    'codigo_otp',
+                    'Código de Verificación OTP - {{cliente}}',
+                    'Se envía al cliente para verificar operaciones críticas como firmar contratos y solicitar retiros de ahorro.',
+                    'cliente, codigo, accion, minutos',
+                    '<!DOCTYPE html><html><body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 20px;"><div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #10b981;"><h2 style="color: #0f172a; text-align: center; margin-top: 0;">Código de Verificación</h2><p style="color: #475569; font-size: 16px; text-align: center; margin-bottom: 25px;">Hola <strong>{{cliente}}</strong>, usa el siguiente código de seguridad de un solo uso para autorizar tu operación de <strong>{{accion}}</strong>:</p><div style="text-align: center;"><div style="background-color: #f1f5f9; border-radius: 8px; padding: 15px 30px; display: inline-block; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #10b981; font-family: monospace;">{{codigo}}</div></div><p style="font-size: 13px; color: #94a3b8; margin-top: 25px; text-align: center;">Este código es de un solo uso y expirará en <strong>{{minutos}} minutos</strong>. Si no solicitaste este código, por favor ignora este mensaje.</p><br><p style="color: #94a3b8; font-size: 12px; text-align: center; border-top: 1px solid #eeeeee; padding-top: 20px; margin-bottom: 0;">Este es un mensaje automático del Sistema de Préstamos.</p></div></body></html>'
+                )
+            `);
+            console.log('✅ Plantilla [codigo_otp] inyectada automáticamente');
+        } else {
+            console.log('ℹ️ La plantilla [codigo_otp] ya existe en la base de datos.');
+        }
+    } catch (e) {
+        console.error('❌ Error al inyectar plantilla de código OTP:', e.message);
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 

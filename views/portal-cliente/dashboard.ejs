@@ -1057,7 +1057,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-header bg-dark text-white py-3">
-                    <h5 class="modal-title fw-bold" id="modalSolicitarRetiroLabel">
+                    <h5 class="modal-title fw-bold text-white" id="modalSolicitarRetiroLabel">
                         <i class="bi bi-cash-stack me-2"></i> Solicitar Retiro de Ahorro
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1664,6 +1664,272 @@
                 Swal.fire('Pago Fallido', 'No se pudo completar el pago en la pasarela. Intenta de nuevo.', 'error');
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
+
+                // --- 12. RETIRO DE AHORROS CON OTP ---
+                const formRetiro = document.querySelector('#modalSolicitarRetiro form');
+                if (formRetiro) {
+                    formRetiro.addEventListener('submit', function(e) {
+                        if (formRetiro.querySelector('input[name="otp"]')) {
+                            return; // Dejar pasar si ya tiene el input hidden de OTP (submit programático)
+                        }
+                        
+                        e.preventDefault();
+                        
+                        const cuentaIdInput = formRetiro.querySelector('input[name="cuenta_id"]');
+                        const montoInput = formRetiro.querySelector('input[name="monto_solicitado"]');
+                        const btnSubmit = formRetiro.querySelector('button[type="submit"]');
+                        
+                        const cuenta_id = cuentaIdInput ? cuentaIdInput.value : '';
+                        const monto_solicitado = montoInput ? montoInput.value : '';
+                        
+                        if (!cuenta_id || !monto_solicitado) {
+                            Swal.fire('Atención', 'Por favor completa todos los campos requeridos.', 'warning');
+                            return;
+                        }
+                        
+                        // Validar que el monto no esté vacío o sea inválido
+                        const cleanMonto = parseFloat(monto_solicitado.toString().replace(/\./g, '').replace(/,/g, '.').trim());
+                        if (isNaN(cleanMonto) || cleanMonto <= 0) {
+                            Swal.fire('Atención', 'Por favor ingresa un monto válido.', 'warning');
+                            return;
+                        }
+                        
+                        btnSubmit.disabled = true;
+                        const originalHtml = btnSubmit.innerHTML;
+                        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando OTP...';
+                        
+                        // Cerrar el modal de Bootstrap temporalmente para no empalmarse con SweetAlert2
+                        const modalEl = document.getElementById('modalSolicitarRetiro');
+                        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                        
+                        Swal.fire({
+                            title: 'Enviando código...',
+                            text: 'Estamos generando tu código de seguridad OTP para autorizar el retiro.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
+                        fetch('/portal-cliente/ahorros/otp/solicitar', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                cuenta_id: cuenta_id,
+                                monto_solicitado: monto_solicitado
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                Swal.fire('Error', data.message || 'No se pudo enviar el código de verificación.', 'error').then(() => {
+                                    if (modalInstance) modalInstance.show();
+                                    btnSubmit.disabled = false;
+                                    btnSubmit.innerHTML = originalHtml;
+                                });
+                                return;
+                            }
+                            
+                            // Abrir el modal OTP interactivo
+                            abrirModalOtpRetiro(cuenta_id, monto_solicitado, formRetiro, btnSubmit, originalHtml, modalInstance);
+                        })
+                        .catch(error => {
+                            console.error('Error al solicitar OTP de retiro:', error);
+                            Swal.fire('Error', 'Error de red o conexión al solicitar código OTP.', 'error').then(() => {
+                                if (modalInstance) modalInstance.show();
+                                btnSubmit.disabled = false;
+                                btnSubmit.innerHTML = originalHtml;
+                            });
+                        });
+                    });
+                }
+
+                function abrirModalOtpRetiro(cuentaId, montoSolicitado, formRetiro, btnSubmit, originalHtml, modalInstance) {
+                    let timerInterval;
+                    let tiempoRestante = 30; // 30 segundos
+
+                    Swal.fire({
+                        title: 'Verificación de Seguridad',
+                        html: `
+                            <div class="text-center p-2">
+                                <p class="text-muted small">Ingresa el código OTP de 6 dígitos enviado a tu correo registrado para confirmar este retiro.</p>
+                                <div class="d-flex justify-content-center gap-2 my-4" id="otp-input-container">
+                                    <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
+                                    <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
+                                    <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
+                                    <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
+                                    <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
+                                    <input type="text" maxlength="1" class="form-control text-center fs-3 fw-bold otp-digit" style="width: 44px; height: 52px; padding: 0; border-radius: 8px; border: 2px solid #cbd5e1; font-family: monospace;" inputmode="numeric" pattern="[0-9]*">
+                                </div>
+                                <div class="mt-3" style="min-height: 30px;">
+                                    <span class="text-muted small" id="otp-timer-text">Reenviar código en <strong id="otp-timer-count">30</strong>s</span>
+                                    <button type="button" class="btn btn-link btn-sm d-none fw-bold text-decoration-none text-primary" id="btn-reenviar-otp" style="font-size: 0.85rem;">Reenviar Código</button>
+                                </div>
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Confirmar Retiro',
+                        cancelButtonText: 'Cancelar',
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const inputs = document.querySelectorAll('.otp-digit');
+                            let otp = '';
+                            inputs.forEach(input => otp += input.value);
+                            
+                            if (otp.length !== 6) {
+                                Swal.showValidationMessage('Por favor, ingresa los 6 dígitos.');
+                                return false;
+                            }
+                            return otp;
+                        },
+                        didOpen: () => {
+                            const container = document.getElementById('otp-input-container');
+                            const inputs = container.querySelectorAll('.otp-digit');
+                            const timerCount = document.getElementById('otp-timer-count');
+                            const timerText = document.getElementById('otp-timer-text');
+                            const btnReenviar = document.getElementById('btn-reenviar-otp');
+
+                            inputs[0].focus();
+
+                            inputs.forEach((input, index) => {
+                                input.addEventListener('input', (e) => {
+                                    const val = e.target.value;
+                                    if (val.length === 1 && index < inputs.length - 1) {
+                                        inputs[index + 1].focus();
+                                    }
+                                    const filledAll = Array.from(inputs).every(inp => inp.value !== '');
+                                    if (filledAll) {
+                                        Swal.clickConfirm();
+                                    }
+                                });
+
+                                input.addEventListener('keydown', (e) => {
+                                    if (e.key === 'Backspace') {
+                                        if (input.value === '' && index > 0) {
+                                            inputs[index - 1].focus();
+                                            inputs[index - 1].value = '';
+                                        }
+                                    }
+                                });
+
+                                input.addEventListener('paste', (e) => {
+                                    e.preventDefault();
+                                    const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                                    const numbers = pasteData.replace(/\D/g, '').substring(0, 6);
+                                    
+                                    for (let i = 0; i < numbers.length && i < inputs.length; i++) {
+                                        inputs[i].value = numbers[i];
+                                    }
+                                    
+                                    const nextFocus = Math.min(numbers.length, inputs.length - 1);
+                                    inputs[nextFocus].focus();
+
+                                    if (numbers.length === 6) {
+                                        Swal.clickConfirm();
+                                    }
+                                });
+                            });
+
+                            // Temporizador
+                            timerInterval = setInterval(() => {
+                                tiempoRestante--;
+                                if (tiempoRestante <= 0) {
+                                    clearInterval(timerInterval);
+                                    timerText.classList.add('d-none');
+                                    btnReenviar.classList.remove('d-none');
+                                } else {
+                                    timerCount.textContent = tiempoRestante;
+                                }
+                            }, 1000);
+
+                            // Reenviar
+                            btnReenviar.addEventListener('click', () => {
+                                btnReenviar.classList.add('d-none');
+                                timerText.classList.remove('d-none');
+                                tiempoRestante = 30;
+                                timerCount.textContent = tiempoRestante;
+
+                                timerInterval = setInterval(() => {
+                                    tiempoRestante--;
+                                    if (tiempoRestante <= 0) {
+                                        clearInterval(timerInterval);
+                                        timerText.classList.add('d-none');
+                                        btnReenviar.classList.remove('d-none');
+                                    } else {
+                                        timerCount.textContent = tiempoRestante;
+                                    }
+                                }, 1000);
+
+                                fetch('/portal-cliente/ahorros/otp/solicitar', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        cuenta_id: cuentaId,
+                                        monto_solicitado: montoSolicitado
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        const Toast = Swal.mixin({
+                                            toast: true,
+                                            position: 'top-end',
+                                            showConfirmButton: false,
+                                            timer: 3000,
+                                            timerProgressBar: true
+                                        });
+                                        Toast.fire({
+                                            icon: 'success',
+                                            title: 'Se ha reenviado un nuevo código a tu correo.'
+                                        });
+                                    } else {
+                                        Swal.showValidationMessage(data.message || 'Error al reenviar código.');
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Error al reenviar OTP:', err);
+                                    Swal.showValidationMessage('Error de red al reenviar el código.');
+                                });
+                            });
+                        },
+                        willClose: () => {
+                            clearInterval(timerInterval);
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const otp = result.value;
+                            
+                            // Crear input hidden y enviarlo
+                            const otpInput = document.createElement('input');
+                            otpInput.type = 'hidden';
+                            otpInput.name = 'otp';
+                            otpInput.value = otp;
+                            formRetiro.appendChild(otpInput);
+                            
+                            Swal.fire({
+                                title: 'Enviando solicitud...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            formRetiro.submit();
+                        } else {
+                            if (modalInstance) modalInstance.show();
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerHTML = originalHtml;
+                        }
+                    });
+                }
+
         });
     </script>
     <%- include('partials/asistente-ia') %>
