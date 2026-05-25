@@ -100,7 +100,8 @@ const pdfService = {
                         doc.image(firmaBuffer, 340, firmaY - 50, { width: 160, height: 50 });
                         
                         const fechaStr = prestamo.fecha_firma ? new Date(prestamo.fecha_firma).toLocaleString('es-CO', {timeZone: 'America/Bogota'}) : '';
-                        doc.fontSize(6).fillColor('#7f8c8d').text(`Firmado digitalmente: IP ${prestamo.ip_firma || 'N/A'} - ${fechaStr}`, 330, firmaY + 40, { width: 180, align: 'center' });
+                        const otpStr = prestamo.firma_otp ? ` (OTP: ${prestamo.firma_otp})` : '';
+                        doc.fontSize(6).fillColor('#7f8c8d').text(`Firmado digitalmente${otpStr}: IP ${prestamo.ip_firma || 'N/A'} - ${fechaStr}`, 330, firmaY + 40, { width: 180, align: 'center' });
                     } catch (e) { console.error('Error insertando firma en PDF:', e); }
                 }
 
@@ -191,7 +192,8 @@ const pdfService = {
                 if (prestamo.firma_digital) {
                     doc.moveDown(0.5);
                     const fechaStr = prestamo.fecha_firma ? new Date(prestamo.fecha_firma).toLocaleString('es-CO', {timeZone: 'America/Bogota'}) : '';
-                    doc.fontSize(6).fillColor('#7f8c8d').text(`Firmado digitalmente: IP ${prestamo.ip_firma || 'N/A'} - ${fechaStr}`, { align: 'center' });
+                    const otpStr = prestamo.firma_otp ? ` (OTP: ${prestamo.firma_otp})` : '';
+                    doc.fontSize(6).fillColor('#7f8c8d').text(`Firmado digitalmente${otpStr}: IP ${prestamo.ip_firma || 'N/A'} - ${fechaStr}`, { align: 'center' });
                     doc.fillColor('#000').fontSize(8);
                 }
 

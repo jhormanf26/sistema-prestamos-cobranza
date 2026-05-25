@@ -721,7 +721,7 @@ const portalClienteController = {
                 ip = ip.split(',')[0].trim();
             }
 
-            await PrestamoModel.guardarFirma(id, firma, ip);
+            await PrestamoModel.guardarFirma(id, firma, ip, otp);
 
             res.json({ success: true });
         } catch (error) {
