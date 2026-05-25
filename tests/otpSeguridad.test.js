@@ -115,6 +115,40 @@ async function ejecutarPruebasOtpSeguridad() {
         );
         assert.strictEqual(registrosBloqueado[0].estado, 'bloqueado', 'El estado del OTP debería ser "bloqueado".');
 
+        // ==================================================
+        // CASO 4: Validación de OTP Pendiente y Vigente (Detección de Spam)
+        // ==================================================
+        console.log('🧪 Caso 4: Validando detección de OTP pendiente y vigente...');
+        
+        // 1. Generamos un OTP de prueba nuevo
+        const refIdPrueba = 88888;
+        await OtpService.generarYEnviar(idCliente, 'carlos.otp@ejemplo.com', 'firma_contrato', refIdPrueba);
+        
+        // 2. Comprobar que obtenerPendienteVigente lo detecta correctamente
+        const otpVigente = await OtpService.obtenerPendienteVigente(idCliente, 'firma_contrato', refIdPrueba);
+        assert.ok(otpVigente, 'Debería detectar el OTP pendiente como vigente.');
+        assert.strictEqual(otpVigente.estado, 'pendiente', 'El estado detectado debe ser pendiente.');
+        
+        // 3. Simular expiración del OTP en la base de datos (restar 10 minutos)
+        const fechaPasada = new Date(Date.now() - 10 * 60 * 1000);
+        await db.query("UPDATE codigos_otp SET expiracion = ? WHERE id = ?", [fechaPasada, otpVigente.id]);
+        
+        // 4. Comprobar que obtenerPendienteVigente ya no lo devuelve por haber expirado
+        const otpExpirado = await OtpService.obtenerPendienteVigente(idCliente, 'firma_contrato', refIdPrueba);
+        assert.strictEqual(otpExpirado, null, 'El OTP expirado no debería ser devuelto como vigente.');
+        
+        // 5. Crear otro OTP y simular que tiene 3 intentos fallidos (bloqueado)
+        await OtpService.generarYEnviar(idCliente, 'carlos.otp@ejemplo.com', 'firma_contrato', refIdPrueba);
+        const otpVigente2 = await OtpService.obtenerPendienteVigente(idCliente, 'firma_contrato', refIdPrueba);
+        assert.ok(otpVigente2, 'Debería detectar el nuevo OTP como vigente.');
+        
+        // Simular 3 intentos fallidos
+        await db.query("UPDATE codigos_otp SET intentos = 3 WHERE id = ?", [otpVigente2.id]);
+        
+        // Comprobar que obtenerPendienteVigente ya no lo devuelve por estar bloqueado (exceso de intentos)
+        const otpBloqueado = await OtpService.obtenerPendienteVigente(idCliente, 'firma_contrato', refIdPrueba);
+        assert.strictEqual(otpBloqueado, null, 'El OTP bloqueado por intentos no debería ser devuelto como vigente.');
+
         console.log('✅ Todas las validaciones de seguridad OTP pasaron correctamente.');
         console.log('🎉 Pruebas TDD del Sistema OTP COMPLETADAS CON ÉXITO.');
 
