@@ -83,6 +83,7 @@
                                                                 data-id="<%= p.id %>" 
                                                                 data-cliente="<%= p.cliente_nombre %> <%= p.cliente_apellido %>"
                                                                 data-dni="<%= p.cliente_dni %>"
+                                                                data-cliente-id="<%= p.cliente_id %>"
                                                                 data-monto="<%= Math.round(p.monto_solicitado) %>"
                                                                 data-cuotas="<%= p.cuotas %>"
                                                                 data-frecuencia="<%= p.frecuencia %>">
@@ -130,6 +131,19 @@
 
                         <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
                             <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-sliders text-primary me-1"></i> Parámetros de Desembolso (Editables)</h6>
+                            
+                            <!-- Badge de Score Crediticio del Cliente -->
+                            <div id="scoreBadgeSolicitud" class="mb-3" style="display:none;">
+                                <div id="alertScoreSolicitud" class="alert d-flex align-items-center gap-2 py-2 mb-0 rounded-3" role="alert">
+                                    <span id="iconScoreSolicitud" style="font-size:1.3rem;"></span>
+                                    <div>
+                                        <span class="fw-bold small" id="titleScoreSolicitud"></span>
+                                        <small class="d-block text-muted" id="descScoreSolicitud"></small>
+                                    </div>
+                                    <span id="puntosScoreSolicitud" class="ms-auto badge"></span>
+                                </div>
+                            </div>
+
                             <div class="row g-3">
                                 <!-- Monto aprobado -->
                                 <div class="col-12 col-sm-6">
@@ -165,7 +179,10 @@
 
                                 <!-- Interés Mensual -->
                                 <div class="col-6 col-sm-4">
-                                    <label class="form-label text-dark fw-bold small">Interés Mensual (%)</label>
+                                    <label class="form-label text-dark fw-bold small d-flex align-items-center gap-1">
+                                        Interés Mensual (%)
+                                        <span id="badgeTasaPersonalSol" class="badge bg-secondary rounded-pill" style="font-size:0.65rem;display:none;">✏️ Custom</span>
+                                    </label>
                                     <input type="number" step="0.1" id="reviewInteres" class="form-control rounded-pill px-3" required value="<%= typeof empresa !== 'undefined' && empresa.interes_global ? empresa.interes_global : '5' %>">
                                 </div>
 
@@ -229,6 +246,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let activeSolicitudId = null;
+            let tasaSugeridaSolicitud = null; // Tasa original sugerida por el score
             const modalElement = document.getElementById("modalRevisar");
             const modal = new bootstrap.Modal(modalElement);
             
@@ -254,6 +272,7 @@
             document.querySelectorAll(".btn-revisar").forEach(btn => {
                 btn.addEventListener("click", function() {
                     activeSolicitudId = this.getAttribute("data-id");
+                    const clienteId   = this.getAttribute("data-cliente-id");
                     
                     // Llenar datos
                     reviewIdTitle.textContent = activeSolicitudId;
@@ -268,8 +287,16 @@
                     
                     reviewComentarios.value = "";
                     reviewFechaInicio.value = hoy;
+
+                    // Ocultar badge de score por defecto
+                    document.getElementById('scoreBadgeSolicitud').style.display = 'none';
+                    document.getElementById('badgeTasaPersonalSol').style.display = 'none';
+                    tasaSugeridaSolicitud = null;
                     
                     modal.show();
+
+                    // Cargar score del cliente va AJAX (silencioso)
+                    if (clienteId) cargarScoreClienteSolicitud(clienteId);
                 });
             });
 
@@ -502,6 +529,66 @@
                     counter.textContent = `${tbody.children.length} Pendientes`;
                 }
             }
+
+            // ── SCORE EN MODAL DE SOLICITUDES ───────────────────────────────────────
+            const estilosPorCategoriaSol = {
+                A: { alertClass: 'alert-success', badgeClass: 'bg-success', icono: '🏆' },
+                B: { alertClass: 'alert-info',    badgeClass: 'bg-info',    icono: '🟦' },
+                C: { alertClass: 'alert-warning', badgeClass: 'bg-warning text-dark', icono: '🟡' },
+                D: { alertClass: 'alert-danger',  badgeClass: 'bg-danger',  icono: '🔴' },
+                E: { alertClass: 'alert-danger',  badgeClass: 'bg-dark',    icono: '⚫' }
+            };
+
+            /**
+             * Consulta el score del cliente via AJAX y pre-llena tasas en el modal de solicitud.
+             * @param {string} clienteId - ID del cliente a consultar.
+             */
+            async function cargarScoreClienteSolicitud(clienteId) {
+                try {
+                    const resp = await fetch(`/clientes/score/${clienteId}`);
+                    if (!resp.ok) return;
+                    const data = await resp.json();
+                    if (!data.success) return;
+
+                    const cat = data.categoria || 'C';
+                    const estilos = estilosPorCategoriaSol[cat] || estilosPorCategoriaSol['C'];
+
+                    // Actualizar badge en el modal
+                    const alertEl    = document.getElementById('alertScoreSolicitud');
+                    const iconEl     = document.getElementById('iconScoreSolicitud');
+                    const titleEl    = document.getElementById('titleScoreSolicitud');
+                    const descEl     = document.getElementById('descScoreSolicitud');
+                    const puntosEl   = document.getElementById('puntosScoreSolicitud');
+                    const badgeSol   = document.getElementById('scoreBadgeSolicitud');
+
+                    alertEl.className  = `alert d-flex align-items-center gap-2 py-2 mb-0 rounded-3 ${estilos.alertClass}`;
+                    iconEl.textContent  = estilos.icono;
+                    titleEl.textContent = `Score ${cat} — ${data.descripcion}`;
+                    descEl.textContent  = `Tasa sugerida: ${data.tasaSugerida}% mensual / Mora: ${data.tasaMoraSugerida}%`;
+                    puntosEl.textContent = `${data.score} pts`;
+                    puntosEl.className   = `ms-auto badge ${estilos.badgeClass}`;
+                    badgeSol.style.display = 'block';
+
+                    // Pre-llenar tasas
+                    tasaSugeridaSolicitud = data.tasaSugerida;
+                    reviewInteres.value      = data.tasaSugerida;
+                    reviewInteresMora.value  = data.tasaMoraSugerida;
+
+                } catch (e) {
+                    // Fallo silencioso: no bloqueamos la aprobación
+                }
+            }
+
+            // Detectar modificación manual de la tasa en el modal
+            document.getElementById('reviewInteres').addEventListener('input', function () {
+                const badge = document.getElementById('badgeTasaPersonalSol');
+                if (tasaSugeridaSolicitud !== null && parseFloat(this.value) !== tasaSugeridaSolicitud) {
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            // ────────────────────────────────────────────────────────────────────────
         });
     </script>
 </body>

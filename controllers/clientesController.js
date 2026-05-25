@@ -263,10 +263,52 @@ const clientesController = {
         try {
             const scoreData = await scoringService.calcularScore(id);
             await ClienteModel.actualizarScore(id, scoreData.score);
-            res.json({ success: true, scoreData });
+
+            // Enriquecer respuesta con la tasa sugerida según el score calculado
+            const tasaInfo = scoringService.obtenerTasaPorScore(scoreData.score);
+
+            res.json({
+                success: true,
+                scoreData,
+                tasaSugerida: tasaInfo.tasaMensual,
+                tasaMoraSugerida: tasaInfo.tasaMora,
+                tasaDescripcion: tasaInfo.descripcion
+            });
         } catch (error) {
-            console.error("Error en recalcularScoreAdmin:", error);
+            console.error('Error en recalcularScoreAdmin:', error);
             res.status(500).json({ success: false, mensaje: 'Error al recalcular el score.' });
+        }
+    },
+
+    /**
+     * Obtiene el score actual de un cliente (desde BD, sin recalcular) y la tasa sugerida.
+     * Usado por el formulario de crear préstamo para sugerir tasas en tiempo real.
+     *
+     * @param {Object} req - Request de Express con `req.params.id` (ID del cliente).
+     * @param {Object} res - Response de Express con JSON { success, score, categoria, tasaSugerida, tasaMoraSugerida }.
+     */
+    obtenerScore: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const cliente = await ClienteModel.obtenerPorId(id);
+            if (!cliente) {
+                return res.status(404).json({ success: false, mensaje: 'Cliente no encontrado.' });
+            }
+
+            const score = parseFloat(cliente.score || 0);
+            const tasaInfo = scoringService.obtenerTasaPorScore(score);
+
+            res.json({
+                success: true,
+                score,
+                categoria: tasaInfo.categoria,
+                tasaSugerida: tasaInfo.tasaMensual,
+                tasaMoraSugerida: tasaInfo.tasaMora,
+                descripcion: tasaInfo.descripcion
+            });
+        } catch (error) {
+            console.error('Error en obtenerScore:', error);
+            res.status(500).json({ success: false, mensaje: 'Error al obtener el score.' });
         }
     }
 };

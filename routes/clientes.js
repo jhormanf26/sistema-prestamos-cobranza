@@ -31,4 +31,7 @@ router.post('/actualizar-preaprobado/:id', clientesController.actualizarPreaprob
 // (NUEVO) Recalcular Score Crediticio
 router.post('/recalcular-score/:id', clientesController.recalcularScoreAdmin);
 
-module.exports = router;
+// (NUEVO) Obtener Score y Tasa Sugerida (lectura desde BD, sin recalcular)
+router.get('/score/:id', clientesController.obtenerScore);
+
+module.exports = router;

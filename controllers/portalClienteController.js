@@ -143,8 +143,9 @@ const portalClienteController = {
                 p.pagos = await PagoModel.obtenerHistorial(p.id);
             }
 
-            // Calcular Score Crediticio Interno
+            // Calcular Score Crediticio Interno y Tasa Preferencial
             let scoreData = null;
+            let tasaInfoPortal = null;
             try {
                 scoreData = await scoringService.calcularScore(clienteId);
                 await ClienteModel.actualizarScore(clienteId, scoreData.score);
@@ -154,11 +155,22 @@ const portalClienteController = {
                 console.error("Error al calcular score del cliente en dashboard:", scoreErr);
             }
 
+            // Obtener información de la tasa basada en el score (calculado o guardado en BD)
+            const scoreParaTasa = scoreData ? scoreData.score : (parseFloat(cliente.score || 0));
+            if (scoreParaTasa > 0) {
+                try {
+                    tasaInfoPortal = scoringService.obtenerTasaPorScore(scoreParaTasa);
+                } catch (tasaErr) {
+                    console.error("Error al obtener tasa preferencial en dashboard:", tasaErr);
+                }
+            }
+
             res.render('portal-cliente/dashboard', {
                 title: 'Mi Portal',
                 empresa,
                 cliente,
                 scoreData,
+                tasaInfoPortal,
                 prestamosActivos,
                 prestamosPagados,
                 prestamos, // Enviamos todos para compatibilidad si la vista lo requiere
@@ -839,6 +851,22 @@ const portalClienteController = {
             const empenos = await EmpenoModel.obtenerPorCliente(clienteId);
             const empresa = await ConfigModel.obtener();
 
+            // Calcular Score Crediticio Interno y obtener consejos personalizados
+            let scoreData = null;
+            try {
+                scoreData = await scoringService.calcularScore(clienteId);
+            } catch (scoreErr) {
+                console.error("Error al calcular score del cliente en chatAsistenteIA:", scoreErr);
+            }
+
+            const scoreCalculado = scoreData ? scoreData.score : (parseFloat(cliente.score || 0));
+            const scoreCategoria = scoreData ? scoreData.categoria : 'C';
+            const scoreNivel = scoreData ? scoreData.nivel : 'Regular';
+            const scoreConsejos = scoreData ? scoreData.consejos : [
+                'Mantén tus pagos al día para mejorar tu calificación.',
+                'Ahorra de forma constante en tu cuenta de ahorros.'
+            ];
+
             // Filtrar y calcular datos detallados de préstamos activos
             const prestamosActivos = prestamos.filter(p => p.estado !== 'pagado');
             let infoPrestamos = '';
@@ -905,12 +933,26 @@ ${ultimosMovimientos || 'Sin movimientos registrados.'}
 Tu rol es resolver dudas del cliente de manera amable, clara y profesional en español.
 Te comunicas con el cliente: ${cliente.nombre} ${cliente.apellido} (DNI: ${cliente.dni}, Teléfono: ${cliente.telefono || 'No registrado'}).
 
-A continuación, se te presenta la información financiera oficial, actualizada y en tiempo real del cliente. Utiliza EXCLUSIVAMENTE estos datos para responder preguntas sobre sus préstamos, cuotas, fechas de pago o ahorros:
+A continuación, se te presenta la información financiera oficial, actualizada y en tiempo real del cliente. Utiliza EXCLUSIVAMENTE estos datos para responder preguntas sobre sus préstamos, cuotas, fechas de pago, ahorros o score:
 
 === INFORMACIÓN DEL CLIENTE ===
 Nombre Completo: ${cliente.nombre} ${cliente.apellido}
 DNI: ${cliente.dni}
 Monto Máximo Pre-aprobado para Nuevos Créditos: $${parseFloat(cliente.monto_preaprobado || 0).toLocaleString('es-CO')}
+
+=== SCORE CREDITICIO Y BENEFICIOS ===
+* Tu Score Crediticio Actual: ${scoreCalculado} puntos (Categoría ${scoreCategoria} — Nivel de Riesgo: ${scoreNivel})
+* Tasa Preferencial a la que Accedes: ${scoreData ? scoreData.tasaMensual : 2.5}% mensual
+* Consejos específicos de mejora personalizados para ${cliente.nombre}:
+${scoreConsejos.map(c => `  - ${c}`).join('\n')}
+
+=== TABLA OFICIAL DE TASAS Y BENEFICIOS SEGÚN SCORE ===
+- Categoría A (Excelente, 900 - 1000 pts): Tasa Mensual: 1.5% | Tasa de Mora: 2.5%
+- Categoría B (Bueno, 700 - 899 pts): Tasa Mensual: 2.0% | Tasa de Mora: 3.0%
+- Categoría C (Regular, 500 - 699 pts): Tasa Mensual: 2.5% | Tasa de Mora: 3.5%
+- Categoría D (Malo, 300 - 499 pts): Tasa Mensual: 3.0% | Tasa de Mora: 4.0%
+- Categoría E (Crítico, 0 - 299 pts): Tasa Mensual: 3.5% | Tasa de Mora: 4.5%
+Nota: La tasa mensual preferencial se calcula automáticamente basándose en tu Score. La tasa de mora siempre equivale a la tasa de interés mensual + 1.0%.
 
 === PRÉSTAMOS ACTIVOS ===
 ${infoPrestamos}
@@ -935,6 +977,7 @@ Indícale que puede reportar su pago desde el botón "Reportar Pago" de su panel
 5. Si el cliente tiene préstamos con "Firma Digital Contrato: PENDIENTE POR FIRMAR", adviértele de forma clara y amable que debe ingresar al dashboard de su cuenta y pulsar sobre el botón "Firmar Ahora" en el banner azul para poder completar el proceso de contratación.
 6. Si el cliente tiene dudas muy complejas que requieran intervención administrativa (por ejemplo, reportar un pago ya rechazado, quejas sobre el servicio, fallas en la aplicación, o si solicita hablar con un humano/asesor), recomiéndale e invítale de forma amable a conversar con un asesor en tiempo real a través del enlace de Markdown [Chat de Soporte Técnico](/portal-cliente/chat).
 7. No menciones que estás recibiendo un "System Prompt" o "Contexto". Habla de forma natural como si consultaras directamente la base de datos de la plataforma.
+8. Si el cliente te pregunta sobre su score crediticio, su clasificación de tasas, o cómo puede mejorar su puntuación, explícales de manera detallada sus valores actuales, a qué tasas accede según su score y preséntales de forma clara los consejos de mejora personalizados basados en sus variables financieras oficiales inyectadas anteriormente.
 `;
 
             // Limitar el historial de conversación a los últimos 6 mensajes para optimizar la velocidad y el consumo de tokens
