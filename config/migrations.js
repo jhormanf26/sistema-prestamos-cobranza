@@ -307,6 +307,13 @@ async function runMigrations() {
         if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [ip_firma]:', e.message);
     }
 
+    try {
+        await db.query("ALTER TABLE prestamos ADD COLUMN firma_otp VARCHAR(10) NULL AFTER ip_firma;");
+        console.log('✅ Columna [firma_otp] agregada a la tabla [prestamos]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [firma_otp]:', e.message);
+    }
+
     // 14. Tabla para documentos de clientes (genérica)
     try {
         await db.query(`

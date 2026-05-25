@@ -126,7 +126,16 @@ class PrestamoModel {
         try { return (await db.query("SELECT p.*, c.nombre, c.apellido, c.dni, c.telefono FROM prestamos p JOIN clientes c ON p.cliente_id = c.id WHERE p.estado = 'vencido' ORDER BY p.fecha_fin ASC"))[0]; } catch (error) { throw error; }
     }
 
-    static async guardarFirma(id, firmaBase64, ip) {
+    /**
+     * Guarda la firma digital del contrato junto con la IP, fecha de firma y el código OTP utilizado.
+     * @param {number|string} id - ID del préstamo.
+     * @param {string} firmaBase64 - Imagen de la firma en formato Base64.
+     * @param {string} ip - IP desde la cual se realizó la firma.
+     * @param {string|null} [otp=null] - Código OTP de 6 dígitos verificado.
+     * @returns {Promise<object>} Resultado de la consulta de actualización.
+     * @throws {Error} Si ocurre un error en la base de datos.
+     */
+    static async guardarFirma(id, firmaBase64, ip, otp = null) {
         try {
             let dateBogota = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Bogota"}));
             const fecha = dateBogota.getFullYear() + "-" + 
@@ -135,8 +144,8 @@ class PrestamoModel {
                           String(dateBogota.getHours()).padStart(2, '0') + ":" + 
                           String(dateBogota.getMinutes()).padStart(2, '0') + ":" + 
                           String(dateBogota.getSeconds()).padStart(2, '0');
-            const query = 'UPDATE prestamos SET firma_digital = ?, fecha_firma = ?, ip_firma = ? WHERE id = ?';
-            const [result] = await db.query(query, [firmaBase64, fecha, ip, id]);
+            const query = 'UPDATE prestamos SET firma_digital = ?, fecha_firma = ?, ip_firma = ?, firma_otp = ? WHERE id = ?';
+            const [result] = await db.query(query, [firmaBase64, fecha, ip, otp, id]);
             return result;
         } catch (error) { throw error; }
     }
