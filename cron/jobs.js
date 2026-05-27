@@ -5,6 +5,7 @@ const { calcularCronograma } = require('../utils/finance');
 const emailService = require('../utils/emailService');
 const { formatCurrency } = require('../utils/formatters');
 const ConfigModel = require('../models/ConfigModel');
+const PrestamoModel = require('../models/PrestamoModel');
 
 function formatPushTemplate(template, data) {
     if (!template) return '';
@@ -28,6 +29,10 @@ function initCronJobs() {
             }
 
             console.log(`CRON: Ejecutando tareas programadas diarias a las ${currentHour}:00...`);
+            
+            // 0. Actualizar automáticamente los préstamos vencidos en la base de datos
+            console.log("CRON: Procesando vencimientos de préstamos activos...");
+            await PrestamoModel.procesarVencimientos();
             
             // 1. Notificaciones PUSH para Administradores (Cuotas a vencer de la tabla prestamos (fecha final))
             const query = `
