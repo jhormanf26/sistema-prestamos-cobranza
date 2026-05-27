@@ -127,18 +127,18 @@ const emailService = {
         return res;
     },
 
-    plantillaRecordatorio: async (cliente, total, fechaFin, moneda) => {
+    plantillaRecordatorio: async (cliente, montoCuota, fechaFin, moneda) => {
         const fallback = `
             <div style="background-color: #fffbeb; padding: 20px; font-family: Arial;">
                 <table align="center" width="100%" style="max-width: 600px; background: #fff; border-radius: 15px;">
                     <tr><td align="center" style="background: #f59e0b; padding: 30px; color: #fff;"><h1>Recordatorio de Pago</h1></td></tr>
-                    <tr><td style="padding: 30px;">Hola ${cliente}, te recordamos que tienes un pago pendiente por ${moneda} ${formatCurrency(total, 2)} que vence el ${new Date(fechaFin).toLocaleDateString()}.</td></tr>
+                    <tr><td style="padding: 30px;">Hola ${cliente}, te recordamos que tienes una cuota pendiente por ${moneda} ${formatCurrency(montoCuota, 2)} que vence el ${new Date(fechaFin).toLocaleDateString()}.</td></tr>
                 </table>
             </div>
         `;
         const res = await renderizar('recordatorio_pago', {
             cliente,
-            monto: formatCurrency(total, 2),
+            monto: formatCurrency(montoCuota, 2),
             fecha: new Date(fechaFin).toLocaleDateString(),
             moneda
         }, fallback);

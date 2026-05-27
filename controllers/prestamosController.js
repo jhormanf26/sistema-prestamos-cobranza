@@ -229,9 +229,10 @@ const prestamosController = {
             }
 
             const config = await ConfigModel.obtener();
+            const montoCuota = parseFloat(prestamo.monto_total) / parseInt(prestamo.cuotas);
             const { asunto, html } = await emailService.plantillaRecordatorio(
                 `${prestamo.nombre} ${prestamo.apellido}`,
-                prestamo.monto_total,
+                montoCuota,
                 prestamo.fecha_fin,
                 config ? config.moneda : '$'
             );
