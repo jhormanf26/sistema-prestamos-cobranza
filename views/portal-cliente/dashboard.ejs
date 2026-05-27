@@ -243,11 +243,12 @@
                                             </div>
                                             <!-- Contenedor del spinner de carga premium -->
                                             <div class="position-absolute top-50 start-50 translate-middle text-center d-flex flex-column align-items-center justify-content-center" id="scoreLoaderContainer" style="opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 2; transform: translate(-50%, -50%) scale(0.7);">
-                                        <div class="spinner-border text-success" role="status" style="width: 2.2rem; height: 2.2rem; border-width: 0.2em;">
+                                                <div class="spinner-border text-success" role="status" style="width: 2.2rem; height: 2.2rem; border-width: 0.2em;">
                                                     <span class="visually-hidden">Calculando...</span>
                                                 </div>
                                                 <span class="text-success fw-bold mt-1" style="font-size: 0.6rem; letter-spacing: 0.5px; text-uppercase;">Calculando</span>
                                             </div>
+                                        </div>
                                         <div class="mt-3 d-flex align-items-center justify-content-center gap-2">
                                             <span class="badge <%= scoreData.badgeBg %> text-white px-3 py-1.5 rounded-pill shadow-sm" id="scoreNivel">
                                                 Score: <%= scoreData.nivel %> (<%= scoreData.categoria %>)
@@ -255,7 +256,6 @@
                                             <button onclick="mostrarAyudaScore()" class="btn btn-sm btn-link text-muted p-0 d-inline-flex align-items-center justify-content-center" title="Ver clasificación de scores" style="text-decoration: none; font-size: 1.15rem; transition: color 0.2s ease;">
                                                 <i class="bi bi-info-circle-fill text-success opacity-75"></i>
                                             </button>
-                                        </div>
                                         </div>
                                     </div>
                                     
@@ -647,7 +647,8 @@
 
                     <!-- Mis Reportes de Pago -->
                     <h5 id="seccion-reportes" class="fw-bold text-dark mb-3"><i class="bi bi-receipt text-success me-2"></i> Mis Reportes de Pago</h5>
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                    <!-- Vista Desktop: Tabla -->
+                    <div class="d-none d-md-block card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -725,10 +726,73 @@
                         </div>
                     </div>
 
+                    <!-- Vista Móvil: Tarjetas Premium -->
+                    <div class="d-block d-md-none mb-5">
+                        <% if(locals.reportesPago && reportesPago.length > 0) { %>
+                            <div class="d-flex flex-column gap-3">
+                                <% reportesPago.forEach(rp => { %>
+                                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white reporte-card-movil" data-reporte-id="<%= rp.id %>">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <span class="fw-bold text-success" style="font-size: 0.95rem;">#<%= rp.id %></span>
+                                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 ms-2">
+                                                    Préstamo #<%= rp.prestamo_id %>
+                                                </span>
+                                            </div>
+                                            <div class="estado-reporte-movil-container">
+                                                <% if(rp.estado === 'pendiente') { %>
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                        <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                    </span>
+                                                <% } else if(rp.estado === 'aprobado') { %>
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                        <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                                                    </span>
+                                                <% } else if(rp.estado === 'rechazado') { %>
+                                                    <button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= rp.observaciones || 'No se especificaron motivos en el sistema.' %>" style="text-decoration: none;">
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                            <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                        </span>
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 pt-2 border-top">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Monto Reportado</small>
+                                                <h6 class="fw-bold text-dark mb-0 font-monospace" style="font-size: 0.9rem;">
+                                                    $<%= parseFloat(rp.monto).toLocaleString('es-CO') %>
+                                                </h6>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Fecha Envío</small>
+                                                <small class="text-dark fw-semibold" style="font-size: 0.75rem;">
+                                                    <%= new Date(rp.fecha_reporte).toLocaleDateString() %> <%= new Date(rp.fecha_reporte).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <% if(rp.comprobante_url) { %>
+                                            <div class="mt-3 text-end pt-2 border-top">
+                                                <a href="<%= rp.comprobante_url %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill w-100 fw-bold" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-image"></i> Ver Comprobante Adjunto
+                                                </a>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } else { %>
+                            <div class="card border-0 shadow-sm rounded-4 p-4 text-center text-muted bg-white">
+                                Aún no has reportado ningún pago por este medio.
+                            </div>
+                        <% } %>
+                    </div>
+
                     <% if (cuentaAhorro) { %>
                     <!-- Mis Aportes de Ahorro -->
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-piggy-bank text-warning me-2"></i> Mis Aportes de Ahorro</h5>
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                    <!-- Vista Desktop: Tabla -->
+                    <div class="d-none d-md-block card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -797,9 +861,69 @@
                         </div>
                     </div>
 
+                    <!-- Vista Móvil: Tarjetas Premium -->
+                    <div class="d-block d-md-none mb-5">
+                        <% if(locals.reportesAporte && reportesAporte.length > 0) { %>
+                            <div class="d-flex flex-column gap-3">
+                                <% reportesAporte.forEach(ra => { %>
+                                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <span class="fw-bold text-warning" style="font-size: 0.95rem;">#<%= ra.id %></span>
+                                            </div>
+                                            <div>
+                                                <% if(ra.estado === 'pendiente') { %>
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                        <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                    </span>
+                                                <% } else if(ra.estado === 'aprobado') { %>
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                        <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                                                    </span>
+                                                <% } else if(ra.estado === 'rechazado') { %>
+                                                    <button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= ra.observaciones || 'No se especificó un motivo de rechazo.' %>" style="text-decoration: none;">
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                            <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                        </span>
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 pt-2 border-top">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Monto Aporte</small>
+                                                <h6 class="fw-bold text-dark mb-0 font-monospace" style="font-size: 0.9rem;">
+                                                    $<%= parseFloat(ra.monto).toLocaleString('es-CO') %>
+                                                </h6>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Fecha</small>
+                                                <small class="text-dark fw-semibold" style="font-size: 0.75rem;">
+                                                    <%= new Date(ra.fecha_reporte).toLocaleDateString() %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <% if(ra.comprobante_url) { %>
+                                            <div class="mt-3 text-end pt-2 border-top">
+                                                <a href="<%= ra.comprobante_url %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill w-100 fw-bold" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-image"></i> Ver Comprobante Adjunto
+                                                </a>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } else { %>
+                            <div class="card border-0 shadow-sm rounded-4 p-4 text-center text-muted bg-white">
+                                Aún no has reportado ningún aporte de ahorro.
+                            </div>
+                        <% } %>
+                    </div>
+
                     <!-- Mis Solicitudes de Retiro -->
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-cash-stack text-dark me-2"></i> Mis Solicitudes de Retiro</h5>
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                    <!-- Vista Desktop: Tabla -->
+                    <div class="d-none d-md-block card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -855,11 +979,64 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Vista Móvil: Tarjetas Premium -->
+                    <div class="d-block d-md-none mb-5">
+                        <% if(locals.solicitudesRetiro && solicitudesRetiro.length > 0) { %>
+                            <div class="d-flex flex-column gap-3">
+                                <% solicitudesRetiro.forEach(sr => { %>
+                                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">#<%= sr.id %></span>
+                                            </div>
+                                            <div>
+                                                <% if(sr.estado === 'pendiente') { %>
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                        <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                    </span>
+                                                <% } else if(sr.estado === 'aprobado') { %>
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                        <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                                                    </span>
+                                                <% } else if(sr.estado === 'rechazado') { %>
+                                                    <button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= sr.comentarios || 'No se especificó un motivo de rechazo.' %>" style="text-decoration: none;">
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                            <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                        </span>
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 pt-2 border-top">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Monto Solicitado</small>
+                                                <h6 class="fw-bold text-danger mb-0 font-monospace" style="font-size: 0.9rem;">
+                                                    $<%= parseFloat(sr.monto_solicitado).toLocaleString('es-CO') %>
+                                                </h6>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Fecha</small>
+                                                <small class="text-dark fw-semibold" style="font-size: 0.75rem;">
+                                                    <%= new Date(sr.fecha_solicitud).toLocaleDateString() %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } else { %>
+                            <div class="card border-0 shadow-sm rounded-4 p-4 text-center text-muted bg-white">
+                                Aún no has solicitado ningún retiro.
+                            </div>
+                        <% } %>
+                    </div>
                     <% } %>
 
                     <!-- Mis Solicitudes de Crédito -->
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-rocket-takeoff-fill text-primary me-2"></i> Mis Solicitudes de Crédito</h5>
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                    <!-- Vista Desktop: Tabla -->
+                    <div class="d-none d-md-block card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -924,9 +1101,70 @@
                         </div>
                     </div>
 
+                    <!-- Vista Móvil: Tarjetas Premium -->
+                    <div class="d-block d-md-none mb-5">
+                        <% if(locals.solicitudesCredito && solicitudesCredito.length > 0) { %>
+                            <div class="d-flex flex-column gap-3">
+                                <% solicitudesCredito.forEach(sc => { %>
+                                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">#<%= sc.id %></span>
+                                            </div>
+                                            <div>
+                                                <% if(sc.estado === 'pendiente') { %>
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                        <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                    </span>
+                                                <% } else if(sc.estado === 'aprobado') { %>
+                                                    <button class="btn btn-sm btn-link text-success p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= sc.comentarios || 'Solicitud aprobada y desembolsada.' %>" style="text-decoration: none;">
+                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                            <i class="bi bi-check-circle-fill me-1"></i> Aprobado (Ver detalle)
+                                                        </span>
+                                                    </button>
+                                                <% } else if(sc.estado === 'rechazado') { %>
+                                                    <button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="<%= sc.comentarios || 'No se especificó un motivo de rechazo.' %>" style="text-decoration: none;">
+                                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                            <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                        </span>
+                                                    </button>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 pt-2 border-top">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Monto Solicitado</small>
+                                                <h6 class="fw-bold text-primary mb-0 font-monospace" style="font-size: 0.9rem;">
+                                                    $<%= parseFloat(sc.monto_solicitado).toLocaleString('es-CO') %>
+                                                </h6>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Plazo</small>
+                                                <span class="small text-dark fw-bold" style="font-size: 0.75rem;">
+                                                    <%= sc.cuotas %> Cuotas (<%= sc.frecuencia %>)
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 pt-2 border-top">
+                                            <small class="text-muted" style="font-size: 0.75rem;">Fecha de Solicitud:</small>
+                                            <small class="text-dark fw-semibold" style="font-size: 0.75rem;">
+                                                <%= new Date(sc.fecha_solicitud).toLocaleDateString() %>
+                                            </small>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } else { %>
+                            <div class="card border-0 shadow-sm rounded-4 p-4 text-center text-muted bg-white">
+                                Aún no has solicitado ningún préstamo.
+                            </div>
+                        <% } %>
+                    </div>
+
                     <!-- Préstamos Históricos -->
                     <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-secondary me-2"></i> Historial (Pagados)</h5>
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    <!-- Vista Desktop: Tabla -->
+                    <div class="d-none d-md-block card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
@@ -961,6 +1199,49 @@
                                 </table>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Vista Móvil: Tarjetas Premium -->
+                    <div class="d-block d-md-none mb-4">
+                        <% if(prestamosPagados && prestamosPagados.length > 0) { %>
+                            <div class="d-flex flex-column gap-3">
+                                <% prestamosPagados.forEach(p => { %>
+                                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div>
+                                                <span class="fw-bold text-dark" style="font-size: 0.95rem;">#<%= p.id %></span>
+                                                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2.5 py-0.5 ms-2" style="font-size: 0.75rem;">
+                                                    Pagado
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" style="font-size: 0.75rem;" title="Ver Historial de Pagos">
+                                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i> PDF
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2 pt-2 border-top">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Monto Total</small>
+                                                <h6 class="fw-bold text-success mb-0 font-monospace" style="font-size: 0.9rem;">
+                                                    $<%= parseFloat(p.monto_total).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
+                                                </h6>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Fecha Fin</small>
+                                                <small class="text-dark fw-semibold" style="font-size: 0.75rem;">
+                                                    <%= p.fecha_fin ? new Date(p.fecha_fin).toLocaleDateString() : 'N/A' %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } else { %>
+                            <div class="card border-0 shadow-sm rounded-4 p-4 text-center text-muted bg-white">
+                                Sin historial de préstamos cancelados.
+                            </div>
+                        <% } %>
                     </div>
                     <!-- Cierre de columnas de préstamos/ahorros/historial -->
                 </div>
@@ -1753,38 +2034,67 @@
                         // 2. Actualizar Tabla de Reportes
                         if (data.reportes) {
                             data.reportes.forEach(reporte => {
-                                const trs = Array.from(document.querySelectorAll('#seccion-reportes + .card tbody tr'));
+                                const trs = Array.from(document.querySelectorAll('#seccion-reportes + div tbody tr, #seccion-reportes + .card tbody tr, .d-none.d-md-block tbody tr'));
                                 const row = trs.find(tr => {
                                     const firstTd = tr.querySelector('td.ps-4');
                                     return firstTd && firstTd.textContent.trim() === '#' + reporte.id;
                                 });
                                 
+                                let newHtml = '';
+                                if (reporte.estado === 'pendiente') {
+                                    newHtml = `<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
+                                                    <i class="bi bi-clock-history me-1"></i> Pendiente
+                                                </span>`;
+                                } else if (reporte.estado === 'aprobado') {
+                                    newHtml = `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
+                                                    <i class="bi bi-check-circle-fill me-1"></i> Aprobado
+                                                </span>`;
+                                } else if (reporte.estado === 'rechazado') {
+                                    const motivo = reporte.observaciones || 'No se especificaron motivos en el sistema.';
+                                    newHtml = `<button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="${motivo}" style="text-decoration: none;">
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
+                                                        <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
+                                                    </span>
+                                                </button>`;
+                                }
+
                                 if (row) {
                                     const estadoTd = row.querySelector('td:nth-child(5)');
                                     if (estadoTd) {
                                         const currentHtml = estadoTd.innerHTML.toLowerCase();
                                         if (!currentHtml.includes(reporte.estado.toLowerCase())) {
-                                            let newHtml = '';
-                                            if (reporte.estado === 'pendiente') {
-                                                newHtml = `<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">
-                                                                <i class="bi bi-clock-history me-1"></i> Pendiente
-                                                            </span>`;
-                                            } else if (reporte.estado === 'aprobado') {
-                                                newHtml = `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-2.5 py-1">
-                                                                <i class="bi bi-check-circle-fill me-1"></i> Aprobado
-                                                            </span>`;
-                                            } else if (reporte.estado === 'rechazado') {
-                                                const motivo = reporte.observaciones || 'No se especificaron motivos en el sistema.';
-                                                newHtml = `<button class="btn btn-sm btn-link text-danger p-0 fw-bold border-0 align-baseline btn-ver-motivo" data-motivo="${motivo}" style="text-decoration: none;">
-                                                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 animate-pulse">
-                                                                    <i class="bi bi-x-circle-fill me-1"></i> Rechazado (Ver motivo)
-                                                                </span>
-                                                            </button>`;
-                                            }
                                             estadoTd.innerHTML = newHtml;
                                             
                                             // Re-bind the click event for the new button
                                             const newBtn = estadoTd.querySelector('.btn-ver-motivo');
+                                            if (newBtn) {
+                                                newBtn.addEventListener('click', function(e) {
+                                                    e.preventDefault();
+                                                    Swal.fire({
+                                                        title: 'Motivo del Rechazo',
+                                                        text: this.getAttribute('data-motivo'),
+                                                        icon: 'warning',
+                                                        confirmButtonText: 'Entendido',
+                                                        customClass: { confirmButton: 'btn btn-success rounded-pill px-4 fw-bold' },
+                                                        buttonsStyling: false
+                                                    });
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Actualizar en vista móvil (tarjetas)
+                                const cardMovil = document.querySelector(`.reporte-card-movil[data-reporte-id="${reporte.id}"]`);
+                                if (cardMovil) {
+                                    const estadoDiv = cardMovil.querySelector('.estado-reporte-movil-container');
+                                    if (estadoDiv) {
+                                        const currentHtml = estadoDiv.innerHTML.toLowerCase();
+                                        if (!currentHtml.includes(reporte.estado.toLowerCase())) {
+                                            estadoDiv.innerHTML = newHtml;
+
+                                            // Re-bind the click event for the new button in mobile card
+                                            const newBtn = estadoDiv.querySelector('.btn-ver-motivo');
                                             if (newBtn) {
                                                 newBtn.addEventListener('click', function(e) {
                                                     e.preventDefault();
@@ -2373,7 +2683,8 @@
             Swal.fire({
                 title: 'Clasificación del Score Crediticio',
                 html: `
-                    <div class="table-responsive text-start small mt-2">
+                    <!-- Vista Desktop: Tabla -->
+                    <div class="table-responsive text-start small mt-2 d-none d-md-block">
                         <table class="table table-sm table-bordered align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
@@ -2417,6 +2728,83 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Vista Móvil: Tarjetas Premium -->
+                    <div class="d-md-none mt-2">
+                        <div class="d-flex flex-column gap-2 text-start">
+                            <!-- Categoría A -->
+                            <div class="p-2.5 rounded-3 border d-flex justify-content-between align-items-center" style="background-color: rgba(16, 185, 129, 0.06); border-color: rgba(16, 185, 129, 0.15) !important;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-success px-2 py-1 rounded-2 fw-bold" style="font-size: 0.75rem;">Cat. A</span>
+                                    <div>
+                                        <div class="fw-bold text-success" style="font-size: 0.8rem; line-height: 1.2;">Excelente</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">Riesgo Muy Bajo</div>
+                                    </div>
+                                </div>
+                                <div class="text-end" style="line-height: 1.2;">
+                                    <div class="fw-bold text-dark" style="font-size: 0.8rem;">900 - 1000 pts</div>
+                                    <div class="text-success fw-bold" style="font-size: 0.7rem;"><i class="bi bi-percent me-0.5"></i> 1.5% / 2.5%</div>
+                                </div>
+                            </div>
+                            <!-- Categoría B -->
+                            <div class="p-2.5 rounded-3 border d-flex justify-content-between align-items-center" style="background-color: rgba(59, 130, 246, 0.06); border-color: rgba(59, 130, 246, 0.15) !important;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-info px-2 py-1 rounded-2 fw-bold text-white" style="font-size: 0.75rem;">Cat. B</span>
+                                    <div>
+                                        <div class="fw-bold text-primary" style="font-size: 0.8rem; line-height: 1.2;">Bueno</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">Riesgo Bajo</div>
+                                    </div>
+                                </div>
+                                <div class="text-end" style="line-height: 1.2;">
+                                    <div class="fw-bold text-dark" style="font-size: 0.8rem;">700 - 899 pts</div>
+                                    <div class="text-primary fw-bold" style="font-size: 0.7rem;"><i class="bi bi-percent me-0.5"></i> 2.0% / 3.0%</div>
+                                </div>
+                            </div>
+                            <!-- Categoría C -->
+                            <div class="p-2.5 rounded-3 border d-flex justify-content-between align-items-center" style="background-color: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.15) !important;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-warning text-dark px-2 py-1 rounded-2 fw-bold" style="font-size: 0.75rem;">Cat. C</span>
+                                    <div>
+                                        <div class="fw-bold text-warning" style="font-size: 0.8rem; line-height: 1.2;">Regular</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">Riesgo Medio</div>
+                                    </div>
+                                </div>
+                                <div class="text-end" style="line-height: 1.2;">
+                                    <div class="fw-bold text-dark" style="font-size: 0.8rem;">500 - 699 pts</div>
+                                    <div class="text-warning fw-bold" style="font-size: 0.7rem;"><i class="bi bi-percent me-0.5"></i> 2.5% / 3.5%</div>
+                                </div>
+                            </div>
+                            <!-- Categoría D -->
+                            <div class="p-2.5 rounded-3 border d-flex justify-content-between align-items-center" style="background-color: rgba(248, 113, 113, 0.06); border-color: rgba(248, 113, 113, 0.15) !important;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge px-2 py-1 rounded-2 fw-bold text-white" style="background-color: #f87171; font-size: 0.75rem;">Cat. D</span>
+                                    <div>
+                                        <div class="fw-bold text-danger" style="font-size: 0.8rem; line-height: 1.2;">Malo</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">Riesgo Alto</div>
+                                    </div>
+                                </div>
+                                <div class="text-end" style="line-height: 1.2;">
+                                    <div class="fw-bold text-dark" style="font-size: 0.8rem;">300 - 499 pts</div>
+                                    <div class="text-danger fw-bold" style="font-size: 0.7rem;"><i class="bi bi-percent me-0.5"></i> 3.0% / 4.0%</div>
+                                </div>
+                            </div>
+                            <!-- Categoría E -->
+                            <div class="p-2.5 rounded-3 border d-flex justify-content-between align-items-center" style="background-color: rgba(220, 38, 38, 0.06); border-color: rgba(220, 38, 38, 0.15) !important;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-danger px-2 py-1 rounded-2 fw-bold" style="font-size: 0.75rem;">Cat. E</span>
+                                    <div>
+                                        <div class="fw-bold text-danger" style="font-size: 0.8rem; line-height: 1.2; color: #dc2626 !important;">Crítico</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">Riesgo Muy Alto</div>
+                                    </div>
+                                </div>
+                                <div class="text-end" style="line-height: 1.2;">
+                                    <div class="fw-bold text-danger" style="font-size: 0.8rem; color: #dc2626 !important;">0 - 299 pts</div>
+                                    <div class="text-danger fw-bold" style="font-size: 0.7rem; color: #dc2626 !important;"><i class="bi bi-percent me-0.5"></i> 3.5% / 4.5%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <p class="small text-muted text-start mt-3 mb-0">
                         <i class="bi bi-info-circle text-success me-1"></i>
                         Tu puntaje base inicia en <strong>500 puntos</strong>. Sube pagando a tiempo (+100 c/u, máx 300), manteniendo saldo en tu cuenta de ahorros (+10 por cada $100.000, máx 100) y por antigüedad (+50). Baja por cuotas en mora (-50/-100) y créditos vencidos (-200 c/u).
