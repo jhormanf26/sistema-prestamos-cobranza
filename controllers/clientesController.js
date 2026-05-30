@@ -1,4 +1,5 @@
 const ClienteModel = require('../models/ClienteModel');
+const db = require('../config/db');
 const PrestamoModel = require('../models/PrestamoModel'); // Asegúrate de tener este modelo si usas verPerfil
 const EmpenoModel = require('../models/EmpenoModel');    // Asegúrate de tener este modelo
 const AhorroModel = require('../models/AhorroModel');    // Asegúrate de tener este modelo
@@ -120,6 +121,39 @@ const clientesController = {
                 console.error("Error al calcular score del cliente en perfil administrativo:", scoreErr);
             }
 
+            // Consultas financieras detalladas de préstamos de este cliente
+            const [[totalesPrestamos]] = await db.query(`
+                SELECT 
+                    COALESCE(SUM(monto_prestado), 0) as totalPrestado,
+                    COALESCE(SUM(monto_total), 0) as totalDeuda
+                FROM prestamos 
+                WHERE cliente_id = ? AND estado != 'anulado'
+            `, [id]);
+
+            const [[totalesPagos]] = await db.query(`
+                SELECT 
+                    COALESCE(SUM(pg.monto_pagado), 0) as totalPagado,
+                    COALESCE(SUM(pg.monto_pagado * (p.monto_total - p.monto_prestado) / p.monto_total), 0) as totalIntereses
+                FROM pagos pg
+                JOIN prestamos p ON pg.prestamo_id = p.id
+                WHERE p.cliente_id = ? AND p.estado != 'anulado'
+            `, [id]);
+
+            const totalPrestado = parseFloat(totalesPrestamos.totalPrestado);
+            const totalDeuda = parseFloat(totalesPrestamos.totalDeuda);
+            const totalPagado = parseFloat(totalesPagos.totalPagado);
+            const totalInteresesGenerados = parseFloat(totalesPagos.totalIntereses);
+            const totalDebe = Math.max(0, totalDeuda - totalPagado);
+            const totalCapitalDevuelto = Math.max(0, totalPagado - totalInteresesGenerados);
+
+            const resumenFinanciero = {
+                totalPrestado,
+                totalPagado,
+                totalDebe,
+                totalInteresesGenerados,
+                totalCapitalDevuelto
+            };
+
             res.render('clientes/perfil', {
                 title: `Perfil de ${cliente.nombre}`,
                 cliente,
@@ -128,7 +162,8 @@ const clientesController = {
                 empenos: empenos || [],
                 cuentaAhorro,
                 empresa: empresaConfig,
-                documentos: documentos || []
+                documentos: documentos || [],
+                resumenFinanciero
             });
 
         } catch (error) {

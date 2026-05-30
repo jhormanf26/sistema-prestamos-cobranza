@@ -122,6 +122,12 @@
                                         <i class="bi bi-shield-check-fill text-success"></i> Score Crediticio
                                     </button>
                                 </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="estadisticas-tab" data-bs-toggle="tab"
+                                        data-bs-target="#estadisticas" type="button">
+                                        <i class="bi bi-graph-up-arrow"></i> Estadísticas
+                                    </button>
+                                </li>
                             </ul>
 
                             <div class="tab-content" id="clientTabsContent">
@@ -663,6 +669,92 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Tab Estadísticas (NUEVA PESTAÑA) -->
+                                <div class="tab-pane fade" id="estadisticas" role="tabpanel">
+                                    <div class="card card-box border-0 shadow-sm p-4">
+                                        <h5 class="fw-bold mb-4"><i class="bi bi-graph-up-arrow text-primary me-2"></i> Estadísticas Financieras del Cliente</h5>
+                                        
+                                        <!-- Fila de Tarjetas KPI del Cliente -->
+                                        <div class="row g-3 mb-4">
+                                            <!-- 1. Total Prestado -->
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="card bg-primary bg-opacity-10 border-0 rounded-4 p-3 h-100">
+                                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                                        <span class="text-primary small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing:0.5px;">Dinero Prestado</span>
+                                                        <i class="bi bi-cash-stack text-primary fs-4"></i>
+                                                    </div>
+                                                    <h4 class="fw-bold text-primary mb-1">
+                                                        <%= empresa.moneda %> <%= formatCurrency(resumenFinanciero.totalPrestado, 2) %>
+                                                     </h4>
+                                                     <small class="text-muted" style="font-size: 0.75rem;">Capital inicial prestado</small>
+                                                 </div>
+                                             </div>
+                                             
+                                             <!-- 2. Total Devuelto -->
+                                             <div class="col-md-6 col-lg-3">
+                                                 <div class="card bg-success bg-opacity-10 border-0 rounded-4 p-3 h-100">
+                                                     <div class="d-flex align-items-center justify-content-between mb-2">
+                                                         <span class="text-success small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing:0.5px;">Dinero Devuelto</span>
+                                                         <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                                     </div>
+                                                     <h4 class="fw-bold text-success mb-1">
+                                                         <%= empresa.moneda %> <%= formatCurrency(resumenFinanciero.totalPagado, 2) %>
+                                                     </h4>
+                                                     <small class="text-muted" style="font-size: 0.75rem;">Abonado a la fecha</small>
+                                                 </div>
+                                             </div>
+                                             
+                                             <!-- 3. Dinero que Debe -->
+                                             <div class="col-md-6 col-lg-3">
+                                                 <div class="card bg-danger bg-opacity-10 border-0 rounded-4 p-3 h-100">
+                                                     <div class="d-flex align-items-center justify-content-between mb-2">
+                                                         <span class="text-danger small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing:0.5px;">Dinero que Debe</span>
+                                                         <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
+                                                     </div>
+                                                     <h4 class="fw-bold text-danger mb-1">
+                                                         <%= empresa.moneda %> <%= formatCurrency(resumenFinanciero.totalDebe, 2) %>
+                                                     </h4>
+                                                     <small class="text-muted" style="font-size: 0.75rem;">Saldo restante por pagar</small>
+                                                 </div>
+                                             </div>
+                                             
+                                             <!-- 4. Ingresos por Intereses -->
+                                             <div class="col-md-6 col-lg-3">
+                                                 <div class="card bg-info bg-opacity-10 border-0 rounded-4 p-3 h-100">
+                                                     <div class="d-flex align-items-center justify-content-between mb-2">
+                                                         <span class="text-info small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing:0.5px;">Ganancia (Intereses)</span>
+                                                         <i class="bi bi-graph-up text-info fs-4"></i>
+                                                     </div>
+                                                     <h4 class="fw-bold text-info mb-1">
+                                                         <%= empresa.moneda %> <%= formatCurrency(resumenFinanciero.totalInteresesGenerados, 2) %>
+                                                     </h4>
+                                                     <small class="text-muted" style="font-size: 0.75rem;">Ingresos reales por interés</small>
+                                                 </div>
+                                             </div>
+                                         </div>
+
+                                         <!-- Gráficos Estadísticos -->
+                                         <div class="row g-4">
+                                             <div class="col-md-6">
+                                                 <div class="border rounded-4 p-3 bg-white h-100">
+                                                     <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-pie-chart-fill text-secondary me-2"></i>Estado de Cartera del Cliente</h6>
+                                                     <div style="max-height: 250px;" class="d-flex align-items-center justify-content-center py-2">
+                                                         <canvas id="chartCarteraCliente" style="max-height: 220px; max-width: 220px;"></canvas>
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                             <div class="col-md-6">
+                                                 <div class="border rounded-4 p-3 bg-white h-100">
+                                                     <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-bar-chart-fill text-secondary me-2"></i>Capital vs Interés Cobrado</h6>
+                                                     <div style="max-height: 250px;" class="d-flex align-items-center justify-content-center py-2">
+                                                         <canvas id="chartBalanceCliente" style="max-height: 220px;"></canvas>
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
                             </div>
 
                         </div>
@@ -1240,6 +1332,87 @@
                     }
                 });
             }
+
+            // --- GRÁFICOS DE ESTADÍSTICAS DEL CLIENTE ---
+            document.addEventListener("DOMContentLoaded", function() {
+                const totalDevuelto = <%= resumenFinanciero.totalPagado %>;
+                const totalDebe = <%= resumenFinanciero.totalDebe %>;
+                const totalCapital = <%= resumenFinanciero.totalCapitalDevuelto %>;
+                const totalInteres = <%= resumenFinanciero.totalInteresesGenerados %>;
+
+                // Cargar CDN de Chart.js si no existe
+                if (typeof Chart === 'undefined') {
+                    const script = document.createElement('script');
+                    script.src = "https://cdn.jsdelivr.net/npm/chart.js";
+                    script.onload = () => {
+                        inicializarGraficosCliente(totalDevuelto, totalDebe, totalCapital, totalInteres);
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    inicializarGraficosCliente(totalDevuelto, totalDebe, totalCapital, totalInteres);
+                }
+
+                function inicializarGraficosCliente(totalDevuelto, totalDebe, totalCapital, totalInteres) {
+                    // 1. Gráfico de Cartera (Rosca)
+                    const ctxCartera = document.getElementById('chartCarteraCliente');
+                    if (ctxCartera) {
+                        new Chart(ctxCartera.getContext('2d'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Dinero Devuelto', 'Dinero que Debe'],
+                                datasets: [{
+                                    data: [totalDevuelto, totalDebe],
+                                    backgroundColor: ['#10b981', '#ef4444'],
+                                    borderWidth: 0,
+                                    hoverOffset: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { position: 'bottom' }
+                                }
+                            }
+                        });
+                    }
+
+                    // 2. Gráfico de Balance (Barra)
+                    const ctxBalance = document.getElementById('chartBalanceCliente');
+                    if (ctxBalance) {
+                        new Chart(ctxBalance.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: ['Capital Devuelto', 'Interés Cobrado'],
+                                datasets: [{
+                                    label: 'Monto Cobrado',
+                                    data: [totalCapital, totalInteres],
+                                    backgroundColor: ['#3b82f6', '#06b6d4'],
+                                    borderRadius: 8,
+                                    borderSkipped: false
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return '<%= empresa.moneda %>' + value.toLocaleString();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            });
         </script>
     </body>
 </html>
