@@ -54,6 +54,16 @@ const pagosController = {
             const hoy = new Date();
             hoy.setHours(0,0,0,0);
 
+            // Calcular monto base a pagar de cuotas vencidas
+            let totalDeberiaHaberPagado = 0;
+            for (const c of cronograma) {
+                if (c.fecha <= hoy) {
+                    totalDeberiaHaberPagado += c.monto;
+                }
+            }
+            const cuotasVencidasPendientes = Math.max(0, totalDeberiaHaberPagado - totalPagado);
+            const montoBaseAPagar = cuotasVencidasPendientes > 0 ? cuotasVencidasPendientes : Math.min(saldoPendiente, cuotaPendiente ? cuotaPendiente.monto : 0);
+
             // Mora diaria sobre capital (monto_prestado)
             const tasaMoraMensual = parseFloat(prestamo.tasa_mora) || 0;
             const montoPrestado = parseFloat(prestamo.monto_prestado);
@@ -74,7 +84,8 @@ const pagosController = {
                 cuotaPendiente: cuotaPendiente,
                 diasAtraso: diasAtraso,
                 moraDiaria: moraDiaria,
-                interesMoraAcumulado: interesMoraAcumulado
+                interesMoraAcumulado: interesMoraAcumulado,
+                montoBaseAPagar: montoBaseAPagar
             });
 
         } catch (error) {

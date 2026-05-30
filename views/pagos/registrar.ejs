@@ -83,9 +83,13 @@
                                                                     <span>Días de Atraso:</span>
                                                                     <span class="fw-bold"><%= diasAtraso %> días</span>
                                                                 </div>
-                                                                <div class="d-flex justify-content-between text-danger">
+                                                                <div class="d-flex justify-content-between text-danger mb-1">
                                                                     <span>Mora Acumulada:</span>
                                                                     <span class="fw-bold"><%= empresa.moneda %> <%= formatCurrency(interesMoraAcumulado, 2) %></span>
+                                                                </div>
+                                                                <div class="d-flex justify-content-between text-dark fw-bold border-top pt-2 mt-2" style="font-size: 0.95rem;">
+                                                                    <span>Total a Pagar (Cuota + Mora):</span>
+                                                                    <span class="text-primary"><%= empresa.moneda %> <%= formatCurrency(montoBaseAPagar + interesMoraAcumulado, 2) %></span>
                                                                 </div>
                                                             <% } else { %>
                                                                 <div class="text-success small mt-2">

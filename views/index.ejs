@@ -139,7 +139,7 @@
                                             <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Monto</th><th class="text-end pe-3">Cobrar</th></tr></thead>
                                             <tbody>
                                                 <% if(detalleMora.length > 0) { detalleMora.forEach(m => { %>
-                                                    <tr><td class="ps-3"><span class="fw-bold d-block"><%= m.nombre %> <%= m.apellido %></span><small class="text-muted"><%= m.telefono %></small></td><td><%= empresa.moneda %> <%= parseFloat(m.monto_total).toLocaleString() %></td><td class="text-end pe-3"><a href="/pagos/registrar/<%= m.id %>" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block"><%= m.nombre %> <%= m.apellido %></span><small class="text-muted"><%= m.telefono %></small></td><td><%= empresa.moneda %> <%= parseFloat(m.monto_total - m.total_pagado).toLocaleString() %></td><td class="text-end pe-3"><a href="/pagos/registrar/<%= m.id %>" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
                                                 <% }) } else { %><tr><td colspan="3" class="text-center py-5 text-muted">Todo al día</td></tr><% } %>
                                             </tbody></table></div></div>
                                     </div>
@@ -263,51 +263,138 @@
                         </div>
 
                         <!-- TAB 3: CRECIMIENTO -->
-                        <div class="tab-pane fade" id="tab-crecimiento" role="tabpanel">
+                    <div class="tab-pane fade" id="tab-crecimiento" role="tabpanel">
                             <div class="row g-3">
                                 <div class="col-12 mb-4">
                                     <div class="card card-box shadow-sm border-0 border-start border-success border-4">
                                         <div class="card-header bg-white fw-bold d-flex justify-content-between"><span>🔥 Oportunidades de Renovación</span><span class="badge bg-success-subtle text-success">Fidelización</span></div>
-                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
-                                            <thead class="table-light"><tr><th class="ps-4">Cliente</th><th class="text-center">Progreso</th><th class="text-center">Falta Pagar</th><th class="text-end pe-4">Acción</th></tr></thead>
-                                            <tbody>
-                                                <% if(oportunidadesRenovacion && oportunidadesRenovacion.length > 0) { oportunidadesRenovacion.forEach(o => { %>
-                                                    <tr>
-                                                        <td class="ps-4"><b><%= o.nombre %> <%= o.apellido %></b><br><small><%= o.telefono %></small></td>
-                                                        <td style="width:25%">
-                                                            <div class="progress" style="height:8px;"><div class="progress-bar bg-success" style="width:<%= o.progreso %>%"></div></div>
-                                                            <small class="fw-bold text-success"><%= o.progreso %>% Pagado</small>
-                                                        </td>
-                                                        <td class="text-center fw-bold text-danger">
-                                                            <%= empresa.moneda %> <%= parseFloat(o.monto_total - o.total_pagado).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
-                                                        </td>
-                                                        <td class="text-end pe-4"><a href="https://wa.me/<%= o.telefono %>?text=Hola%20<%= o.nombre %>,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3"><i class="bi bi-whatsapp"></i> Ofrecer</a></td>
-                                                    </tr>
-                                                <% }) } else { %><tr><td colspan="4" class="text-center py-5 text-muted">No hay renovaciones cercanas</td></tr><% } %>
-                                            </tbody></table></div></div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="card card-box shadow-sm border-0">
-                                        <div class="card-header bg-white fw-bold text-primary">👑 Mejores Clientes (Historial VIP)</div>
-                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0 text-nowrap">
-                                            <thead class="table-dark"><tr><th class="ps-4">Cliente</th><th class="text-center">Pagados</th><th class="text-center">Capital Mín / Máx</th><th class="text-center">Tasa Mín / Máx (%)</th><th class="text-end pe-4">Acción</th></tr></thead>
-                                            <tbody>
-                                                <% if(historialFinalizados && historialFinalizados.length > 0) { historialFinalizados.forEach(h => { %>
-                                                    <tr>
-                                                        <td class="ps-4 py-3"><b><%= h.nombre %> <%= h.apellido %></b><br><small><%= h.telefono %></small></td>
-                                                        <td class="text-center"><span class="badge bg-dark rounded-pill"><%= h.total_prestamos %></span></td>
-                                                        <td class="text-center"><%= empresa.moneda %> <%= parseFloat(h.capital_min).toLocaleString() %> - <%= empresa.moneda %> <%= parseFloat(h.capital_max).toLocaleString() %></td>
-                                                        <td class="text-center bg-light text-warning-emphasis fw-bold"><%= parseFloat(h.interes_min_pct).toFixed(1) %>% - <%= parseFloat(h.interes_max_pct).toFixed(1) %>%</td>
-                                                        <td class="text-end pe-4"><a href="https://wa.me/<%= h.telefono %>?text=Hola%20<%= h.nombre %>,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-star-fill"></i> Ofrecer VIP</a></td>
-                                                    </tr>
-                                                <% }) } else { %><tr><td colspan="5" class="text-center py-4 text-muted">Sin registros históricos</td></tr><% } %>
-                                            </tbody></table></div></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                        <div class="card-body p-0">
+                                             <div class="table-responsive d-none d-md-block">
+                                                 <table class="table table-hover align-middle mb-0">
+                                                     <thead class="table-light"><tr><th class="ps-4">Cliente</th><th class="text-center">Progreso</th><th class="text-center">Falta Pagar</th><th class="text-end pe-4">Acción</th></tr></thead>
+                                                     <tbody>
+                                                         <% if(oportunidadesRenovacion && oportunidadesRenovacion.length > 0) { oportunidadesRenovacion.forEach(o => { %>
+                                                             <tr>
+                                                                 <td class="ps-4"><b><%= o.nombre %> <%= o.apellido %></b><br><small><%= o.telefono %></small></td>
+                                                                 <td style="width:25%">
+                                                                     <div class="progress" style="height:8px;"><div class="progress-bar bg-success" style="width:<%= o.progreso %>%"></div></div>
+                                                                     <small class="fw-bold text-success"><%= o.progreso %>% Pagado</small>
+                                                                 </td>
+                                                                 <td class="text-center fw-bold text-danger">
+                                                                     <%= empresa.moneda %> <%= parseFloat(o.monto_total - o.total_pagado).toLocaleString('en-US', {minimumFractionDigits: 2}) %>
+                                                                 </td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/<%= o.telefono %>?text=Hola%20<%= o.nombre %>,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3"><i class="bi bi-whatsapp"></i> Ofrecer</a></td>
+                                                             </tr>
+                                                         <% }) } else { %><tr><td colspan="4" class="text-center py-5 text-muted">No hay renovaciones cercanas</td></tr><% } %>
+                                                     </tbody>
+                                                 </table>
+                                             </div>
 
+                                             <!-- Vista Móvil: Tarjetas Premium de Oportunidades de Renovación -->
+                                             <div class="d-block d-md-none p-3">
+                                                 <div class="d-flex flex-column gap-3">
+                                                     <% if(oportunidadesRenovacion && oportunidadesRenovacion.length > 0) { oportunidadesRenovacion.forEach(o => { %>
+                                                         <div class="card border border-light-subtle shadow-sm rounded-4 p-3 bg-white">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;"><%= o.nombre %> <%= o.apellido %></h6>
+                                                                     <a href="tel:<%= o.telefono %>" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i><%= o.telefono %></a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/<%= o.telefono %>?text=Hola%20<%= o.nombre %>,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-whatsapp me-1"></i> Ofrecer
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2">
+                                                                 <div class="col-6 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Progreso</span>
+                                                                     <div class="progress mx-auto mt-1" style="height:6px; max-width: 80px;">
+                                                                         <div class="progress-bar bg-success" style="width:<%= o.progreso %>%"></div>
+                                                                     </div>
+                                                                     <span class="fw-bold text-success" style="font-size: 0.75rem;"><%= o.progreso %>% Pagado</span>
+                                                                 </div>
+                                                                 <div class="col-6">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Falta Pagar</span>
+                                                                     <span class="fw-bold text-danger" style="font-size: 0.8rem;"><%= empresa.moneda %> <%= parseFloat(o.monto_total - o.total_pagado).toLocaleString('en-US', {minimumFractionDigits: 2}) %></span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     <% }) } else { %>
+                                                         <div class="text-center py-4 text-muted small">No hay renovaciones cercanas</div>
+                                                     <% } %>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                    </div>
+                                    <div class="col-12">
+                                     <div class="card card-box shadow-sm border-0">
+                                         <div class="card-header bg-white fw-bold text-primary">👑 Mejores Clientes (Historial VIP)</div>
+                                         <div class="card-body p-0">
+                                             <div class="table-responsive d-none d-md-block text-nowrap">
+                                                 <table class="table table-hover align-middle mb-0 text-nowrap">
+                                                     <thead class="table-dark"><tr><th class="ps-4">Cliente</th><th class="text-center">Pagados</th><th class="text-center">Capital Mín / Máx</th><th class="text-center">Tasa Mín / Máx (%)</th><th class="text-end pe-4">Acción</th></tr></thead>
+                                                     <tbody>
+                                                         <% if(historialFinalizados && historialFinalizados.length > 0) { historialFinalizados.forEach(h => { %>
+                                                             <tr>
+                                                                 <td class="ps-4 py-3"><b><%= h.nombre %> <%= h.apellido %></b><br><small><%= h.telefono %></small></td>
+                                                                 <td class="text-center"><span class="badge bg-dark rounded-pill"><%= h.total_prestamos %></span></td>
+                                                                 <td class="text-center"><%= empresa.moneda %> <%= parseFloat(h.capital_min).toLocaleString() %> - <%= empresa.moneda %> <%= parseFloat(h.capital_max).toLocaleString() %></td>
+                                                                 <td class="text-center bg-light text-warning-emphasis fw-bold"><%= parseFloat(h.interes_min_pct).toFixed(1) %>% - <%= parseFloat(h.interes_max_pct).toFixed(1) %>%</td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/<%= h.telefono %>?text=Hola%20<%= h.nombre %>,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-star-fill"></i> Ofrecer VIP</a></td>
+                                                             </tr>
+                                                         <% }) } else { %><tr><td colspan="5" class="text-center py-4 text-muted">Sin registros históricos</td></tr><% } %>
+                                                     </tbody>
+                                                 </table>
+                                             </div>
+
+                                             <!-- Vista Móvil: Tarjetas Premium VIP -->
+                                             <div class="d-block d-md-none p-3">
+                                                 <div class="d-flex flex-column gap-3">
+                                                     <% if(historialFinalizados && historialFinalizados.length > 0) { historialFinalizados.forEach(h => { %>
+                                                         <div class="card border border-warning-subtle shadow-sm rounded-4 p-3 bg-white" style="border-left: 4px solid #ffc107 !important;">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;"><%= h.nombre %> <%= h.apellido %></h6>
+                                                                     <a href="tel:<%= h.telefono %>" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i><%= h.telefono %></a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/<%= h.telefono %>?text=Hola%20<%= h.nombre %>,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-star-fill me-1"></i> Ofrecer VIP
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2" style="font-size: 0.75rem;">
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Pagados</span>
+                                                                     <span class="badge bg-dark rounded-pill mt-1" style="font-size: 0.75rem;"><%= h.total_prestamos %></span>
+                                                                 </div>
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Capital</span>
+                                                                     <span class="fw-bold text-dark d-block mt-0.5" style="font-size: 0.7rem; line-height: 1.2;">
+                                                                         <%= empresa.moneda %> <%= parseFloat(h.capital_min).toLocaleString() %><br>a <%= parseFloat(h.capital_max).toLocaleString() %>
+                                                                     </span>
+                                                                 </div>
+                                                                 <div class="col-4">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Tasa (%)</span>
+                                                                     <span class="fw-bold text-warning-emphasis d-block mt-1" style="font-size: 0.75rem;">
+                                                                         <%= parseFloat(h.interes_min_pct).toFixed(1) %>% - <%= parseFloat(h.interes_max_pct).toFixed(1) %>%
+                                                                     </span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     <% }) } else { %>
+                                                         <div class="text-center py-4 text-muted small">Sin registros históricos</div>
+                                                     <% } %>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
                         <!-- TAB 4: MARKETING (Analítica Web) -->
                         <div class="tab-pane fade" id="tab-marketing" role="tabpanel">
                             <div class="row g-4 mb-4">
