@@ -59,7 +59,7 @@
                                             <p class="text-muted small">No hay aportes de ahorro pendientes de verificación en este momento.</p>
                                         </div>
                                     <% } else { %>
-                                        <div class="table-responsive">
+                                        <div class="table-responsive d-none d-md-block">
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="table-light">
                                                     <tr>
@@ -107,6 +107,35 @@
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        <div class="d-block d-md-none p-3">
+                                            <% reportes.forEach(reporte => { %>
+                                                <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-white border-start border-warning border-3" id="row-aporte-mobile-<%= reporte.id %>">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="fw-bold text-warning">#<%= reporte.id %></span>
+                                                        <span class="small text-muted"><%= new Date(reporte.fecha_reporte).toLocaleDateString() %></span>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <div class="fw-bold text-dark"><%= reporte.nombre %> <%= reporte.apellido %></div>
+                                                        <small class="text-muted"><%= reporte.dni %></small>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                                        <h6 class="fw-bold text-dark mb-0 font-monospace">
+                                                            $<%= parseFloat(reporte.monto).toLocaleString('es-CO') %>
+                                                        </h6>
+                                                        <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold btn-verificar-aporte" 
+                                                                data-id="<%= reporte.id %>" 
+                                                                data-cliente="<%= reporte.nombre %> <%= reporte.apellido %>"
+                                                                data-dni="<%= reporte.dni %>"
+                                                                data-monto="<%= Math.round(reporte.monto) %>"
+                                                                data-comprobante-url="<%= reporte.comprobante_url %>"
+                                                                data-observaciones="<%= reporte.observaciones || '' %>">
+                                                            <i class="bi bi-eye-fill me-1"></i> Verificar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            <% }) %>
+                                        </div>
                                     <% } %>
                                 </div>
                             </div>
@@ -132,7 +161,7 @@
                                             <p class="text-muted small">No hay solicitudes de retiro pendientes en este momento.</p>
                                         </div>
                                     <% } else { %>
-                                        <div class="table-responsive">
+                                        <div class="table-responsive d-none d-md-block">
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="table-light">
                                                     <tr>
@@ -185,6 +214,41 @@
                                                     <% }) %>
                                                 </tbody>
                                             </table>
+                                        </div>
+
+                                        <div class="d-block d-md-none p-3">
+                                            <% retiros.forEach(retiro => { %>
+                                                <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-white border-start border-danger border-3" id="row-retiro-mobile-<%= retiro.id %>">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="fw-bold text-dark">#<%= retiro.id %></span>
+                                                        <span class="small text-muted"><%= new Date(retiro.fecha_solicitud).toLocaleDateString() %></span>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <div class="fw-bold text-dark"><%= retiro.nombre %> <%= retiro.apellido %></div>
+                                                        <small class="text-muted"><%= retiro.dni %></small>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <span class="text-muted small">Saldo Actual: </span>
+                                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2.5 py-1 fw-bold font-monospace">
+                                                            $<%= parseFloat(retiro.saldo_actual).toLocaleString('es-CO') %>
+                                                        </span>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                                        <h6 class="fw-bold text-danger mb-0 font-monospace">
+                                                            $<%= parseFloat(retiro.monto_solicitado).toLocaleString('es-CO') %>
+                                                        </h6>
+                                                        <button class="btn btn-sm btn-dark rounded-pill px-3 fw-bold btn-verificar-retiro" 
+                                                                data-id="<%= retiro.id %>" 
+                                                                data-cliente="<%= retiro.nombre %> <%= retiro.apellido %>"
+                                                                data-dni="<%= retiro.dni %>"
+                                                                data-monto="<%= Math.round(retiro.monto_solicitado) %>"
+                                                                data-saldo="<%= Math.round(retiro.saldo_actual) %>"
+                                                                data-comentarios="<%= retiro.comentarios || '' %>">
+                                                            <i class="bi bi-eye-fill me-1"></i> Tramitar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            <% }) %>
                                         </div>
                                     <% } %>
                                 </div>

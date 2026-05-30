@@ -129,7 +129,7 @@
                                 <div class="tab-pane fade show active" id="prestamos" role="tabpanel">
                                     <div class="card card-box p-0 border-0 shadow-sm overflow-hidden">
                                         <% if(prestamos.length > 0) { %>
-                                            <div class="table-responsive">
+                                            <div class="table-responsive d-none d-md-block">
                                                 <table class="table table-hover align-middle mb-0">
                                                     <thead class="table-light text-uppercase small fw-bold">
                                                         <tr>
@@ -170,6 +170,50 @@
                                                         <% }) %>
                                                     </tbody>
                                                 </table>
+                                            </div>
+
+                                            <div class="d-block d-md-none p-3">
+                                                <% prestamos.forEach(p => { 
+                                                    const pagado = p.total_pagado || 0;
+                                                    const saldo = p.monto_total - pagado;
+                                                    let badgeClass = '';
+                                                    if(p.estado == 'pendiente') {
+                                                        badgeClass = 'bg-warning text-dark';
+                                                    } else if(p.estado == 'pagado') {
+                                                        badgeClass = 'bg-success';
+                                                    } else {
+                                                        badgeClass = 'bg-danger';
+                                                    }
+                                                %>
+                                                    <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-white border-start border-3 <%= p.estado == 'pagado' ? 'border-success' : (p.estado == 'vencido' ? 'border-danger' : 'border-warning') %>">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <span class="badge bg-dark">#<%= p.id %></span>
+                                                            <span class="badge <%= badgeClass %> px-2 rounded-pill"><%= p.estado.toUpperCase() %></span>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <span class="text-muted small">Fecha: </span>
+                                                            <span class="fw-bold text-dark"><%= new Date(p.fecha_inicio).toLocaleDateString() %></span>
+                                                        </div>
+                                                        <div class="row g-2 mb-3 py-2 bg-light rounded-3 text-center">
+                                                            <div class="col-4 border-end">
+                                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Prestado</small>
+                                                                <span class="fw-bold text-dark font-monospace small"><%= empresa.moneda %><%= formatCurrency(p.monto_prestado, 0) %></span>
+                                                            </div>
+                                                            <div class="col-4 border-end">
+                                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Pagado</small>
+                                                                <span class="fw-bold text-success font-monospace small"><%= empresa.moneda %><%= formatCurrency(pagado, 0) %></span>
+                                                            </div>
+                                                            <div class="col-4">
+                                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Saldo</small>
+                                                                <span class="fw-bold text-danger font-monospace small"><%= empresa.moneda %><%= formatCurrency(saldo, 0) %></span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+                                                            <a href="/pagos/registrar/<%= p.id %>" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"><i class="bi bi-cash me-1"></i> Cobrar</a>
+                                                            <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold"><i class="bi bi-calendar3 me-1"></i> Cuotas</a>
+                                                        </div>
+                                                    </div>
+                                                <% }) %>
                                             </div>
                                         <% } else { %>
                                             <div class="text-center py-5 text-muted">No hay historial de préstamos.</div>
@@ -285,7 +329,7 @@
                                                 <h5 class="fw-bold mb-3"><i class="bi bi-folder-fill text-warning me-2"></i> Expediente Digital</h5>
                                                 
                                                 <% if (documentos && documentos.length > 0) { %>
-                                                    <div class="table-responsive">
+                                                    <div class="table-responsive d-none d-md-block">
                                                         <table class="table table-hover align-middle">
                                                             <thead class="table-light text-uppercase small fw-bold">
                                                                 <tr>
@@ -341,6 +385,61 @@
                                                                 <% }) %>
                                                             </tbody>
                                                         </table>
+                                                    </div>
+
+                                                    <!-- Vista Móvil: Tarjetas Premium de Documentos -->
+                                                    <div class="d-block d-md-none mt-3">
+                                                        <div class="d-flex flex-column gap-3">
+                                                            <% documentos.forEach(doc => { %>
+                                                                <div class="card border border-light-subtle shadow-sm rounded-4 p-3 bg-white animate-fade-in">
+                                                                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                        <div class="d-flex align-items-center gap-2">
+                                                                            <i class="bi <%= doc.archivo_url.toLowerCase().endsWith('.pdf') ? 'bi-file-pdf text-danger' : 'bi-image text-primary' %> fs-4"></i>
+                                                                            <div>
+                                                                                <span class="fw-bold d-block text-dark" style="font-size: 0.9rem;"><%= doc.nombre_documento %></span>
+                                                                                <a href="<%= doc.archivo_url %>" target="_blank" class="small text-decoration-none" style="font-size: 0.75rem;">Abrir archivo <i class="bi bi-box-arrow-up-right"></i></a>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            <span class="badge bg-light text-dark border" style="font-size: 0.75rem;">
+                                                                                <%= doc.subido_por === 'cliente' ? 'Cliente' : 'Administrador' %>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <div class="d-flex align-items-center justify-content-between small text-muted mb-2" style="font-size: 0.8rem;">
+                                                                        <div>
+                                                                            <i class="bi bi-calendar3 me-1"></i><%= new Date(doc.fecha_subida).toLocaleDateString() %>
+                                                                        </div>
+                                                                        <div>
+                                                                            <% if (doc.estado === 'pendiente') { %>
+                                                                                <span class="badge bg-warning text-dark px-2 rounded-pill">PENDIENTE</span>
+                                                                            <% } else if (doc.estado === 'aprobado') { %>
+                                                                                <span class="badge bg-success px-2 rounded-pill">APROBADO</span>
+                                                                            <% } else { %>
+                                                                                <span class="badge bg-danger px-2 rounded-pill" title="Motivo: <%= doc.motivo_rechazo %>">RECHAZADO</span>
+                                                                            <% } %>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <% if (doc.estado === 'rechazado' && doc.motivo_rechazo) { %>
+                                                                        <div class="alert alert-danger bg-danger bg-opacity-10 border-0 p-2 rounded-3 small mb-2 text-danger" style="font-size: 0.75rem;">
+                                                                            <strong>Motivo:</strong> <%= doc.motivo_rechazo %>
+                                                                        </div>
+                                                                    <% } %>
+
+                                                                    <div class="d-flex gap-2 justify-content-end pt-2 border-top">
+                                                                        <% if (doc.estado !== 'aprobado') { %>
+                                                                            <button onclick="aprobarDoc(<%= doc.id %>)" class="btn btn-sm btn-outline-success px-3" title="Aprobar"><i class="bi bi-check-lg me-1"></i> Aprobar</button>
+                                                                        <% } %>
+                                                                        <% if (doc.estado !== 'rechazado') { %>
+                                                                            <button onclick="rechazarDoc(<%= doc.id %>)" class="btn btn-sm btn-outline-danger px-3" title="Rechazar"><i class="bi bi-x-lg me-1"></i> Rechazar</button>
+                                                                        <% } %>
+                                                                        <button onclick="eliminarDoc(<%= doc.id %>)" class="btn btn-sm btn-outline-secondary" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                                                    </div>
+                                                                </div>
+                                                            <% }) %>
+                                                        </div>
                                                     </div>
                                                 <% } else { %>
                                                     <div class="text-center py-5 border rounded-4 bg-light">
@@ -433,7 +532,7 @@
                                                 </div>
                                                 
                                                 <!-- Desglose de puntos -->
-                                                <div class="table-responsive mb-4">
+                                                <div class="table-responsive mb-4 d-none d-md-block">
                                                     <table class="table table-bordered table-striped align-middle mb-0 small">
                                                         <thead class="table-light fw-bold text-dark">
                                                             <tr>
@@ -475,6 +574,77 @@
                                                             </tr>
                                                         </tbody>
                                                     </table>
+                                                </div>
+
+                                                <div class="d-block d-md-none mb-4">
+                                                    <!-- Tarjeta Base -->
+                                                    <div class="card border border-light shadow-sm rounded-4 mb-2 p-3 bg-light">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-dark">Puntaje Base del Sistema</span>
+                                                            <span class="badge bg-secondary">500 pts</span>
+                                                        </div>
+                                                        <small class="text-muted mt-1">Estándar inicial</small>
+                                                    </div>
+                                                    
+                                                    <!-- Pagos a tiempo -->
+                                                    <div class="card border border-light shadow-sm rounded-4 mb-2 p-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-dark">Pagos a tiempo</span>
+                                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" id="desglosePagosAdminMob">+<%= scoreData.desglose.pagadosATiempo %> pts</span>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center mt-2 small">
+                                                            <span class="text-muted">Impacto: +100 pts c/u, máx 300</span>
+                                                            <span class="text-dark fw-bold" id="detallePagosAdminMob"><%= scoreData.detalles.prestamosPagadosATiempoCount %> préstamos</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Saldo ahorro -->
+                                                    <div class="card border border-light shadow-sm rounded-4 mb-2 p-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-dark">Saldo en Cuenta de Ahorro</span>
+                                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" id="desgloseAhorrosAdminMob">+<%= scoreData.desglose.ahorros %> pts</span>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center mt-2 small">
+                                                            <span class="text-muted">Impacto: +10 pts por cada $100.000, máx 100</span>
+                                                            <span class="text-dark fw-bold" id="detalleAhorrosAdminMob"><%= empresa.moneda %> <%= formatCurrency(scoreData.detalles.ahorroSaldo, 0) %></span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Antigüedad -->
+                                                    <div class="card border border-light shadow-sm rounded-4 mb-2 p-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-dark">Antigüedad de cuenta</span>
+                                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" id="desgloseAntiguedadAdminMob">+<%= scoreData.desglose.antiguedad %> pts</span>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center mt-2 small">
+                                                            <span class="text-muted">Impacto: > 6 meses otorga +50</span>
+                                                            <span class="text-dark fw-bold" id="detalleAntiguedadAdminMob"><%= scoreData.detalles.antiguedadMeses %> meses</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Mora -->
+                                                    <div class="card border border-light shadow-sm rounded-4 mb-2 p-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-dark">Préstamos en mora/vencidos</span>
+                                                            <span class="badge <%= scoreData.desglose.prestamosVencidos < 0 ? 'bg-danger text-danger bg-opacity-10' : 'bg-light text-muted' %> fw-bold" id="desgloseVencidosAdminMob"><%= scoreData.desglose.prestamosVencidos %> pts</span>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center mt-2 small">
+                                                            <span class="text-muted">Impacto: -200 pts c/u</span>
+                                                            <span class="text-dark fw-bold" id="detalleVencidosAdminMob"><%= scoreData.detalles.prestamosVencidosCount %> préstamos</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Cuotas vencidas -->
+                                                    <div class="card border border-light shadow-sm rounded-4 mb-2 p-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-dark">Cuotas activas vencidas</span>
+                                                            <span class="badge <%= scoreData.desglose.cuotasVencidas < 0 ? 'bg-danger text-danger bg-opacity-10' : 'bg-light text-muted' %> fw-bold" id="desgloseCuotasAdminMob"><%= scoreData.desglose.cuotasVencidas %> pts</span>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center mt-2 small">
+                                                            <span class="text-muted">Impacto: -50 (< 30d), -100 (> 30d)</span>
+                                                            <span class="text-dark fw-bold" id="detalleCuotasAdminMob"><%= scoreData.detalles.cuotasAtrasadasCount %> (< 30d) / <%= scoreData.detalles.cuotasAtrasadas30Count %> (> 30d)</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 
                                                 <!-- Consejos de Mejora -->

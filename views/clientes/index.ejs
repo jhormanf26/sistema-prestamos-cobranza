@@ -42,7 +42,7 @@
                     </div>
 
                     <div class="card card-box p-3">
-                        <div class="table-responsive" style="min-height: 300px;">
+                        <div class="table-responsive d-none d-md-block" style="min-height: 300px;">
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
@@ -149,7 +149,123 @@
                                         <tr><td colspan="6" class="text-center py-5">No se encontraron clientes.</td></tr>
                                     <% } %>
                                 </tbody>
-                            </table>
+                             </table>
+                         </div>
+                        
+                        <!-- Vista Móvil: Tarjeticas Premium de Clientes -->
+                        <div class="d-block d-md-none mt-3">
+                            <% if (clientes.length > 0) { %>
+                                <div class="d-flex flex-column gap-3">
+                                    <% clientes.forEach(cliente => { %>
+                                        <div class="card border border-light-subtle shadow-sm rounded-4 p-3 bg-white">
+                                            <!-- Fila superior: Foto, Nombre, Estado y Dropdown -->
+                                            <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <% if(cliente.foto) { %>
+                                                        <img src="/uploads/<%= cliente.foto %>" class="rounded-circle border" style="width: 44px; height: 44px; object-fit: cover;">
+                                                    <% } else { %>
+                                                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                                                            <%= cliente.nombre.charAt(0) %>
+                                                        </div>
+                                                    <% } %>
+                                                    <div>
+                                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;"><%= cliente.nombre %> <%= cliente.apellido %></h6>
+                                                        <span class="badge bg-light text-dark border mt-1" style="font-size: 0.75rem;">CC <%= cliente.dni %></span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" style="z-index: 1040;">
+                                                            <li><a class="dropdown-item py-2" href="/clientes/ver/<%= cliente.id %>"><i class="bi bi-eye-fill text-info me-2"></i> Ver Perfil</a></li>
+                                                            <li><a class="dropdown-item py-2" href="/clientes/editar/<%= cliente.id %>"><i class="bi bi-pencil-fill text-warning me-2"></i> Editar</a></li>
+                                                            <li><a class="dropdown-item py-2 text-success" href="#" onclick="recalcularScoreRapido(event, <%= cliente.id %>)"><i class="bi bi-shield-check-fill me-2"></i> Recalcular Score</a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <% if(cliente.estado == 1 || cliente.estado == null) { %>
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 text-danger" href="/clientes/cambiar-estado/<%= cliente.id %>" 
+                                                                       onclick="confirmarCambioEstado(event, this.href, 'bloquear', 'cliente')">
+                                                                        <i class="bi bi-lock-fill me-2"></i> Inhabilitar
+                                                                    </a>
+                                                                </li>
+                                                            <% } else { %>
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 text-success" href="/clientes/cambiar-estado/<%= cliente.id %>" 
+                                                                       onclick="confirmarCambioEstado(event, this.href, 'activar', 'cliente')">
+                                                                        <i class="bi bi-unlock-fill me-2"></i> Habilitar
+                                                                    </a>
+                                                                </li>
+                                                            <% } %>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Información del Cliente (Dirección y Contactos) -->
+                                            <div class="row g-2 small text-muted mb-3" style="font-size: 0.8rem;">
+                                                <div class="col-12">
+                                                    <i class="bi bi-geo-alt-fill text-secondary me-1.5"></i><%= cliente.direccion || 'Sin dirección' %>
+                                                </div>
+                                                <div class="col-6">
+                                                    <a href="tel:<%= cliente.telefono %>" class="text-decoration-none text-muted d-block text-nowrap"><i class="bi bi-telephone-fill text-secondary me-1.5"></i><%= cliente.telefono || '-' %></a>
+                                                </div>
+                                                <div class="col-6">
+                                                    <a href="mailto:<%= cliente.email %>" class="text-decoration-none text-muted d-block text-truncate"><i class="bi bi-envelope-fill text-secondary me-1.5"></i><%= cliente.email || '-' %></a>
+                                                </div>
+                                            </div>
+
+                                            <!-- Fila inferior: Score, Estado y Último Login -->
+                                            <div class="d-flex align-items-center justify-content-between pt-2 border-top bg-light bg-opacity-50 rounded-3 p-2">
+                                                <div class="text-center flex-fill border-end">
+                                                    <span class="d-block text-muted small mb-1" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Score</span>
+                                                    <% if (cliente.score !== null && typeof cliente.score !== 'undefined') { %>
+                                                        <% 
+                                                           let badgeClass = 'bg-secondary';
+                                                           let categoria = 'C';
+                                                           if (cliente.score >= 900) { badgeClass = 'bg-success'; categoria = 'A'; }
+                                                           else if (cliente.score >= 700) { badgeClass = 'bg-info'; categoria = 'B'; }
+                                                           else if (cliente.score >= 500) { badgeClass = 'bg-warning text-dark'; categoria = 'C'; }
+                                                           else if (cliente.score >= 300) { badgeClass = 'bg-danger bg-opacity-75'; categoria = 'D'; }
+                                                           else { badgeClass = 'bg-danger'; categoria = 'E'; }
+                                                        %>
+                                                        <span class="badge <%= badgeClass %> px-2 rounded-pill shadow-xs" style="font-size: 0.75rem; cursor: pointer;" onclick="mostrarAyudaScore()">
+                                                            <%= cliente.score %> (<%= categoria %>)
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="text-muted small">--</span>
+                                                    <% } %>
+                                                </div>
+                                                
+                                                <div class="text-center flex-fill border-end">
+                                                    <span class="d-block text-muted small mb-1" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Estado</span>
+                                                    <% if(cliente.estado == 1 || cliente.estado == null) { %>
+                                                        <span class="badge bg-success bg-opacity-75 rounded-pill" style="font-size: 0.7rem;">Activo</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary rounded-pill" style="font-size: 0.7rem;">Inactivo</span>
+                                                    <% } %>
+                                                    <% if(cliente.app_instalada) { %>
+                                                        <span class="badge bg-primary bg-opacity-75 rounded-pill d-block mt-1 mx-auto" style="font-size: 0.6rem; max-width: fit-content; padding: 1px 4px;"><i class="bi bi-phone"></i> App</span>
+                                                    <% } %>
+                                                </div>
+
+                                                <div class="text-center flex-fill">
+                                                    <span class="d-block text-muted small mb-1" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Último Acceso</span>
+                                                    <% if(cliente.ultimo_login) { %>
+                                                        <span class="fw-semibold text-dark small" style="font-size: 0.7rem;"><%= new Date(cliente.ultimo_login).toLocaleDateString('es-CO') %></span>
+                                                    <% } else { %>
+                                                        <span class="text-muted fst-italic" style="font-size: 0.7rem;">Nunca</span>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-4 bg-white rounded-4 border">No se encontraron clientes.</div>
+                            <% } %>
                         </div>
                         
                         <% if (totalPages > 1) { %>

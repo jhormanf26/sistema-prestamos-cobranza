@@ -16,7 +16,7 @@
                     </div>
 
                     <div class="card card-box border-0 shadow-sm">
-                        <div class="table-responsive">
+                        <div class="table-responsive d-none d-md-block">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
@@ -66,6 +66,36 @@
                                     <% } %>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="d-block d-md-none p-3">
+                            <% if (cadenas.length > 0) { %>
+                                <% cadenas.forEach(c => { %>
+                                    <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-white border-start border-3 <%= c.estado === 'activa' ? 'border-success' : 'border-secondary' %>">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-bold text-dark fs-6"><%= c.nombre %></span>
+                                            <span class="badge <%= c.estado === 'activa' ? 'bg-success' : 'bg-secondary' %> rounded-pill"><%= c.estado %></span>
+                                        </div>
+                                        <div class="mb-3">
+                                            <span class="badge bg-info-subtle text-info rounded-pill text-capitalize"><%= c.frecuencia %></span>
+                                            <span class="badge bg-secondary rounded-pill ms-1"><%= c.numero_participantes %> Participantes</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                            <div>
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Cuota</small>
+                                                <span class="fw-bold text-success font-monospace fs-5">
+                                                    <%= empresa.moneda %> <%= formatCurrency(c.monto_cuota, 0) %>
+                                                </span>
+                                            </div>
+                                            <a href="/cadenas/ver/<%= c.id %>" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                                                <i class="bi bi-eye me-1"></i> Gestionar
+                                            </a>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="text-center py-4 text-muted">No hay cadenas registradas.</div>
+                            <% } %>
                         </div>
                     </div>
                 </div>

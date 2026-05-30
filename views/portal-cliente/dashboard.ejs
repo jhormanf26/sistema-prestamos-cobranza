@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- Mobile Header Simple -->
-                <div class="d-md-none bg-white p-3 shadow-sm d-flex justify-content-between align-items-center mb-3">
+                <div class="d-md-none bg-white p-3 shadow d-flex justify-content-between align-items-center mb-3 sticky-top" style="top: 0; z-index: 1020;">
                     <div class="d-flex align-items-center">
                         <i class="bi bi-person-badge text-success fs-3 me-2"></i>
                         <h5 class="mb-0 fw-bold">Mi Portal</h5>
@@ -383,14 +383,18 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="row mt-3">
-                                                <div class="col-6">
-                                                    <p class="text-muted small mb-1">Monto Total</p>
-                                                    <h5 class="fw-bold">$<%= parseFloat(p.monto_total).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h5>
+                                            <div class="row mt-3 text-center text-sm-start align-items-center">
+                                                <div class="col-4">
+                                                    <p class="text-muted small mb-1" style="font-size: 0.75rem;">Monto Total</p>
+                                                    <h5 class="fw-bold text-dark mb-0" style="font-size: clamp(0.85rem, 2.5vw, 1.15rem); font-weight: 700;">$<%= parseFloat(p.monto_total).toLocaleString('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 2}) %></h5>
                                                 </div>
-                                                <div class="col-6 text-end">
-                                                    <p class="text-muted small mb-1">Pagado</p>
-                                                    <h5 class="fw-bold text-success">$<%= parseFloat(p.total_pagado || 0).toLocaleString('en-US', {minimumFractionDigits: 2}) %></h5>
+                                                <div class="col-4 text-center border-start border-end">
+                                                    <p class="text-muted small mb-1" style="font-size: 0.75rem;">Saldo por Pagar</p>
+                                                    <h5 class="fw-bold text-danger mb-0" style="font-size: clamp(0.85rem, 2.5vw, 1.15rem); font-weight: 700;">$<%= parseFloat(p.monto_total - (p.total_pagado || 0)).toLocaleString('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 2}) %></h5>
+                                                </div>
+                                                <div class="col-4 text-end">
+                                                    <p class="text-muted small mb-1" style="font-size: 0.75rem;">Pagado</p>
+                                                    <h5 class="fw-bold text-success mb-0" style="font-size: clamp(0.85rem, 2.5vw, 1.15rem); font-weight: 700;">$<%= parseFloat(p.total_pagado || 0).toLocaleString('es-CO', {minimumFractionDigits: 0, maximumFractionDigits: 2}) %></h5>
                                                 </div>
                                             </div>
 

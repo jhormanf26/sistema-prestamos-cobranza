@@ -23,7 +23,7 @@
                                 </div>
 
                                 <div class="card card-box p-0 overflow-hidden border-danger">
-                                    <div class="table-responsive">
+                                    <div class="table-responsive d-none d-md-block">
                                         <table class="table table-hover align-middle mb-0">
                                             <thead class="table-danger">
                                                 <tr>
@@ -87,6 +87,50 @@
                                                     <% }) %>
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    <div class="d-block d-md-none p-3">
+                                        <% vencidos.forEach(p=> {
+                                            // Calcular días de retraso
+                                            const fechaFin = new Date(p.fecha_fin);
+                                            const hoy = new Date();
+                                            const diffTime = Math.abs(hoy - fechaFin);
+                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                            %>
+                                            <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-white border-start border-danger border-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="badge bg-danger">#<%= p.id %></span>
+                                                    <span class="badge bg-warning text-dark">+<%= diffDays %> días moroso</span>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <div class="fw-bold text-dark fs-6"><%= p.nombre %> <%= p.apellido %></div>
+                                                    <small class="text-muted d-block">CC: <%= p.dni %></small>
+                                                    <small class="text-danger d-block mt-1">Límite: <%= fechaFin.toLocaleDateString() %></small>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <% if(p.telefono) { %>
+                                                        <a href="https://wa.me/<%= p.telefono %>"
+                                                            target="_blank"
+                                                            class="btn btn-sm btn-success text-white py-1 px-2 rounded-pill"
+                                                            title="Enviar WhatsApp">
+                                                            <i class="bi bi-whatsapp me-1"></i><%= p.telefono %>
+                                                        </a>
+                                                    <% } %>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                                    <div>
+                                                        <span class="text-muted small d-block">Deuda Total</span>
+                                                        <span class="fw-bold text-danger font-monospace">
+                                                            <%= empresa.moneda %> <%= formatCurrency(p.monto_total, 2) %>
+                                                        </span>
+                                                    </div>
+                                                    <a href="/pagos/registrar/<%= p.id %>"
+                                                        class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                                                        <i class="bi bi-cash-coin me-1"></i> Cobrar
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        <% }) %>
                                     </div>
                                 </div>
                                 <% } else { %>
