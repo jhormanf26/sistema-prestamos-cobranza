@@ -80,7 +80,7 @@ class DashboardModel {
     static async obtenerTotales() {
         try {
             const [clientes] = await db.query('SELECT COUNT(*) as total FROM clientes');
-            const [prestamos] = await db.query("SELECT SUM(monto_prestado) as total FROM prestamos WHERE estado = 'pendiente'");
+            const [prestamos] = await db.query("SELECT SUM(monto_prestado) as total FROM prestamos WHERE estado IN ('pendiente', 'vencido')");
             const [ahorros] = await db.query("SELECT SUM(saldo_actual) as total FROM cuentas_ahorro");
             const [pagos] = await db.query("SELECT SUM(monto_pagado) as total FROM pagos");
             const [totalPrestadoHistorico] = await db.query("SELECT SUM(monto_prestado) as total FROM prestamos");
@@ -95,7 +95,7 @@ class DashboardModel {
                             WHEN 'Mensual' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
                             ELSE DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
                         END as proxima_fecha
-                    FROM prestamos p WHERE p.estado = 'pendiente'
+                    FROM prestamos p WHERE p.estado IN ('pendiente', 'vencido')
                 ) as calc
                 WHERE proxima_fecha < CURDATE()
             `);
@@ -200,7 +200,7 @@ class DashboardModel {
                         ) as cuotas_cubiertas
                     FROM prestamos p
                     JOIN clientes c ON p.cliente_id = c.id
-                    WHERE p.estado = 'pendiente'
+                    WHERE p.estado IN ('pendiente', 'vencido')
                 ) as prestamos_calculados
                 HAVING proxima_fecha < CURDATE()
                 ORDER BY proxima_fecha ASC

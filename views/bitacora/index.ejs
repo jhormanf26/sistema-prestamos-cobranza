@@ -33,7 +33,7 @@
                                 </div>
 
                                 <div class="card card-box p-0 border-0 shadow-sm">
-                                    <div class="table-responsive">
+                                    <div class="table-responsive d-none d-md-block">
                                         <table class="table table-hover align-middle mb-0">
                                             <thead class="table-dark">
                                                 <tr>
@@ -90,6 +90,46 @@
                                                                 <% } %>
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    <div class="d-block d-md-none p-3">
+                                        <% if (registros && registros.length> 0) { %>
+                                            <% registros.forEach(reg=> { %>
+                                                <% 
+                                                    let borderClass = 'border-secondary';
+                                                    let badgeClass='bg-secondary';
+                                                    let accion=reg.accion || 'INFO';
+                                                    if(accion.includes('REGISTRAR') || accion.includes('CREAR') || accion.includes('NUEVO')) {
+                                                        borderClass='border-success';
+                                                        badgeClass='bg-success';
+                                                    }
+                                                    if(accion.includes('ELIMINAR')) {
+                                                        borderClass='border-danger';
+                                                        badgeClass='bg-danger';
+                                                    }
+                                                    if(accion.includes('EDITAR')) {
+                                                        borderClass='border-warning';
+                                                        badgeClass='bg-warning text-dark';
+                                                    }
+                                                    let fechaMostrar=reg.fecha || reg.created_at;
+                                                    let fechaTexto=fechaMostrar ? new Date(fechaMostrar).toLocaleString() : '---';
+                                                %>
+                                                <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-white border-start border-3 <%= borderClass %>">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="small text-muted font-monospace"><i class="bi bi-clock me-1"></i><%= fechaTexto %></span>
+                                                        <span class="badge <%= badgeClass %>"><%= accion %></span>
+                                                    </div>
+                                                    <div class="mb-1">
+                                                        <div class="fw-bold text-dark"><i class="bi bi-person-circle me-1 text-muted"></i><%= reg.usuario || 'Sistema' %></div>
+                                                    </div>
+                                                    <div class="mt-2 pt-2 border-top">
+                                                        <p class="text-secondary small mb-0"><%= reg.detalle || '-' %></p>
+                                                    </div>
+                                                </div>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <div class="text-center py-4 text-muted">No hay registros de actividad recientes.</div>
+                                        <% } %>
                                     </div>
                                 </div>
 

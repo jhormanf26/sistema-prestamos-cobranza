@@ -84,7 +84,7 @@
                     </div>
 
                     <div class="card card-box p-3">
-                        <div class="table-responsive">
+                        <div class="table-responsive d-none d-md-block">
                                     <table class="table table-hover align-middle">
                                         <thead class="table-light text-uppercase small fw-bold">
                                             <tr>
@@ -181,6 +181,87 @@
                                     <% } %>
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- Vista Móvil: Tarjeticas Premium de Préstamos -->
+                        <div class="d-block d-md-none mt-3">
+                            <% if (prestamos.length > 0) { %>
+                                <div class="d-flex flex-column gap-3">
+                                    <% prestamos.forEach(p => { 
+                                        const pagado = p.total_pagado || 0;
+                                        const saldo = p.monto_total - pagado;
+                                    %>
+                                        <div class="card border border-light-subtle shadow-sm rounded-4 p-3 bg-white">
+                                            <!-- Fila superior: ID Préstamo, Estado y Dropdown -->
+                                            <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-dark px-2.5 py-1.5 rounded-3 fw-bold" style="font-size: 0.8rem;">#<%= p.id %></span>
+                                                    <div>
+                                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;"><%= p.nombre %> <%= p.apellido %></h6>
+                                                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-person-vcard me-1"></i><%= p.dni %></small>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <% if(p.estado == 'pendiente') { %>
+                                                        <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.65rem;">PENDIENTE</span>
+                                                    <% } else if(p.estado == 'pagado') { %>
+                                                        <span class="badge bg-success rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.65rem;">PAGADO</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-danger rounded-pill px-2.5 py-1 fw-bold animate-pulse" style="font-size: 0.65rem;">VENCIDO</span>
+                                                    <% } %>
+
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-sm btn-light border rounded-pill px-2.5 py-1 d-flex align-items-center justify-content-center" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                                                            <i class="bi bi-three-dots-vertical"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" style="z-index: 1040;">
+                                                            <li><a class="dropdown-item py-2" href="/prestamos/cronograma/<%= p.id %>"><i class="bi bi-calendar3 text-primary me-2"></i> Cronograma</a></li>
+                                                            <li><a class="dropdown-item py-2" href="/clientes/ver/<%= p.cliente_id %>"><i class="bi bi-person-fill text-info me-2"></i> Ver Cliente</a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item py-2 text-danger" href="/reportes/cronograma-pdf/<%= p.id %>" target="_blank"><i class="bi bi-file-earmark-pdf me-2"></i> PDF Cronograma</a></li>
+                                                            <li><a class="dropdown-item py-2" href="/reportes/contrato/<%= p.id %>" target="_blank"><i class="bi bi-file-text text-secondary me-2"></i> PDF Contrato</a></li>
+                                                            <li><a class="dropdown-item py-2 text-success" href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank"><i class="bi bi-receipt me-2"></i> PDF Desembolso</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Fila central: Totales -->
+                                            <div class="d-flex align-items-center justify-content-between bg-light bg-opacity-50 rounded-3 p-2.5 mb-3">
+                                                <div class="text-center flex-fill border-end">
+                                                    <span class="d-block text-muted small mb-1" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Monto Total</span>
+                                                    <span class="fw-bold text-dark small" style="font-size: 0.85rem;"><%= empresa.moneda %> <%= formatCurrency(p.monto_total, 0) %></span>
+                                                </div>
+                                                
+                                                <div class="text-center flex-fill border-end">
+                                                    <span class="d-block text-muted small mb-1" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Pagado</span>
+                                                    <span class="fw-bold text-success small" style="font-size: 0.85rem;"><%= empresa.moneda %> <%= formatCurrency(pagado, 0) %></span>
+                                                </div>
+
+                                                <div class="text-center flex-fill">
+                                                    <span class="d-block text-muted small mb-1" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Saldo</span>
+                                                    <span class="fw-bold text-danger small" style="font-size: 0.85rem;"><%= empresa.moneda %> <%= formatCurrency(saldo, 0) %></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Botones directos de acción principal -->
+                                            <div class="d-flex gap-2">
+                                                <% if(p.estado != 'pagado') { %>
+                                                    <a href="/pagos/registrar/<%= p.id %>" class="btn btn-success btn-sm flex-fill fw-bold py-2 rounded-pill shadow-xs">
+                                                        <i class="bi bi-cash-coin me-1"></i> REGISTRAR PAGO
+                                                    </a>
+                                                <% } %>
+                                                <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-outline-primary btn-sm flex-fill fw-bold py-2 rounded-pill shadow-xs">
+                                                    <i class="bi bi-calendar3 me-1"></i> VER CRONOGRAMA
+                                                </a>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-4 bg-white rounded-4 border text-muted">No se encontraron préstamos registrados.</div>
+                            <% } %>
                         </div>
                         
                         <% if (totalPages > 1) { %>
