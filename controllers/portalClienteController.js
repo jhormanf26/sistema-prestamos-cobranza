@@ -165,12 +165,59 @@ const portalClienteController = {
                 }
             }
 
+            // Calcular antigüedad detallada (meses y días) del cliente
+            let antiguedadInfo = null;
+            if (cliente.created_at) {
+                const fechaRegistro = new Date(cliente.created_at);
+                const fechaActual = new Date();
+                
+                // Formatear la fecha de registro en español
+                const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
+                const fechaRegistroFormateada = fechaRegistro.toLocaleDateString('es-ES', opciones);
+                
+                // Diferencia en años, meses y días de forma exacta y robusta
+                let años = fechaActual.getFullYear() - fechaRegistro.getFullYear();
+                let meses = fechaActual.getMonth() - fechaRegistro.getMonth();
+                let dias = fechaActual.getDate() - fechaRegistro.getDate();
+                
+                if (dias < 0) {
+                    const ultimoDiaMesAnterior = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 0).getDate();
+                    dias += ultimoDiaMesAnterior;
+                    meses--;
+                }
+                
+                if (meses < 0) {
+                    meses += 12;
+                    años--;
+                }
+                
+                const totalMeses = (años * 12) + meses;
+                
+                // Aniversario mensual exacto si el día del mes es el mismo (dias === 0) y lleva al menos 1 mes
+                const esAniversarioMes = (dias === 0 && totalMeses > 0);
+                
+                const diffTime = Math.abs(fechaActual - fechaRegistro);
+                const totalDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                antiguedadInfo = {
+                    fechaRegistroFormateada,
+                    años,
+                    meses,
+                    dias,
+                    totalMeses,
+                    totalDias,
+                    esAniversarioMes,
+                    tieneMasDeSeisMeses: totalMeses >= 6
+                };
+            }
+
             res.render('portal-cliente/dashboard', {
                 title: 'Mi Portal',
                 empresa,
                 cliente,
                 scoreData,
                 tasaInfoPortal,
+                antiguedadInfo,
                 prestamosActivos,
                 prestamosPagados,
                 prestamos, // Enviamos todos para compatibilidad si la vista lo requiere
