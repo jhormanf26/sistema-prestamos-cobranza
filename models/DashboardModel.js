@@ -93,6 +93,8 @@ class DashboardModel {
                             WHEN 'Semanal' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 WEEK)
                             WHEN 'Quincenal' THEN DATE_ADD(p.fecha_inicio, INTERVAL (FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1) * 15 DAY)
                             WHEN 'Mensual' THEN DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
+                            WHEN 'Bimensual' THEN DATE_ADD(p.fecha_inicio, INTERVAL (FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1) * 2 MONTH)
+                            WHEN 'Trimensual' THEN DATE_ADD(p.fecha_inicio, INTERVAL (FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1) * 3 MONTH)
                             ELSE DATE_ADD(p.fecha_inicio, INTERVAL FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas)) + 1 MONTH)
                         END as proxima_fecha
                     FROM prestamos p WHERE p.estado IN ('pendiente', 'vencido')
@@ -133,6 +135,8 @@ class DashboardModel {
                                     WHEN 'Semanal' THEN GREATEST(0, FLOOR(DATEDIFF(CURDATE(), p.fecha_inicio) / 7))
                                     WHEN 'Quincenal' THEN GREATEST(0, FLOOR(DATEDIFF(CURDATE(), p.fecha_inicio) / 15))
                                     WHEN 'Mensual' THEN GREATEST(0, TIMESTAMPDIFF(MONTH, p.fecha_inicio, CURDATE()))
+                                    WHEN 'Bimensual' THEN GREATEST(0, FLOOR(TIMESTAMPDIFF(MONTH, p.fecha_inicio, CURDATE()) / 2))
+                                    WHEN 'Trimensual' THEN GREATEST(0, FLOOR(TIMESTAMPDIFF(MONTH, p.fecha_inicio, CURDATE()) / 3))
                                     ELSE GREATEST(0, TIMESTAMPDIFF(MONTH, p.fecha_inicio, CURDATE()))
                                 END
                             ) - FLOOR(IFNULL((SELECT SUM(monto_pagado) FROM pagos WHERE prestamo_id = p.id), 0) / (p.monto_total / p.cuotas))
@@ -186,6 +190,8 @@ class DashboardModel {
                         WHEN 'Semanal' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 WEEK)
                         WHEN 'Quincenal' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 15 DAY)
                         WHEN 'Mensual' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
+                        WHEN 'Bimensual' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 2 MONTH)
+                        WHEN 'Trimensual' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 3 MONTH)
                         ELSE DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
                     END as proxima_fecha
                 FROM (
@@ -220,6 +226,8 @@ class DashboardModel {
                         WHEN 'Semanal' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 WEEK)
                         WHEN 'Quincenal' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 15 DAY)
                         WHEN 'Mensual' THEN DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
+                        WHEN 'Bimensual' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 2 MONTH)
+                        WHEN 'Trimensual' THEN DATE_ADD(fecha_inicio, INTERVAL (cuotas_cubiertas + 1) * 3 MONTH)
                         ELSE DATE_ADD(fecha_inicio, INTERVAL cuotas_cubiertas + 1 MONTH)
                     END as proxima_fecha
                 FROM (
@@ -233,9 +241,9 @@ class DashboardModel {
                         ) as cuotas_cubiertas
                     FROM prestamos p
                     JOIN clientes c ON p.cliente_id = c.id
-                    WHERE p.estado = 'pendiente'
+                    WHERE p.estado IN ('pendiente', 'vencido')
                 ) as prestamos_calculados
-                HAVING proxima_fecha >= CURDATE() AND proxima_fecha <= DATE_ADD(CURDATE(), INTERVAL ? DAY)
+                HAVING proxima_fecha <= DATE_ADD(CURDATE(), INTERVAL ? DAY)
                 ORDER BY proxima_fecha ASC
                 LIMIT 10
             `;
