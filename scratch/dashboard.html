@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Préstamos Pro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Favicon / Icono del Sitio para Google Search y Navegadores -->
+    <link rel="icon" href="/img/clientes.png" type="image/png" sizes="192x192">
+    <link rel="shortcut icon" href="/img/clientes.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/img/clientes.png">
+
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => {
+                        console.log('PWA: Service Worker registrado');
+                        reg.update(); // Forzar búsqueda de actualización
+                    })
+                    .catch(err => console.log('PWA: Error al registrar SW', err));
+            });
+        }
+    </script>
+    <style>
+        /* Animación de pulso global premium */
+        .animate-pulse {
+            animation: pulse-global 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-global {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .4;
+            }
+        }
+    </style>
+</head>
+<style>
+    /* Estilos ÚNICOS para las Pestañas del Dashboard (sin afectar al menú lateral) */
+    .nav-dash {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-left: 0;
+        margin-bottom: 0;
+        list-style: none;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    .nav-dash .nav-item {
+        margin-right: 12px;
+    }
+    .nav-dash .btn-dash {
+        color: #555;
+        font-weight: 600;
+        padding: 0.7rem 1.4rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+        background: #fdfdfd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+    }
+    .nav-dash .btn-dash i { margin-right: 8px; font-size: 1.1rem; }
+    .nav-dash .btn-dash.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+    }
+    .nav-dash .btn-dash:hover:not(.active) {
+        background-color: #f8f9fa;
+        border-color: #ccc;
+    }
+    .tab-content-dash { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <!-- El Sidebar ahora volverá a su color original -->
+            <div class="col-auto col-md-3 col-xl-2 px-0 sidebar" id="sidebarMenu">
+    <div
+        class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100 position-relative">
+
+        <!-- Botón de Cerrar (Solo Móvil) -->
+        <button class="btn btn-link text-white d-md-none position-absolute top-0 end-0 mt-2 me-2" id="closeSidebarBtn">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <a href="/"
+            class="d-flex flex-column align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none brand w-100 mt-4 mt-md-0">
+            
+                    <div class="bg-primary rounded-circle p-2 mb-2 d-flex align-items-center justify-content-center shadow-sm"
+                        style="width: 55px; height: 55px;">
+                        <i class="bi bi-bank2 fs-4 text-white"></i>
+                    </div>
+                    
+                        <span class="d-inline small text-center text-truncate w-100 fw-bold">
+                            SISTEMA PRÉSTAMOS
+                        </span>
+        </a>
+
+        <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100 mt-3"
+            id="menu">
+
+            
+
+            <li class="nav-item w-100">
+                <a href="/" class="nav-link align-middle px-0">
+                    <i class="bi bi-grid-1x2-fill"></i> <span class="ms-1 d-inline">Panel Principal</span>
+                </a>
+            </li>
+
+            <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                style="font-size: 0.7rem;">Operaciones</li>
+
+            
+
+                    
+                    <li class="nav-item w-100">
+                        <a href="/clientes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-people-fill"></i> <span class="ms-1 d-inline">Clientes</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/prestamos" class="nav-link px-0 align-middle">
+                            <i class="bi bi-cash-stack"></i> <span class="ms-1 d-inline">Préstamos</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/simulador" class="nav-link px-0 align-middle">
+                            <i class="bi bi-calculator"></i> <span class="ms-1 d-inline">Calculadora</span>
+                        </a>
+                    </li>
+                    
+
+
+                    
+                    <li class="nav-item w-100">
+                        <a href="/gastos" class="nav-link px-0 align-middle">
+                            <i class="bi bi-graph-down-arrow"></i> <span class="ms-1 d-inline">Gastos</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/reportes/panel" class="nav-link px-0 align-middle">
+                            <i class="bi bi-bar-chart-line-fill"></i> <span class="ms-1 d-inline">Reportes Excel</span>
+                        </a>
+                    </li>
+                    <li class="nav-item w-100">
+                        <a href="/reportes/flujo-proyectado" class="nav-link px-0 align-middle text-info">
+                            <i class="bi bi-graph-up text-info"></i> <span class="ms-1 d-inline text-info fw-bold">Flujo Proyectado</span>
+                        </a>
+                    </li>
+                    
+
+                    <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                        style="font-size: 0.7rem;">Servicios</li>
+
+                    
+                    <li class="nav-item w-100">
+                        <a href="/empenos" class="nav-link px-0 align-middle">
+                            <i class="bi bi-gem"></i> <span class="ms-1 d-inline">Empeños</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/ahorros" class="nav-link px-0 align-middle">
+                            <i class="bi bi-piggy-bank-fill"></i> <span class="ms-1 d-inline">Ahorros</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/cadenas" class="nav-link px-0 align-middle">
+                            <i class="bi bi-arrow-repeat"></i> <span class="ms-1 d-inline">Cadenas</span>
+                        </a>
+                    </li>
+                    
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/promocion" target="_blank" class="nav-link px-0 align-middle text-info">
+                            <i class="bi bi-megaphone-fill"></i> <span class="ms-1 d-inline fw-bold">Web Promocional</span>
+                        </a>
+                    </li>
+                                        
+                    
+                    <li class="nav-header text-uppercase text-muted small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                        style="font-size: 0.7rem; color: #ffffff !important;">Portal Clientes</li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/admin/comprobantes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-wallet2 text-success animate-pulse"></i> <span class="ms-1 d-inline text-success fw-bold">Comprobantes</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/admin/solicitudes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-rocket-takeoff-fill text-primary"></i> <span class="ms-1 d-inline text-primary fw-bold">Solicitudes Cupo</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/ahorros/solicitudes" class="nav-link px-0 align-middle">
+                            <i class="bi bi-piggy-bank-fill text-warning"></i> <span class="ms-1 d-inline text-warning fw-bold">Solicitudes Ahorro</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="nav-item w-100">
+                        <a href="/admin/soporte" class="nav-link px-0 align-middle d-flex align-items-center">
+                            <i class="bi bi-headset" style="color: #6366f1;"></i> 
+                            <span class="ms-1 d-inline fw-bold" style="color: #6366f1;">Chat Soporte</span>
+                            
+                        </a>
+                    </li>
+                    
+
+                    
+                        <li class="nav-header text-uppercase text-warning small fw-bold mt-3 mb-1 ps-2 d-none d-sm-block"
+                            style="font-size: 0.7rem; color: #08a06f !important; ">Administración</li>
+                        <li class="nav-item w-100">
+                            <a href="/caja" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-calculator-fill" style="color: #08a06f !important; "></i> <span class="ms-1 d-inline"  style="color: #08a06f !important; ">Corte de Caja</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/bitacora" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-eye-fill" style="color: #08a06f !important; "></i> <span class="ms-1 d-inline" style="color: #08a06f !important; ">Auditoría</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/usuarios" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-shield-lock-fill"style="color: #08a06f !important; "></i> <span class="ms-1 d-inline"style="color: #08a06f !important; ">Usuarios</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/config" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-gear-fill"style="color: #08a06f !important; "></i> <span class="ms-1 d-inline"style="color: #08a06f !important; ">Configuración</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/plantillas" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-envelope-paper-fill" style="color: #08a06f !important; "></i> <span class="ms-1 d-inline" style="color: #08a06f !important; ">Plantillas Correo</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/plantillas-pdf" class="nav-link px-0 align-middle text-warning">
+                                <i class="bi bi-file-earmark-pdf-fill" style="color: #08a06f !important; "></i> <span class="ms-1 d-inline" style="color: #08a06f !important; ">Plantillas PDF</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="/mi-licencia" class="nav-link px-0 align-middle text-warning rounded mt-1"
+                                style="background-color: rgb(0 0 0); border-left: 3px solid #08a06f;">
+                                <i class="bi bi-shield-check"style="color: #08a06f !important; "></i> <span class="ms-1 d-inline fw-bold"style="color: #08a06f !important; ">Mi
+                                    Licencia</span>
+                            </a>
+                        </li>
+                        
+
+        </ul>
+
+        <div class="w-100 border-top border-secondary pt-3 pb-4">
+            <div class="dropdown">
+                <a href="#"
+                    class="d-flex align-items-center text-white text-decoration-none dropdown-toggle p-2 rounded hover-effect"
+                    id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false"
+                    style="background: rgba(255,255,255,0.05);">
+                    <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold me-2"
+                        style="width: 32px; height: 32px;">
+                        A
+                    </div>
+                    <span class="d-inline mx-1 small">
+                        <strong>
+                            Administrador
+                        </strong>
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                    <li><a class="dropdown-item" href="/perfil">Mi Perfil</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="bi bi-box-arrow-right"></i>
+                            Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <!-- Barra de Navegación para Móviles -->
+<header class="main-header shadow-sm">
+    <div class="d-flex align-items-center gap-3">
+        <button class="sidebar-toggler" id="mobileMenuBtn">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <span class="header-date d-none d-lg-block">
+            <i class="bi bi-calendar3 me-2"></i>
+            
+                Viernes, 5 de junio de 2026
+        </span>
+    </div>
+
+    <!-- Buscador Global -->
+    <div class="header-search">
+        <i class="bi bi-search"></i>
+        <input type="text" id="globalSearch" placeholder="Escriba para ir a un módulo (ej: Prestamos, Clientes)..."
+            autocomplete="off">
+        <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <div class="header-user-info">
+        <div class="header-user-details d-none d-md-block">
+            <span class="header-user-name">
+                Usuario
+            </span>
+            <span class="header-user-role">
+                Administrador
+            </span>
+        </div>
+
+        <div class="header-user-avatar d-none d-sm-flex">
+            U
+        </div>
+
+        <!-- Selector de Tema (Modo Oscuro) -->
+        <button class="btn btn-link text-decoration-none p-2 me-2 border-0" id="themeToggle" title="Cambiar Tema">
+            <i class="bi bi-moon-fill fs-5" id="themeIcon"></i>
+        </button>
+
+        <a href="/auth/logout" class="header-logout-btn shadow-sm" title="Cerrar Sesión">
+            <i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline ms-1">Salir</span>
+        </a>
+    </div>
+</header>
+
+<!-- Overlay para oscurecer el fondo cuando el menú está abierto -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+                <div class="container-fluid px-4 py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="fw-bold text-dark my-0 text-uppercase fs-4">Tablero de Control</h2>
+                            <p class="text-muted small mb-0">Gestiona tu negocio y marketing</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="/promocion" target="_blank" class="btn btn-outline-primary shadow-sm border-2">
+                                <i class="bi bi-globe2 me-2"></i> Ver Mi Web
+                            </a>
+                            <span class="badge bg-white text-dark border p-2 fw-normal shadow-sm d-flex align-items-center">
+                                Hoy: 5/6/2026 | <span id="live-clock" class="ms-1">03:58 p.m.</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards (Mantenemos el diseño premium) -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-primary h-100 border-0"><div><h5>Clientes</h5><h3>14</h3><small>Registrados</small></div><i class="bi bi-people"></i></div></div>
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-success h-100 border-0"><div><h5>Capital Activo</h5><h3>$ 25,167,000.00</h3><small>Dinero en calle</small></div><i class="bi bi-cash-stack"></i></div></div>
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-purple h-100 border-0"><div><h5>Total Ahorros</h5><h3>$ 196,600.00</h3><small>Capital Captado</small></div><i class="bi bi-piggy-bank"></i></div></div>
+                        <div class="col-12 col-sm-6 col-xl"><div class="card card-box stat-card stat-card-info h-100 border-0"><div><h5>Total Recaudado</h5><h3>$ 7,137,300.00</h3><small>Histórico</small></div><i class="bi bi-wallet2"></i></div></div>
+                    </div>
+
+                    <!-- NAVEGACIÓN LOCAL (Con clases únicas para no interferir) -->
+                    <ul class="nav-dash mb-4" id="pills-tab" role="tablist">
+                        <li class="nav-item"><button class="btn-dash active" data-bs-toggle="pill" data-bs-target="#tab-analisis" type="button"><i class="bi bi-graph-up"></i> Análisis</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-accion" type="button"><i class="bi bi-lightning-charge"></i> Acción Diaria</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-crecimiento" type="button"><i class="bi bi-rocket-takeoff"></i> Crecimiento</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-gastos" type="button"><i class="bi bi-receipt"></i> Gastos</button></li>
+                        <li class="nav-item"><button class="btn-dash" data-bs-toggle="pill" data-bs-target="#tab-marketing" type="button"><i class="bi bi-megaphone"></i> Marketing</button></li>
+                    </ul>
+
+                    <div class="tab-content tab-content-dash" id="pills-tabContent">
+                        
+                        <!-- TAB 1: ANALISIS -->
+                        <div class="tab-pane fade show active" id="tab-analisis" role="tabpanel">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6 col-lg-3"><div class="card card-box border-start border-danger border-4 shadow-sm"><div class="card-body"><h6 class="text-muted text-uppercase small">Mora Activa</h6><h4 class="fw-bold text-danger mb-0">18 Clientes</h4></div></div></div>
+                                <div class="col-md-6 col-lg-4"><div class="card card-box border-start border-warning border-4 shadow-sm"><div class="card-body"><h6 class="text-muted text-uppercase small">Monto en Riesgo</h6><h4 class="fw-bold text-warning mb-0">$ 25,193,710.00</h4></div></div></div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-lg-5">
+                                    <div class="card card-box shadow-sm border-0">
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between align-items-center">
+                                            <span>Estado de Cartera</span>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary active" id="btn-ver-cuotas" onclick="cambiarVistaCartera('cuotas')">Cuotas</button>
+                                                <button type="button" class="btn btn-outline-primary" id="id-ver-prestamos" onclick="cambiarVistaCartera('prestamos')">Préstamos</button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body"><div style="height: 280px;"><canvas id="chartEstados"></canvas></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7"><div class="card card-box shadow-sm border-0"><div class="card-header bg-white fw-bold border-0">Capital vs Recuperado</div><div class="card-body"><div style="height: 280px;"><canvas id="chartBalance"></canvas></div></div></div></div>
+                            </div>
+                            <div class="row g-3 mt-1">
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0">
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between">
+                                            <span>Recuperación de Capital</span>
+                                            <i class="bi bi-shield-check text-success"></i>
+                                        </div>
+                                        <div class="card-body"><div style="height: 250px;"><canvas id="chartCapital"></canvas></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0">
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between">
+                                            <span>Estado de Ganancias (Intereses)</span>
+                                            <i class="bi bi-graph-up-arrow text-primary"></i>
+                                        </div>
+                                        <div class="card-body"><div style="height: 250px;"><canvas id="chartGanancias"></canvas></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: ACCION DIARIA -->
+                        <div class="tab-pane fade" id="tab-accion" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center"><span>🚨 Deudores en Mora</span><span class="badge bg-danger">10</span></div>
+                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Monto</th><th class="text-end pe-3">Cobrar</th></tr></thead>
+                                            <tbody>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">ClientePrueba4 Apellido4</span><small class="text-muted">999888774</small></td><td>$ 2,280</td><td class="text-end pe-3"><a href="/pagos/registrar/6" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">ClientePrueba7 Apellido7</span><small class="text-muted">999888777</small></td><td>$ 4,080</td><td class="text-end pe-3"><a href="/pagos/registrar/9" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">ClientePrueba10 Apellido10</span><small class="text-muted">999888770</small></td><td>$ 5,880</td><td class="text-end pe-3"><a href="/pagos/registrar/12" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">nylle Apellido1</span><small class="text-muted">999888771</small></td><td>$ 480</td><td class="text-end pe-3"><a href="/pagos/registrar/3" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">VICTOR RAMOS</span><small class="text-muted">90909090</small></td><td>$ 1,100</td><td class="text-end pe-3"><a href="/pagos/registrar/2" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">ClientePrueba7 Apellido7</span><small class="text-muted">999888777</small></td><td>$ 80,000</td><td class="text-end pe-3"><a href="/pagos/registrar/19" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">ClientePrueba3 Apellido3</span><small class="text-muted">999888773</small></td><td>$ 1,680</td><td class="text-end pe-3"><a href="/pagos/registrar/5" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">ClientePrueba6 Apellido6</span><small class="text-muted">999888776</small></td><td>$ 3,480</td><td class="text-end pe-3"><a href="/pagos/registrar/8" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">ClientePrueba9 Apellido9</span><small class="text-muted">999888779</small></td><td>$ 5,280</td><td class="text-end pe-3"><a href="/pagos/registrar/11" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                                    <tr><td class="ps-3"><span class="fw-bold d-block">VICTOR RAMOS</span><small class="text-muted">90909090</small></td><td>$ 8,100</td><td class="text-end pe-3"><a href="/pagos/registrar/14" class="btn btn-sm btn-success"><i class="bi bi-cash"></i></a></td></tr>
+                                                
+                                            </tbody></table></div></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                                            <span>📅 Vencimientos (7 días)</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <button onclick="cambiarPeriodo('diasVencimiento', 7)" class="btn btn-outline-warning text-dark active">7d</button>
+                                                <button onclick="cambiarPeriodo('diasVencimiento', 15)" class="btn btn-outline-warning text-dark ">15d</button>
+                                                <button onclick="cambiarPeriodo('diasVencimiento', 30)" class="btn btn-outline-warning text-dark ">30d</button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light"><tr><th class="ps-3">Cliente</th><th>Fecha</th><th class="text-end pe-3">Acciones</th></tr></thead>
+                                            <tbody>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">ClientePrueba4 Apellido4</span><small class="text-muted">diario</small></td>
+                                                        <td>27/3/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(6, 'ClientePrueba4 Apellido4')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/6" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">ClientePrueba7 Apellido7</span><small class="text-muted">diario</small></td>
+                                                        <td>27/3/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(9, 'ClientePrueba7 Apellido7')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/9" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">ClientePrueba10 Apellido10</span><small class="text-muted">diario</small></td>
+                                                        <td>27/3/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(12, 'ClientePrueba10 Apellido10')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/12" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">nylle Apellido1</span><small class="text-muted">diario</small></td>
+                                                        <td>28/3/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(3, 'nylle Apellido1')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/3" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">VICTOR RAMOS</span><small class="text-muted">mensual</small></td>
+                                                        <td>17/4/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(2, 'VICTOR RAMOS')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/2" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">ClientePrueba7 Apellido7</span><small class="text-muted">mensual</small></td>
+                                                        <td>22/4/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(19, 'ClientePrueba7 Apellido7')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/19" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">ClientePrueba3 Apellido3</span><small class="text-muted">mensual</small></td>
+                                                        <td>26/4/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(5, 'ClientePrueba3 Apellido3')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/5" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">ClientePrueba6 Apellido6</span><small class="text-muted">mensual</small></td>
+                                                        <td>26/4/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(8, 'ClientePrueba6 Apellido6')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/8" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">ClientePrueba9 Apellido9</span><small class="text-muted">mensual</small></td>
+                                                        <td>26/4/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(11, 'ClientePrueba9 Apellido9')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/11" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                    <tr>
+                                                        <td class="ps-3"><span class="fw-bold d-block">VICTOR RAMOS</span><small class="text-muted">mensual</small></td>
+                                                        <td>16/5/2026</td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group">
+                                                                <button onclick="enviarRecordatorio(14, 'VICTOR RAMOS')" class="btn btn-sm btn-outline-info" title="Enviar Recordatorio por Correo">
+                                                                    <i class="bi bi-envelope-at-fill"></i>
+                                                                </button>
+                                                                <a href="/prestamos/cronograma/14" class="btn btn-sm btn-outline-primary" title="Ver Cronograma">
+                                                                    <i class="bi bi-eye"></i>
+                                                                </a>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                
+                                            </tbody></table></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 4: GASTOS -->
+                        <div class="tab-pane fade" id="tab-gastos" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-lg-5">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0">Distribución de Gastos</div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                
+                                                    <canvas id="chartGastosCat"></canvas>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0 d-flex justify-content-between align-items-center">
+                                            <span>Evolución de Gastos (Últimos 7 días)</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <button onclick="cambiarPeriodo('diasGastos', 7)" class="btn btn-outline-danger active">7d</button>
+                                                <button onclick="cambiarPeriodo('diasGastos', 15)" class="btn btn-outline-danger ">15d</button>
+                                                <button onclick="cambiarPeriodo('diasGastos', 30)" class="btn btn-outline-danger ">30d</button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                
+                                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                                                        <i class="bi bi-graph-up fs-1 mb-2"></i>
+                                                        <p class="small fw-bold">No hay registros para este periodo</p>
+                                                    </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-1">
+                                <div class="col-lg-8">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0">Flujo de Caja: Ingresos vs Gastos (Últimos 6 meses)</div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                
+                                                    <canvas id="chartFlujoCaja"></canvas>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="card card-box shadow-sm border-0 h-100">
+                                        <div class="card-header bg-white fw-bold border-0">Gastos por Registrador</div>
+                                        <div class="card-body">
+                                            <div style="height: 280px;">
+                                                
+                                                    <canvas id="chartGastosUsuario"></canvas>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: CRECIMIENTO -->
+                    <div class="tab-pane fade" id="tab-crecimiento" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-12 mb-4">
+                                    <div class="card card-box shadow-sm border-0 border-start border-success border-4">
+                                        <div class="card-header bg-white fw-bold d-flex justify-content-between"><span>🔥 Oportunidades de Renovación</span><span class="badge bg-success-subtle text-success">Fidelización</span></div>
+                                        <div class="card-body p-0">
+                                             <div class="table-responsive d-none d-md-block">
+                                                 <table class="table table-hover align-middle mb-0">
+                                                     <thead class="table-light"><tr><th class="ps-4">Cliente</th><th class="text-center">Progreso</th><th class="text-center">Falta Pagar</th><th class="text-end pe-4">Acción</th></tr></thead>
+                                                     <tbody>
+                                                         
+                                                             <tr>
+                                                                 <td class="ps-4"><b>mi niña Apellido2</b><br><small>999888772</small></td>
+                                                                 <td style="width:25%">
+                                                                     <div class="progress" style="height:8px;"><div class="progress-bar bg-success" style="width:88.2%"></div></div>
+                                                                     <small class="fw-bold text-success">88.2% Pagado</small>
+                                                                 </td>
+                                                                 <td class="text-center fw-bold text-danger">
+                                                                     $ 12,000.00
+                                                                 </td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/999888772?text=Hola%20mi niña,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3"><i class="bi bi-whatsapp"></i> Ofrecer</a></td>
+                                                             </tr>
+                                                         
+                                                             <tr>
+                                                                 <td class="ps-4"><b>ClientePrueba7 Apellido7</b><br><small>999888777</small></td>
+                                                                 <td style="width:25%">
+                                                                     <div class="progress" style="height:8px;"><div class="progress-bar bg-success" style="width:84.0%"></div></div>
+                                                                     <small class="fw-bold text-success">84.0% Pagado</small>
+                                                                 </td>
+                                                                 <td class="text-center fw-bold text-danger">
+                                                                     $ 80,000.00
+                                                                 </td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/999888777?text=Hola%20ClientePrueba7,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3"><i class="bi bi-whatsapp"></i> Ofrecer</a></td>
+                                                             </tr>
+                                                         
+                                                     </tbody>
+                                                 </table>
+                                             </div>
+
+                                             <!-- Vista Móvil: Tarjetas Premium de Oportunidades de Renovación -->
+                                             <div class="d-block d-md-none p-3">
+                                                 <div class="d-flex flex-column gap-3">
+                                                     
+                                                         <div class="card border border-light-subtle shadow-sm rounded-4 p-3 bg-white">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">mi niña Apellido2</h6>
+                                                                     <a href="tel:999888772" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i>999888772</a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/999888772?text=Hola%20mi niña,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-whatsapp me-1"></i> Ofrecer
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2">
+                                                                 <div class="col-6 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Progreso</span>
+                                                                     <div class="progress mx-auto mt-1" style="height:6px; max-width: 80px;">
+                                                                         <div class="progress-bar bg-success" style="width:88.2%"></div>
+                                                                     </div>
+                                                                     <span class="fw-bold text-success" style="font-size: 0.75rem;">88.2% Pagado</span>
+                                                                 </div>
+                                                                 <div class="col-6">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Falta Pagar</span>
+                                                                     <span class="fw-bold text-danger" style="font-size: 0.8rem;">$ 12,000.00</span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     
+                                                         <div class="card border border-light-subtle shadow-sm rounded-4 p-3 bg-white">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">ClientePrueba7 Apellido7</h6>
+                                                                     <a href="tel:999888777" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i>999888777</a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/999888777?text=Hola%20ClientePrueba7,%20vimos%20que%20est%C3%A1s%20por%20terminar%20tu%20cr%C3%A9dito.%20%C2%BFDeseas%20renovarlo?" target="_blank" class="btn btn-sm btn-success rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-whatsapp me-1"></i> Ofrecer
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2">
+                                                                 <div class="col-6 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Progreso</span>
+                                                                     <div class="progress mx-auto mt-1" style="height:6px; max-width: 80px;">
+                                                                         <div class="progress-bar bg-success" style="width:84.0%"></div>
+                                                                     </div>
+                                                                     <span class="fw-bold text-success" style="font-size: 0.75rem;">84.0% Pagado</span>
+                                                                 </div>
+                                                                 <div class="col-6">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Falta Pagar</span>
+                                                                     <span class="fw-bold text-danger" style="font-size: 0.8rem;">$ 80,000.00</span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     
+                                                 </div>
+                                             </div>
+                                         </div>
+                                    </div>
+                                    <div class="col-12">
+                                     <div class="card card-box shadow-sm border-0">
+                                         <div class="card-header bg-white fw-bold text-primary">👑 Mejores Clientes (Historial VIP)</div>
+                                         <div class="card-body p-0">
+                                             <div class="table-responsive d-none d-md-block text-nowrap">
+                                                 <table class="table table-hover align-middle mb-0 text-nowrap">
+                                                     <thead class="table-dark"><tr><th class="ps-4">Cliente</th><th class="text-center">Pagados</th><th class="text-center">Capital Mín / Máx</th><th class="text-center">Tasa Mín / Máx (%)</th><th class="text-end pe-4">Acción</th></tr></thead>
+                                                     <tbody>
+                                                         
+                                                             <tr>
+                                                                 <td class="ps-4 py-3"><b>mi niña Apellido2</b><br><small>999888772</small></td>
+                                                                 <td class="text-center"><span class="badge bg-dark rounded-pill">2</span></td>
+                                                                 <td class="text-center">$ 1,000 - $ 5,000,000</td>
+                                                                 <td class="text-center bg-light text-warning-emphasis fw-bold">10.0% - 20.0%</td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/999888772?text=Hola%20mi niña,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-star-fill"></i> Ofrecer VIP</a></td>
+                                                             </tr>
+                                                         
+                                                             <tr>
+                                                                 <td class="ps-4 py-3"><b>ClientePrueba5 Apellido5</b><br><small>999888775</small></td>
+                                                                 <td class="text-center"><span class="badge bg-dark rounded-pill">1</span></td>
+                                                                 <td class="text-center">$ 2,500 - $ 2,500</td>
+                                                                 <td class="text-center bg-light text-warning-emphasis fw-bold">20.0% - 20.0%</td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/999888775?text=Hola%20ClientePrueba5,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-star-fill"></i> Ofrecer VIP</a></td>
+                                                             </tr>
+                                                         
+                                                             <tr>
+                                                                 <td class="ps-4 py-3"><b>ClientePrueba8 Apellido8</b><br><small>999888778</small></td>
+                                                                 <td class="text-center"><span class="badge bg-dark rounded-pill">1</span></td>
+                                                                 <td class="text-center">$ 4,000 - $ 4,000</td>
+                                                                 <td class="text-center bg-light text-warning-emphasis fw-bold">20.0% - 20.0%</td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/999888778?text=Hola%20ClientePrueba8,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-star-fill"></i> Ofrecer VIP</a></td>
+                                                             </tr>
+                                                         
+                                                             <tr>
+                                                                 <td class="ps-4 py-3"><b>Jhorman Felipe Fuentes Martinez</b><br><small>3102578041</small></td>
+                                                                 <td class="text-center"><span class="badge bg-dark rounded-pill">1</span></td>
+                                                                 <td class="text-center">$ 50,000 - $ 50,000</td>
+                                                                 <td class="text-center bg-light text-warning-emphasis fw-bold">1.0% - 1.0%</td>
+                                                                 <td class="text-end pe-4"><a href="https://wa.me/3102578041?text=Hola%20Jhorman Felipe,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-star-fill"></i> Ofrecer VIP</a></td>
+                                                             </tr>
+                                                         
+                                                     </tbody>
+                                                 </table>
+                                             </div>
+
+                                             <!-- Vista Móvil: Tarjetas Premium VIP -->
+                                             <div class="d-block d-md-none p-3">
+                                                 <div class="d-flex flex-column gap-3">
+                                                     
+                                                         <div class="card border border-warning-subtle shadow-sm rounded-4 p-3 bg-white" style="border-left: 4px solid #ffc107 !important;">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">mi niña Apellido2</h6>
+                                                                     <a href="tel:999888772" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i>999888772</a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/999888772?text=Hola%20mi niña,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-star-fill me-1"></i> Ofrecer VIP
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2" style="font-size: 0.75rem;">
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Pagados</span>
+                                                                     <span class="badge bg-dark rounded-pill mt-1" style="font-size: 0.75rem;">2</span>
+                                                                 </div>
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Capital</span>
+                                                                     <span class="fw-bold text-dark d-block mt-0.5" style="font-size: 0.7rem; line-height: 1.2;">
+                                                                         $ 1,000<br>a 5,000,000
+                                                                     </span>
+                                                                 </div>
+                                                                 <div class="col-4">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Tasa (%)</span>
+                                                                     <span class="fw-bold text-warning-emphasis d-block mt-1" style="font-size: 0.75rem;">
+                                                                         10.0% - 20.0%
+                                                                     </span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     
+                                                         <div class="card border border-warning-subtle shadow-sm rounded-4 p-3 bg-white" style="border-left: 4px solid #ffc107 !important;">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">ClientePrueba5 Apellido5</h6>
+                                                                     <a href="tel:999888775" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i>999888775</a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/999888775?text=Hola%20ClientePrueba5,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-star-fill me-1"></i> Ofrecer VIP
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2" style="font-size: 0.75rem;">
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Pagados</span>
+                                                                     <span class="badge bg-dark rounded-pill mt-1" style="font-size: 0.75rem;">1</span>
+                                                                 </div>
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Capital</span>
+                                                                     <span class="fw-bold text-dark d-block mt-0.5" style="font-size: 0.7rem; line-height: 1.2;">
+                                                                         $ 2,500<br>a 2,500
+                                                                     </span>
+                                                                 </div>
+                                                                 <div class="col-4">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Tasa (%)</span>
+                                                                     <span class="fw-bold text-warning-emphasis d-block mt-1" style="font-size: 0.75rem;">
+                                                                         20.0% - 20.0%
+                                                                     </span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     
+                                                         <div class="card border border-warning-subtle shadow-sm rounded-4 p-3 bg-white" style="border-left: 4px solid #ffc107 !important;">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">ClientePrueba8 Apellido8</h6>
+                                                                     <a href="tel:999888778" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i>999888778</a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/999888778?text=Hola%20ClientePrueba8,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-star-fill me-1"></i> Ofrecer VIP
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2" style="font-size: 0.75rem;">
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Pagados</span>
+                                                                     <span class="badge bg-dark rounded-pill mt-1" style="font-size: 0.75rem;">1</span>
+                                                                 </div>
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Capital</span>
+                                                                     <span class="fw-bold text-dark d-block mt-0.5" style="font-size: 0.7rem; line-height: 1.2;">
+                                                                         $ 4,000<br>a 4,000
+                                                                     </span>
+                                                                 </div>
+                                                                 <div class="col-4">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Tasa (%)</span>
+                                                                     <span class="fw-bold text-warning-emphasis d-block mt-1" style="font-size: 0.75rem;">
+                                                                         20.0% - 20.0%
+                                                                     </span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     
+                                                         <div class="card border border-warning-subtle shadow-sm rounded-4 p-3 bg-white" style="border-left: 4px solid #ffc107 !important;">
+                                                             <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                                 <div>
+                                                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Jhorman Felipe Fuentes Martinez</h6>
+                                                                     <a href="tel:3102578041" class="text-decoration-none small text-muted"><i class="bi bi-telephone-fill text-secondary me-1"></i>3102578041</a>
+                                                                 </div>
+                                                                 <div>
+                                                                     <a href="https://wa.me/3102578041?text=Hola%20Jhorman Felipe,%20tienes%20un%20excelente%20historial.%20%C2%BFTe%20interesar%C3%ADa%20un%20nuevo%20cr%C3%A9dito%3F" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" style="font-size: 0.75rem;">
+                                                                         <i class="bi bi-star-fill me-1"></i> Ofrecer VIP
+                                                                     </a>
+                                                                 </div>
+                                                             </div>
+                                                             
+                                                             <div class="row g-2 mb-1 text-center bg-light bg-opacity-50 rounded-3 p-2" style="font-size: 0.75rem;">
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Pagados</span>
+                                                                     <span class="badge bg-dark rounded-pill mt-1" style="font-size: 0.75rem;">1</span>
+                                                                 </div>
+                                                                 <div class="col-4 border-end">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Capital</span>
+                                                                     <span class="fw-bold text-dark d-block mt-0.5" style="font-size: 0.7rem; line-height: 1.2;">
+                                                                         $ 50,000<br>a 50,000
+                                                                     </span>
+                                                                 </div>
+                                                                 <div class="col-4">
+                                                                     <span class="d-block text-muted small" style="font-size: 0.65rem; text-uppercase; font-weight:600;">Tasa (%)</span>
+                                                                     <span class="fw-bold text-warning-emphasis d-block mt-1" style="font-size: 0.75rem;">
+                                                                         1.0% - 1.0%
+                                                                     </span>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
+                                                     
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                        <!-- TAB 4: MARKETING (Analítica Web) -->
+                        <div class="tab-pane fade" id="tab-marketing" role="tabpanel">
+                            <div class="row g-4 mb-4">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Rendimiento Web (Landing Page)</h5>
+                                            <a href="/promocion/detalle" class="btn btn-sm btn-primary rounded-pill px-3">
+                                                <i class="bi bi-list-ul me-1"></i> Ver Detalle de Sesiones
+                                            </a>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <div class="row g-3 mb-4">
+                                                <div class="col-md-3">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Impactos (Visitas)</h6>
+                                                        <h3 class="fw-bold mb-0">22</h3>
+                                                        <span class="text-primary small">Visitas totales</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Únicos</h6>
+                                                        <h3 class="fw-bold mb-0 text-purple">2</h3>
+                                                        <span class="text-purple small">Personas</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Clicks</h6>
+                                                        <h3 class="fw-bold mb-0 text-success">0</h3>
+                                                        <span class="text-success small">Interesados</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Leads</h6>
+                                                        <h3 class="fw-bold mb-0 text-danger">0</h3>
+                                                        <span class="text-danger small">Capturados</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Conv. (CR)</h6>
+                                                        <h3 class="fw-bold mb-0 text-info">
+                                                            0.00%
+                                                        </h3>
+                                                        <span class="text-info small">Visitas vs Leads</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="p-3 bg-light rounded-3 text-center border h-100">
+                                                        <h6 class="text-muted small text-uppercase fw-bold mb-2">Hoy</h6>
+                                                        <h3 class="fw-bold mb-0 text-warning">0</h3>
+                                                        <span class="text-warning small">Eventos</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Gráfico de Tendencia y Mapa de Calor -->
+                                            <div class="row mb-4">
+                                                <div class="col-lg-8">
+                                                    <div class="p-3 border rounded-3 bg-white h-100">
+                                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                                            <h6 class="fw-bold mb-0"><i class="bi bi-graph-up me-2 text-primary"></i>Tendencia de Actividad (Últimos 7 Días)</h6>
+                                                            <div class="btn-group btn-group-sm">
+                                                                <button onclick="cambiarPeriodo('diasMarketing', 7)" class="btn btn-outline-primary active">7d</button>
+                                                                <button onclick="cambiarPeriodo('diasMarketing', 15)" class="btn btn-outline-primary ">15d</button>
+                                                                <button onclick="cambiarPeriodo('diasMarketing', 30)" class="btn btn-outline-primary ">30d</button>
+                                                            </div>
+                                                        </div>
+                                                        <div style="height: 250px;">
+                                                            
+                                                                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted opacity-50">
+                                                                    <i class="bi bi-activity fs-1 mb-2"></i>
+                                                                    <p class="small fw-bold">Aún no hay actividad registrada</p>
+                                                                </div>
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="p-3 border rounded-3 bg-white h-100">
+                                                        <h6 class="fw-bold mb-3"><i class="bi bi-fire me-2 text-danger"></i>Mapa de Calor (Lectura)</h6>
+                                                        <div style="height: 250px;">
+                                                            <canvas id="chartScroll"></canvas>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4 p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 d-flex align-items-center mb-4">
+                                                <i class="bi bi-info-circle-fill text-primary fs-4 me-3"></i>
+                                                <p class="mb-0 small text-dark">
+                                                    <strong>¿Cómo funciona?</strong> Cada vez que alguien entra a tu página de promoción o usa el simulador y hace clic en el botón de WhatsApp, el sistema lo registra aquí en tiempo real.
+                                                </p>
+                                            </div>
+
+                                            <!-- Tabla de Leads Recientes -->
+                                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                                <div class="card-header bg-dark py-3 d-flex justify-content-between align-items-center">
+                                                    <h6 class="mb-0 fw-bold text-white" style="color: white !important;"><i class="bi bi-person-lines-fill me-2"></i>Últimos Leads Capturados (Prospectos)</h6>
+                                                    <span class="badge bg-danger">VIP</span>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-hover align-middle mb-0">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th class="ps-4">Nombre</th>
+                                                                    <th>Teléfono</th>
+                                                                    <th>Simulación</th>
+                                                                    <th>Fecha</th>
+                                                                    <th class="text-end pe-4">Acción</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                
+                                                                    <tr>
+                                                                        <td colspan="5" class="text-center py-5 text-muted">
+                                                                            <i class="bi bi-emoji-smile d-block fs-1 mb-2"></i>
+                                                                            Aún no tienes leads capturados hoy.
+                                                                        </td>
+                                                                    </tr>
+                                                                
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const datosEstados = {"prestamos":{"pendiente":23,"pagado":5,"vencido":3},"cuotas":{"pagado":"37","vencido":"52","pendiente":"128"}};
+        const datosBalance = ["30224500.00","7137300.00"];
+        const datosGastosCat = [{"label":"Otros","data":"370.00"},{"label":"Servicios","data":"440.00"},{"label":"Suministros","data":"300.00"},{"label":"Sueldos","data":"300000.00"},{"label":"Carro","data":"1125000.00"},{"label":"Tarjeta de Crédito","data":"22000.00"}];
+        const datosGastosDias = [];
+        const datosFlujoCaja = [{"mes":"2026-01","ingresos":"500.00","gastos":"10.00"},{"mes":"2026-02","ingresos":"100.00","gastos":"0.00"},{"mes":"2026-03","ingresos":"1200.00","gastos":"1100.00"},{"mes":"2026-04","ingresos":"6635000.00","gastos":"1425000.00"},{"mes":"2026-05","ingresos":"500500.00","gastos":"22000.00"}];
+        const datosGastosUsuario = [{"label":"Administrador","data":"1447010.00"},{"label":"Sistema","data":"1100.00"}];
+        const datosGanancias = {"capitalRecuperado":6543740.32265285,"gananciaRealizada":"593559.67734715","capitalPendiente":23680759.67734715,"gananciaPendiente":4004290.32265285};
+        const datosAnalytics = [];
+        const moneda = "$";
+        
+        let chartCartera;
+
+        // --- Gráfico de Analítica Web ---
+        if (datosAnalytics && datosAnalytics.length > 0) {
+            const ctxAnalytics = document.getElementById('chartAnalytics').getContext('2d');
+            new Chart(ctxAnalytics, {
+                type: 'line',
+                data: {
+                    labels: datosAnalytics.map(d => {
+                        const date = new Date(d.fecha);
+                        return `${date.getUTCDate().toString().padStart(2, '0')}/${(date.getUTCMonth()+1).toString().padStart(2, '0')}`;
+                    }),
+                    datasets: [
+                        {
+                            label: 'Visitas',
+                            data: datosAnalytics.map(d => d.visitas),
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Solicitudes (Clicks)',
+                            data: datosAnalytics.map(d => d.clics),
+                            borderColor: '#198754',
+                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Leads (WhatsApp)',
+                            data: datosAnalytics.map(d => d.leads),
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        // --- Gráfico de Mapa de Calor (Scroll) ---
+        const datosScroll = {"v25":12,"v50":13,"v75":9,"v90":12};
+        const totalV_scroll = 22 || 1;
+        
+        new Chart(document.getElementById('chartScroll').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Inicio (25%)', 'Medio (50%)', 'Interés (75%)', 'Final (90%)'],
+                datasets: [{
+                    label: '% de Lectura',
+                    data: [
+                        ((datosScroll.v25 / totalV_scroll) * 100).toFixed(1),
+                        ((datosScroll.v50 / totalV_scroll) * 100).toFixed(1),
+                        ((datosScroll.v75 / totalV_scroll) * 100).toFixed(1),
+                        ((datosScroll.v90 / totalV_scroll) * 100).toFixed(1)
+                    ],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.6)',
+                        'rgba(13, 110, 253, 0.6)',
+                        'rgba(255, 193, 7, 0.6)',
+                        'rgba(220, 53, 69, 0.6)'
+                    ],
+                    borderColor: ['#198754', '#0d6efd', '#ffc107', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => ` ${context.raw}% de los visitantes`
+                        }
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true, max: 100, ticks: { callback: value => value + '%' } }
+                }
+            }
+        });
+
+        function renderizarCartera(modo) {
+            const ctx = document.getElementById('chartEstados');
+            const data = modo === 'cuotas' ? [datosEstados.cuotas.pendiente, datosEstados.cuotas.pagado, datosEstados.cuotas.vencido] : [datosEstados.prestamos.pendiente, datosEstados.prestamos.pagado, datosEstados.prestamos.vencido];
+            const labels = modo === 'cuotas' ? ['Cuotas Pendientes', 'Cuotas Pagadas', 'Cuotas Vencidas'] : ['Préstamos Pendientes', 'Préstamos Pagados', 'Préstamos Vencidos'];
+
+            if (chartCartera) chartCartera.destroy();
+
+            chartCartera = new Chart(ctx, { 
+                type: 'doughnut', 
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: data, 
+                        backgroundColor: ['#ffc107', '#198754', '#dc3545'] 
+                    }] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { position: 'bottom' } } 
+                } 
+            });
+        }
+
+        function cambiarVistaCartera(modo) {
+            renderizarCartera(modo);
+            document.getElementById('btn-ver-cuotas').classList.toggle('active', modo === 'cuotas');
+            document.getElementById('id-ver-prestamos').classList.toggle('active', modo === 'prestamos');
+        }
+
+        // Render inicial por cuotas
+        renderizarCartera('cuotas');
+        
+        
+        new Chart(document.getElementById('chartBalance'), { type: 'bar', data: { labels: ['Prestado', 'Recuperado'], datasets: [{ label: `Monto en ${moneda}`, data: datosBalance, backgroundColor: ['#0d6efd', '#0dcaf0'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+
+        // Nuevos Gráficos de Análisis de Ganancias
+        new Chart(document.getElementById('chartCapital'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Capital Recuperado', 'Capital en Calle'],
+                datasets: [{
+                    data: [datosGanancias.capitalRecuperado, datosGanancias.capitalPendiente],
+                    backgroundColor: ['#198754', '#e9ecef']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        new Chart(document.getElementById('chartGanancias'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Intereses Cobrados', 'Intereses por Cobrar'],
+                datasets: [{
+                    data: [datosGanancias.gananciaRealizada, datosGanancias.gananciaPendiente],
+                    backgroundColor: ['#0d6efd', '#ffc107']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        if (datosGastosCat && datosGastosCat.length > 0) {
+            new Chart(document.getElementById('chartGastosCat'), { type: 'doughnut', data: { labels: datosGastosCat.map(d => d.label), datasets: [{ data: datosGastosCat.map(d => d.data), backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#0dcaf0', '#6f42c1'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+        }
+        
+        if (datosGastosDias && datosGastosDias.length > 0) {
+            new Chart(document.getElementById('chartGastosDias'), { type: 'line', data: { labels: datosGastosDias.map(d => d.label), datasets: [{ label: `Gastos (${moneda})`, data: datosGastosDias.map(d => d.data), borderColor: '#dc3545', backgroundColor: 'rgba(220, 53, 69, 0.2)', fill: true, tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        }
+
+        if (datosFlujoCaja && datosFlujoCaja.length > 0) {
+            new Chart(document.getElementById('chartFlujoCaja'), { 
+                type: 'bar', 
+                data: { 
+                    labels: datosFlujoCaja.map(d => d.mes), 
+                    datasets: [
+                        { label: 'Ingresos', data: datosFlujoCaja.map(d => d.ingresos), backgroundColor: '#198754' },
+                        { label: 'Gastos', data: datosFlujoCaja.map(d => d.gastos), backgroundColor: '#dc3545' }
+                    ] 
+                }, 
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } 
+            });
+        }
+
+        if (datosGastosUsuario && datosGastosUsuario.length > 0) {
+            new Chart(document.getElementById('chartGastosUsuario'), { type: 'bar', data: { labels: datosGastosUsuario.map(d => d.label), datasets: [{ label: `Gastos por Persona`, data: datosGastosUsuario.map(d => d.data), backgroundColor: '#6f42c1' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+
+        function enviarRecordatorio(id, cliente) {
+            Swal.fire({
+                title: '¿Enviar recordatorio?',
+                text: `Se enviará un correo de cobro a ${cliente}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0dcaf0',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Enviando...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                    
+                    fetch(`/prestamos/recordatorio/${id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('¡Enviado!', 'El recordatorio ha sido enviado con éxito.', 'success');
+                            } else {
+                                Swal.fire('Error', data.mensaje || 'No se pudo enviar el correo.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', 'Hubo un problema con la conexión.', 'error');
+                        });
+                }
+            });
+        }
+
+        function actualizarReloj() {
+            const ahora = new Date();
+            const timeStr = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) clockEl.innerText = timeStr;
+        }
+        setInterval(actualizarReloj, 60000);
+
+        function cambiarPeriodo(param, valor) {
+            const url = new URL(window.location.href);
+            url.searchParams.set(param, valor);
+            
+            // Persistir la pestaña activa
+            const activeBtn = document.querySelector('.btn-dash.active');
+            if (activeBtn) {
+                const target = activeBtn.getAttribute('data-bs-target');
+                url.searchParams.set('tab', target);
+            }
+            
+            window.location.href = url.toString();
+        }
+
+        // Restaurar pestaña activa al cargar
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const tabTarget = params.get('tab');
+            if (tabTarget) {
+                const tabBtn = document.querySelector(`[data-bs-target="${tabTarget}"]`);
+                if (tabBtn) {
+                    const tabTrigger = new bootstrap.Tab(tabBtn);
+                    tabTrigger.show();
+                }
+            }
+
+            // Escuchar cambios de pestaña para actualizar la URL sin recargar
+            document.querySelectorAll('.btn-dash').forEach(btn => {
+                btn.addEventListener('shown.bs.tab', (e) => {
+                    const target = e.target.getAttribute('data-bs-target');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', target);
+                    window.history.replaceState({}, '', url.toString());
+                });
+            });
+        });
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Formateador Global para Moneda (Estilo Colombia)
+        window.formatCurrency = (valor, decimales = 0) => {
+            if (valor === null || valor === undefined || isNaN(valor)) return '0';
+            return new Intl.NumberFormat('es-CO', {
+                minimumFractionDigits: decimales,
+                maximumFractionDigits: decimales
+            }).format(valor);
+        };
+
+        // Máscara de Moneda para Inputs (Puntos de miles en tiempo real)
+        window.applyCurrencyMask = (selector) => {
+            const inputs = document.querySelectorAll(selector);
+            inputs.forEach(input => {
+                input.type = 'text'; // Cambiamos a texto para permitir puntos
+                
+                input.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value === "") {
+                        e.target.value = "";
+                        return;
+                    }
+                    
+                    // Aseguramos que sea un número válido para el formateador
+                    const numericValue = parseInt(value, 10);
+                    if (isNaN(numericValue)) return;
+
+                    // Formatear con separador de miles (Punto en Colombia)
+                    e.target.value = new Intl.NumberFormat('es-CO').format(numericValue);
+                    
+                    // Disparar evento personalizado para que otros scripts (como simuladores) se enteren del cambio
+                    e.target.dispatchEvent(new CustomEvent('moneyInput', { detail: { rawValue: value } }));
+                });
+
+                // Formatear valor inicial si existe
+                if (input.value) {
+                    let initialValue = input.value.replace(/\D/g, '');
+                    if (initialValue) {
+                        try {
+                            input.value = new Intl.NumberFormat('es-CO').format(parseInt(initialValue, 10));
+                        } catch (e) {
+                            console.error("Error formatting initial value", e);
+                        }
+                    }
+                }
+            });
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Activar Menú Lateral
+            const currentLocation = location.pathname;
+            const menuItems = document.querySelectorAll('.sidebar .nav-link');
+            
+            menuItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (currentLocation === href || (currentLocation.startsWith(href) && href !== '/')) {
+                    item.classList.add('active');
+                }
+            });
+
+            // 2. Detectar Mensajes Flash
+            const mensajeExito = ``;
+            const mensajeError = ``;
+
+            if (mensajeExito) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Excelente!',
+                    text: mensajeExito,
+                    timer: 4000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
+            }
+
+            if (mensajeError) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Atención!',
+                    text: mensajeError,
+                    confirmButtonColor: '#d33'
+                });
+            }
+
+            // 3. RESPONSIVE SIDEBAR LOGIC (Escritorio y Móvil)
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+            if (mobileMenuBtn && sidebar) {
+                const toggleSidebar = () => {
+                    const isMobile = window.innerWidth < 768;
+                    
+                    if (isMobile) {
+                        // Comportamiento Móvil: Overlay y deslizar
+                        sidebar.classList.toggle('sidebar-open');
+                        if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
+                        document.body.style.overflow = sidebar.classList.contains('sidebar-open') ? 'hidden' : '';
+                    } else {
+                        // Comportamiento Escritorio: Colapsar y expandir contenido
+                        document.body.classList.toggle('sidebar-collapsed');
+                    }
+                };
+
+                mobileMenuBtn.addEventListener('click', toggleSidebar);
+                
+                if (sidebarOverlay) {
+                    sidebarOverlay.addEventListener('click', toggleSidebar);
+                }
+                
+                if (closeSidebarBtn) {
+                    closeSidebarBtn.addEventListener('click', toggleSidebar);
+                }
+
+                // Cerrar al hacer clic en un link (Solo móvil para no molestar en escritorio)
+                const navLinks = sidebar.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth < 768) {
+                            toggleSidebar();
+                        }
+                    });
+                });
+
+                // --- LÓGICA DE BUSCADOR GLOBAL (NAVEGACIÓN POR MENÚS) ---
+                const globalSearch = document.getElementById('globalSearch');
+                const searchResults = document.getElementById('searchResults');
+
+                if (globalSearch && searchResults) {
+                    // Mapeamos los menús existentes en el sidebar
+                    const menuItems = Array.from(sidebar.querySelectorAll('.nav-link')).map(item => ({
+                        nombre: item.innerText.trim(),
+                        url: item.getAttribute('href'),
+                        icon: item.querySelector('i').className
+                    }));
+
+                    globalSearch.addEventListener('input', function(e) {
+                        const term = e.target.value.toLowerCase().trim();
+                        
+                        if (term.length < 1) {
+                            searchResults.classList.remove('active');
+                            return;
+                        }
+
+                        const matches = menuItems.filter(m => m.nombre.toLowerCase().includes(term));
+
+                        if (matches.length > 0) {
+                            searchResults.innerHTML = matches.map(m => `
+                                <a href="${m.url}" class="search-item">
+                                    <i class="${m.icon}"></i>
+                                    <span>${m.nombre}</span>
+                                    <span class="badge">Módulo</span>
+                                </a>
+                            `).join('');
+                            searchResults.classList.add('active');
+                        } else {
+                            searchResults.innerHTML = '<div class="p-3 text-center text-muted small">No se encontraron módulos...</div>';
+                            searchResults.classList.add('active');
+                        }
+                    });
+
+                    // Cerrar al hacer clic fuera
+                    document.addEventListener('click', function(e) {
+                        if (!globalSearch.contains(e.target) && !searchResults.contains(e.target)) {
+                            searchResults.classList.remove('active');
+                        }
+                    });
+
+                    // Navegación con teclado (Opcional pero pro)
+                    globalSearch.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') searchResults.classList.remove('active');
+                    });
+                }
+            }
+        });
+
+        // 3. Función INTELIGENTE para Confirmar Cambio de Estado
+        // Ahora recibe "entidad" ('usuario' o 'cliente') para personalizar el mensaje
+        function confirmarCambioEstado(event, url, accion, entidad = 'usuario') {
+            event.preventDefault(); 
+
+            let titulo, texto, icono, colorBoton, textoBoton;
+
+            if (entidad === 'cliente') {
+                // --- MENSAJES PARA CLIENTES ---
+                if (accion === 'bloquear') {
+                    titulo = '¿Inhabilitar Cliente?';
+                    texto = "El cliente pasará a estado Inactivo (No borra su historial).";
+                    icono = 'warning';
+                    colorBoton = '#d33';
+                    textoBoton = 'Sí, inhabilitar';
+                } else {
+                    titulo = '¿Habilitar Cliente?';
+                    texto = "El cliente estará activo nuevamente.";
+                    icono = 'question';
+                    colorBoton = '#28a745';
+                    textoBoton = 'Sí, habilitar';
+                }
+            } else {
+                // --- MENSAJES PARA USUARIOS (LOGIN) ---
+                if (accion === 'bloquear') {
+                    titulo = '¿Bloquear Acceso?';
+                    texto = "El usuario ya no podrá iniciar sesión en el sistema.";
+                    icono = 'warning';
+                    colorBoton = '#d33';
+                    textoBoton = 'Sí, bloquear';
+                } else {
+                    titulo = '¿Reactivar Usuario?';
+                    texto = "El usuario volverá a tener acceso al sistema.";
+                    icono = 'question';
+                    colorBoton = '#28a745';
+                    textoBoton = 'Sí, activar';
+                }
+            }
+
+            Swal.fire({
+                title: titulo,
+                text: texto,
+                icon: icono,
+                showCancelButton: true,
+                confirmButtonColor: colorBoton,
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: textoBoton,
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+
+        // --- LÓGICA DE MODO OSCURO (PERSISTENTE) ---
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            if(themeIcon) themeIcon.classList.replace('bi-moon-fill', 'bi-sun-fill');
+        }
+
+        if(themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-fill');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.classList.replace('bi-moon-fill', 'bi-sun-fill');
+                }
+            });
+        }
+    </script>
+    
+    <!-- Script global para Auto-Sincronización Silenciosa -->
+    <script>
+    window.addEventListener('load', () => {
+        setTimeout(async () => {
+            try {
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (!registration) return;
+                const subscription = await registration.pushManager.getSubscription();
+                if (!subscription) return;
+
+                const deviceInfo = {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform || 'unknown',
+                    connection: navigator.connection ? navigator.connection.effectiveType : 'unknown',
+                    battery: 'unknown',
+                    isCharging: 'unknown'
+                };
+
+                if ('getBattery' in navigator) {
+                    try {
+                        const battery = await navigator.getBattery();
+                        deviceInfo.battery = Math.round(battery.level * 100) + '%';
+                        deviceInfo.isCharging = battery.charging ? 'Sí' : 'No';
+                    } catch (e) {}
+                }
+
+                await fetch('/push/update-info', {
+                    method: 'POST',
+                    body: JSON.stringify({ endpoint: subscription.endpoint, deviceInfo }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } catch (e) {}
+        }, 4000);
+    });
+    </script>
+</body>
+</html>
