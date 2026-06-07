@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const prestamosController = require('../controllers/prestamosController');
+const uploadDesembolso = require('../middleware/uploadDesembolso');
 
 // Listar
 router.get('/', prestamosController.listar);
@@ -13,6 +14,9 @@ router.get('/recordatorio/:id', prestamosController.enviarRecordatorio);
 // Crear
 router.get('/crear', prestamosController.mostrarFormulario);
 router.post('/guardar', prestamosController.guardar);
+
+// Evidencia de Desembolso / Entrega del Dinero
+router.post('/comprobante-desembolso/:id', uploadDesembolso.single('comprobante'), prestamosController.guardarComprobanteDesembolso);
 
 // Descargas PDF
 router.get('/pdf-cronograma/:id', prestamosController.descargarCronograma);

@@ -457,6 +457,21 @@ async function runMigrations() {
         }
     }
 
+    // 19. Columnas para comprobante y notas de desembolso en prestamos
+    try {
+        await db.query("ALTER TABLE prestamos ADD COLUMN comprobante_desembolso VARCHAR(255) NULL AFTER observaciones;");
+        console.log('✅ Columna [comprobante_desembolso] agregada a la tabla [prestamos]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [comprobante_desembolso]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE prestamos ADD COLUMN notas_desembolso TEXT NULL AFTER comprobante_desembolso;");
+        console.log('✅ Columna [notas_desembolso] agregada a la tabla [prestamos]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [notas_desembolso]:', e.message);
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 

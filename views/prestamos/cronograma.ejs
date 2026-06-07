@@ -102,6 +102,59 @@
                                     </div>
                                 <% } %>
 
+                                <!-- Evidencia de Desembolso / Entrega del Dinero -->
+                                <div class="card card-box mt-4 p-4 border rounded-3 bg-light bg-opacity-75">
+                                    <h5 class="fw-bold text-primary mb-3">
+                                        <i class="bi bi-shield-check me-1"></i> Evidencia de Desembolso / Entrega de Dinero
+                                    </h5>
+                                    
+                                    <% if (prestamo.comprobante_desembolso || prestamo.notas_desembolso) { %>
+                                        <div class="p-3 bg-white border rounded shadow-sm mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-8">
+                                                    <% if (prestamo.notas_desembolso) { %>
+                                                        <p class="mb-2 text-dark"><strong>Notas/Detalle:</strong> <%= prestamo.notes_desembolso || prestamo.notas_desembolso %></p>
+                                                    <% } %>
+                                                    <p class="text-muted small mb-0">
+                                                        <i class="bi bi-calendar-check me-1"></i> Evidencia registrada
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                                    <% if (prestamo.comprobante_desembolso) { %>
+                                                        <a href="/uploads/desembolsos/<%= prestamo.comprobante_desembolso %>" target="_blank" class="btn btn-outline-primary btn-sm me-2">
+                                                            <i class="bi bi-image me-1"></i> Ver Comprobante
+                                                        </a>
+                                                    <% } %>
+                                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#formDesembolso" aria-expanded="false" aria-controls="formDesembolso">
+                                                        <i class="bi bi-pencil-square me-1"></i> Editar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% } %>
+
+                                    <div class="collapse <%= !(prestamo.comprobante_desembolso || prestamo.notas_desembolso) ? 'show' : '' %>" id="formDesembolso">
+                                        <form action="/prestamos/comprobante-desembolso/<%= prestamo.id %>" method="POST" enctype="multipart/form-data" class="mt-2">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="comprobante" class="form-label fw-bold text-secondary">Foto del Comprobante (Transferencia, Recibo, etc.)</label>
+                                                    <input type="file" class="form-control" id="comprobante" name="comprobante" accept="image/*">
+                                                    <div class="form-text">Formatos permitidos: JPG, PNG, WEBP, GIF (Máx. 10MB)</div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="notas" class="form-label fw-bold text-secondary">Notas / Detalles del Desembolso</label>
+                                                    <textarea class="form-control" id="notas" name="notas" rows="2" placeholder="Ej: Entregado en efectivo, transferencia por Nequi, etc."><%= prestamo.notas_desembolso || '' %></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar Evidencia
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
                                 <div class="mt-4 text-end">
                                     <a href="/reportes/cronograma-pdf/<%= prestamo.id %>" target="_blank"
                                         class="btn btn-danger btn-lg">

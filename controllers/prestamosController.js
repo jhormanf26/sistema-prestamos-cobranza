@@ -244,6 +244,35 @@ const prestamosController = {
             console.error(error);
             res.json({ success: false, mensaje: 'Error interno del servidor.' });
         }
+    },
+
+    guardarComprobanteDesembolso: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const { notas } = req.body;
+            const usuarioActual = (req.session && req.session.usuario) ? req.session.usuario.nombre : 'Administrador';
+            
+            const prestamo = await PrestamoModel.obtenerPorId(id);
+            if (!prestamo) {
+                req.flash('mensajeError', 'El préstamo no existe.');
+                return res.redirect('/prestamos');
+            }
+
+            let nombreArchivo = prestamo.comprobante_desembolso;
+            if (req.file) {
+                nombreArchivo = req.file.filename;
+            }
+
+            await PrestamoModel.guardarDesembolso(id, nombreArchivo, notas || '');
+            await BitacoraModel.registrar(usuarioActual, 'REGISTRAR_DESEMBOLSO', `Préstamo ID: ${id} - Comprobante: ${nombreArchivo || 'Ninguno'}`);
+
+            req.flash('mensajeExito', 'Evidencia de desembolso registrada correctamente.');
+            res.redirect(`/prestamos/cronograma/${id}`);
+        } catch (error) {
+            console.error(error);
+            req.flash('mensajeError', 'Error al guardar la evidencia de desembolso.');
+            res.redirect(`/prestamos/cronograma/${id}`);
+        }
     }
 };
 
