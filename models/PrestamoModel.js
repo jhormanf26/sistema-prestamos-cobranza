@@ -149,6 +149,21 @@ class PrestamoModel {
             return result;
         } catch (error) { throw error; }
     }
+
+    /**
+     * Guarda la evidencia de desembolso (comprobante y notas) de un préstamo.
+     * @param {number|string} id - ID del préstamo.
+     * @param {string|null} comprobante - Nombre del archivo de imagen subido o null.
+     * @param {string|null} notas - Notas o comentarios del desembolso o null.
+     * @returns {Promise<object>} Resultado de la consulta de actualización.
+     */
+    static async guardarDesembolso(id, comprobante, notas) {
+        try {
+            const query = 'UPDATE prestamos SET comprobante_desembolso = ?, notas_desembolso = ? WHERE id = ?';
+            const [result] = await db.query(query, [comprobante, notas, id]);
+            return result;
+        } catch (error) { throw error; }
+    }
 }
 
 module.exports = PrestamoModel;

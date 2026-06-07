@@ -308,6 +308,8 @@ CREATE TABLE IF NOT EXISTS `prestamos` (
   `fecha_inicio` date NOT NULL,
   `fecha_fin` date NOT NULL,
   `observaciones` text,
+  `comprobante_desembolso` varchar(255) DEFAULT NULL,
+  `notas_desembolso` text,
   PRIMARY KEY (`id`),
   KEY `cliente_id` (`cliente_id`),
   CONSTRAINT `prestamos_ibfk_1` FOREIGN KEY (`cliente_id`) REFERENCES `clientes` (`id`) ON DELETE RESTRICT
