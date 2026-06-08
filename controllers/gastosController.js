@@ -22,6 +22,8 @@ const gastosController = {
                 totalRegistros = await GastoModel.contarTotal();
             }
 
+            const todosLosGastosFiltrados = await GastoModel.obtenerTodosFiltrados(busqueda);
+
             const totalPages = Math.ceil(totalRegistros / limit);
             const config = await ConfigModel.obtener();
             const empresaConfig = config || { moneda: '$' };
@@ -29,6 +31,7 @@ const gastosController = {
             res.render('gastos/index', { 
                 title: 'Gestión de Gastos',
                 gastos: gastos,
+                todosLosGastosFiltrados: todosLosGastosFiltrados,
                 busqueda: busqueda,
                 currentPage: page,
                 totalPages: totalPages,

@@ -210,6 +210,34 @@
                                                         </nav>
                                                         <% } %>
                                                 </div>
+
+                                                <!-- ÁREA DE GRÁFICOS DINÁMICOS -->
+                                                <div class="row g-3 mt-4 mb-4" id="contenedorGraficosGastos">
+                                                    <!-- Gráfico Principal (Evolución o Histórico por filtro) -->
+                                                    <div class="col-12 col-lg-6" id="columnaGraficoPrincipal">
+                                                        <div class="card card-box p-4 border-0 shadow-sm bg-white rounded-4 h-100">
+                                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                <h5 class="fw-bold mb-0 text-dark" id="tituloGraficoPrincipal">📈 Evolución Histórica</h5>
+                                                                <span class="badge bg-danger text-white rounded-pill px-3 py-1.5" id="badgeFiltro" style="font-size: 0.75rem;">General</span>
+                                                            </div>
+                                                            <div style="position: relative; height: 300px; width: 100%;">
+                                                                <canvas id="chartGastoDinamicoLine"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Gráfico Secundario (Distribución por Categorías) -->
+                                                    <div class="col-12 col-lg-6" id="columnaGraficoSecundario">
+                                                        <div class="card card-box p-4 border-0 shadow-sm bg-white rounded-4 h-100">
+                                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                <h5 class="fw-bold mb-0 text-dark" id="tituloGraficoSecundario">📊 Gastos por Categoría</h5>
+                                                            </div>
+                                                            <div style="position: relative; height: 300px; width: 100%;">
+                                                                <canvas id="chartGastoDinamicoCat"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                             </div>
                     </div>
             </div>
@@ -321,6 +349,9 @@
             </div>
         </div>
 
+        <!-- Incluir Chart.js desde CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
         <%- include('../partials/footer') %>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
@@ -380,5 +411,176 @@
                             input.value = input.value.replace(/\D/g, '');
                         });
                     }
+
+                    // ==========================================
+                    // LÓGICA DE GRÁFICOS DINÁMICOS Y RESPONSIVOS
+                    // ==========================================
+                    const todosLosGastos = <%- typeof todosLosGastosFiltrados !== 'undefined' ? JSON.stringify(todosLosGastosFiltrados) : '[]' %>;
+                    const busquedaActual = "<%= busqueda %>".trim();
+                    const moneda = "<%= empresa.moneda %>";
+
+                    if (!todosLosGastos || todosLosGastos.length === 0) {
+                        // Si no hay gastos, ocultamos o mostramos empty state
+                        const cont = document.getElementById('contenedorGraficosGastos');
+                        if (cont) {
+                            cont.innerHTML = `
+                                <div class="col-12">
+                                    <div class="card card-box p-5 border-0 shadow-sm bg-white rounded-4 text-center">
+                                        <i class="bi bi-bar-chart text-muted opacity-50" style="font-size: 3rem;"></i>
+                                        <h5 class="mt-3 text-muted">No hay datos suficientes para graficar</h5>
+                                        <p class="text-muted small">Registra salidas de gastos para ver reportes visuales.</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return;
+                    }
+
+                    // Categorías válidas en minúscula para comparación robusta
+                    const categoriasValidas = ["servicios", "alquiler", "sueldos", "mantenimiento", "carro", "tarjeta de crédito", "otros"];
+                    const esFiltroCategoria = categoriasValidas.includes(busquedaActual.toLowerCase());
+
+                    // Gráfico Principal (Histórico / Evolución Temporal)
+                    // Agrupar por fecha
+                    const gastosPorFecha = {};
+                    todosLosGastos.forEach(g => {
+                        const fecha = new Date(g.fecha_gasto).toLocaleDateString('es-CO', { timeZone: 'UTC' });
+                        gastosPorFecha[fecha] = (gastosPorFecha[fecha] || 0) + parseFloat(g.monto);
+                    });
+
+                    const labelsLine = Object.keys(gastosPorFecha);
+                    const dataLine = Object.values(gastosPorFecha);
+
+                    // Configurar títulos y visibilidad
+                    const tituloPrincipalEl = document.getElementById('tituloGraficoPrincipal');
+                    const badgeFiltroEl = document.getElementById('badgeFiltro');
+                    const colPrincipalEl = document.getElementById('columnaGraficoPrincipal');
+                    const colSecundarioEl = document.getElementById('columnaGraficoSecundario');
+                    const tituloSecundarioEl = document.getElementById('tituloGraficoSecundario');
+
+                    if (busquedaActual) {
+                        badgeFiltroEl.innerText = "Filtrado";
+                        badgeFiltroEl.className = "badge bg-warning text-dark rounded-pill px-3 py-1.5";
+                        if (esFiltroCategoria) {
+                            tituloPrincipalEl.innerText = `📈 Evolución de ${busquedaActual}`;
+                            tituloSecundarioEl.innerText = `📊 Desglose de: ${busquedaActual}`;
+                        } else {
+                            tituloPrincipalEl.innerText = `📈 Histórico: "${busquedaActual}"`;
+                            // Ocultamos el secundario y expandimos el principal si es un filtro de texto libre (ej: "Luz")
+                            if (colSecundarioEl) colSecundarioEl.style.display = 'none';
+                            if (colPrincipalEl) {
+                                colPrincipalEl.className = 'col-12';
+                            }
+                        }
+                    } else {
+                        badgeFiltroEl.innerText = "General";
+                        badgeFiltroEl.className = "badge bg-danger text-white rounded-pill px-3 py-1.5";
+                        tituloPrincipalEl.innerText = "📈 Evolución Histórica de Gastos";
+                        tituloSecundarioEl.innerText = "📊 Gastos por Categoría";
+                    }
+
+                    // Renderizar Gráfico de Línea
+                    const ctxLine = document.getElementById('chartGastoDinamicoLine').getContext('2d');
+                    new Chart(ctxLine, {
+                        type: 'line',
+                        data: {
+                            labels: labelsLine,
+                            datasets: [{
+                                label: `Total Gastos (${moneda})`,
+                                data: dataLine,
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                fill: true,
+                                tension: 0.35,
+                                borderWidth: 3,
+                                pointBackgroundColor: '#ef4444',
+                                pointHoverRadius: 7
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` Gastado: ${moneda} ${window.formatCurrency(context.raw, 2)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return moneda + ' ' + window.formatCurrency(value, 0);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Renderizar Gráfico Secundario (Solo si no es filtro de texto libre)
+                    if (!busquedaActual || esFiltroCategoria) {
+                        const ctxCat = document.getElementById('chartGastoDinamicoCat').getContext('2d');
+                        
+                        let labelsCat = [];
+                        let dataCat = [];
+                        let bgColors = ['#ef4444', '#f97316', '#eab308', '#10b981', '#06b6d4', '#6366f1', '#a855f7'];
+
+                        if (esFiltroCategoria) {
+                            // Si es categoría, agrupamos por DESCRIPCIÓN dentro de esa categoría
+                            const gastosPorDesc = {};
+                            todosLosGastos.forEach(g => {
+                                const desc = g.descripcion || 'Otros';
+                                gastosPorDesc[desc] = (gastosPorDesc[desc] || 0) + parseFloat(g.monto);
+                            });
+                            labelsCat = Object.keys(gastosPorDesc);
+                            dataCat = Object.values(gastosPorDesc);
+                        } else {
+                            // Agrupamos por CATEGORÍA general
+                            const gastosPorCat = {};
+                            todosLosGastos.forEach(g => {
+                                const cat = g.categoria || 'Otros';
+                                gastosPorCat[cat] = (gastosPorCat[cat] || 0) + parseFloat(g.monto);
+                            });
+                            labelsCat = Object.keys(gastosPorCat);
+                            dataCat = Object.values(gastosPorCat);
+                        }
+
+                        new Chart(ctxCat, {
+                            type: 'doughnut',
+                            data: {
+                                labels: labelsCat,
+                                datasets: [{
+                                    data: dataCat,
+                                    backgroundColor: bgColors.slice(0, labelsCat.length),
+                                    borderWidth: 2,
+                                    borderColor: '#ffffff'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: { boxWidth: 12, padding: 15 }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return ` Total: ${moneda} ${window.formatCurrency(context.raw, 2)}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
                 });
             </script>
+
