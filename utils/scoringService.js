@@ -288,16 +288,17 @@ const scoringService = {
                             let puntosImpacto = 0;
                             let tipo = 'mismo_dia';
 
-                            if (diffDays > 0) {
-                                // Demora: restamos 1 punto por día
-                                puntosComportamiento -= diffDays;
-                                puntosImpacto = -diffDays;
+                                                        if (diffDays > 0) {
+                                // Demora: restamos 2 puntos por día
+                                puntosComportamiento -= (diffDays * 2);
+                                puntosImpacto = -(diffDays * 2);
                                 tipo = 'demora';
                                 totalCuotasConDemoraHistoricas++;
                             } else if (diffDays < 0) {
-                                // Anticipación: sumamos 1 punto por día
-                                puntosComportamiento += Math.abs(diffDays);
-                                puntosImpacto = Math.abs(diffDays);
+                                // Anticipación: sumamos 1 punto por día (máximo 10 por cuota)
+                                const ptsAnticipacion = Math.min(10, Math.abs(diffDays));
+                                puntosComportamiento += ptsAnticipacion;
+                                puntosImpacto = ptsAnticipacion;
                                 tipo = 'anticipacion';
                             }
 
@@ -448,6 +449,77 @@ const scoringService = {
         resultado.tasaMora = parseFloat((resultado.tasaMensual + 1).toFixed(2));
 
         return resultado;
+    },
+
+    /**
+     * Calcula el límite máximo de crédito permitido para un cliente.
+     * @param {number|string} clienteId - ID del cliente a evaluar.
+     * @returns {Promise<Object>} Objeto con el límite máximo, el motivo/criterio aplicado y si es personalizado/override.
+     */
+    calcularLimiteMaximo: async (clienteId) => {
+        try {
+            const cliente = await ClienteModel.obtenerPorId(clienteId);
+            if (!cliente) {
+                throw new Error(`Cliente con ID ${clienteId} no encontrado.`);
+            }
+
+            // 1. Si tiene monto pre-aprobado personalizado mayor a 0, este tiene prioridad absoluta
+            if (cliente.monto_preaprobado && parseFloat(cliente.monto_preaprobado) > 0) {
+                return {
+                    limiteMaximo: parseFloat(cliente.monto_preaprobado),
+                    motivo: 'Monto pre-aprobado personalizado definido por el administrador',
+                    criterio: 'personalizado',
+                    override: true
+                };
+            }
+
+            // 2. Verificar historial de préstamos
+            const prestamos = await PrestamoModel.obtenerPorCliente(clienteId);
+            if (!prestamos || prestamos.length === 0) {
+                return {
+                    limiteMaximo: 200000,
+                    motivo: 'Cliente nuevo sin historial de préstamos',
+                    criterio: 'nuevo_cliente',
+                    override: false
+                };
+            }
+
+            // 3. Si tiene historial, calcular score para determinar límite basado en score
+            const scoreInfo = await scoringService.calcularScore(clienteId);
+            const score = scoreInfo.score;
+
+            let limite = 200000;
+            let motivo = `Categoría E (Score: ${score})`;
+
+            if (score >= 900) {
+                limite = 2000000;
+                motivo = `Categoría A (Score: ${score})`;
+            } else if (score >= 700) {
+                limite = 1000000;
+                motivo = `Categoría B (Score: ${score})`;
+            } else if (score >= 500) {
+                limite = 500000;
+                motivo = `Categoría C (Score: ${score})`;
+            } else if (score >= 300) {
+                limite = 300000;
+                motivo = `Categoría D (Score: ${score})`;
+            } else {
+                limite = 200000;
+                motivo = `Categoría E (Score: ${score})`;
+            }
+
+            return {
+                limiteMaximo: limite,
+                motivo: `Límite sugerido según score: ${motivo}`,
+                criterio: 'score',
+                override: false,
+                score,
+                categoria: scoreInfo.categoria
+            };
+        } catch (error) {
+            console.error("Error al calcular el límite de crédito:", error);
+            throw error;
+        }
     }
 };
 
