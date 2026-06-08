@@ -332,6 +332,7 @@ const clientesController = {
 
             const score = parseFloat(cliente.score || 0);
             const tasaInfo = scoringService.obtenerTasaPorScore(score);
+            const limiteInfo = await scoringService.calcularLimiteMaximo(id);
 
             res.json({
                 success: true,
@@ -339,7 +340,10 @@ const clientesController = {
                 categoria: tasaInfo.categoria,
                 tasaSugerida: tasaInfo.tasaMensual,
                 tasaMoraSugerida: tasaInfo.tasaMora,
-                descripcion: tasaInfo.descripcion
+                descripcion: tasaInfo.descripcion,
+                limiteMaximo: limiteInfo.limiteMaximo,
+                limiteMotivo: limiteInfo.motivo,
+                limiteOverride: limiteInfo.override
             });
         } catch (error) {
             console.error('Error en obtenerScore:', error);

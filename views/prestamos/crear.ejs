@@ -38,25 +38,35 @@
                                                             </select>
                                                         </div>
 
-                                                        <!-- Badge de Score Crediticio del Cliente -->
-                                                        <div id="scoreBadgeContainer" class="mb-3" style="display:none;">
-                                                            <div id="scoreBadge" class="alert d-flex align-items-center gap-2 py-2 mb-0" role="alert" style="border-radius:10px;">
-                                                                <span id="scoreBadgeIcon" style="font-size:1.4rem;"></span>
-                                                                <div>
-                                                                    <span class="fw-bold" id="scoreBadgeTitle"></span>
-                                                                    <small class="d-block" id="scoreBadgeDesc"></small>
-                                                                </div>
-                                                                <span id="scoreBadgePuntos" class="ms-auto badge fs-6"></span>
-                                                            </div>
-                                                        </div>
+                                                         <!-- Badge de Score Crediticio del Cliente -->
+                                                         <div id="scoreBadgeContainer" class="mb-3" style="display:none;">
+                                                             <div id="scoreBadge" class="alert d-flex align-items-center gap-2 py-2 mb-2" role="alert" style="border-radius:10px;">
+                                                                 <span id="scoreBadgeIcon" style="font-size:1.4rem;"></span>
+                                                                 <div>
+                                                                     <span class="fw-bold" id="scoreBadgeTitle"></span>
+                                                                     <small class="d-block" id="scoreBadgeDesc"></small>
+                                                                 </div>
+                                                                 <span id="scoreBadgePuntos" class="ms-auto badge fs-6"></span>
+                                                             </div>
+                                                             <div id="limiteBadge" class="alert alert-secondary d-flex align-items-center gap-2 py-2 mb-0" role="alert" style="border-radius:10px;">
+                                                                 <span style="font-size:1.4rem;">🔒</span>
+                                                                 <div>
+                                                                     <span class="fw-bold text-dark" id="limiteBadgeTitle">Límite de Crédito Permitido: $0</span>
+                                                                     <small class="d-block text-muted" id="limiteBadgeDesc"></small>
+                                                                 </div>
+                                                             </div>
+                                                         </div>
 
-                                                        <div class="row">
-                                                            <div class="col-md-4 mb-3">
-                                                                <label class="form-label">Monto a Prestar (<%= empresa.moneda %>)</label>
-                                                                <input type="text" name="monto" id="inputMonto"
-                                                                    class="form-control currency-input" required
-                                                                    placeholder="0">
-                                                            </div>
+                                                         <div class="row">
+                                                             <div class="col-md-4 mb-3">
+                                                                 <label class="form-label">Monto a Prestar (<%= empresa.moneda %>)</label>
+                                                                 <input type="text" name="monto" id="inputMonto"
+                                                                     class="form-control currency-input" required
+                                                                     placeholder="0">
+                                                                 <div id="montoExcedidoFeedback" class="invalid-feedback" style="display:none;">
+                                                                     El monto ingresado supera el límite de crédito permitido.
+                                                                 </div>
+                                                             </div>
                                                             <div class="col-md-4 mb-3">
                                                                 <label class="form-label d-flex align-items-center gap-2">
                                                                     Interés Mensual (%)
@@ -169,10 +179,7 @@
 
                             </div>
                     </div>
-            </div>
-        </div>
-
-        <%- include('../partials/footer') %>
+            </div        <%- include('../partials/footer') %>
 
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
@@ -189,6 +196,9 @@
                     const inputInteresMora = document.getElementById('inputInteresMora');
                     const inputFechaInicio = document.getElementById('inputFechaInicio');
                     const simFechaFin = document.getElementById('simFechaFin');
+
+                    // Límite de crédito cargado dinámicamente
+                    let limiteMaximoCliente = null;
 
                     // Obtenemos el símbolo de moneda desde el servidor
                     const moneda = "<%= empresa.moneda %>";
@@ -228,6 +238,17 @@
                         const i = parseFloat(inputInteres.value) || 0;
                         const c = parseInt(inputCuotas.value) || 1;
                         const f = document.querySelector('select[name="frecuencia"]').value;
+
+                        // Validar contra el límite máximo en tiempo real
+                        if (limiteMaximoCliente !== null && m > limiteMaximoCliente) {
+                            inputMonto.classList.add('is-invalid');
+                            document.getElementById('montoExcedidoFeedback').style.display = 'block';
+                            const fmtLimite = window.formatCurrency ? window.formatCurrency(limiteMaximoCliente, 0) : limiteMaximoCliente;
+                            document.getElementById('montoExcedidoFeedback').textContent = `El monto ingresado supera el límite de crédito permitido de ${moneda} ${fmtLimite}.`;
+                        } else {
+                            inputMonto.classList.remove('is-invalid');
+                            document.getElementById('montoExcedidoFeedback').style.display = 'none';
+                        }
 
                         // Lógica de interés mensual (debe coincidir con utils/finance.js)
                         let factor = 1;
@@ -287,9 +308,26 @@
                     inputFechaInicio.addEventListener('change', calcular);
                     document.querySelector('select[name="frecuencia"]').addEventListener('change', calcular);
 
-                    // LIMPIAR PUNTOS ANTES DE ENVIAR AL SERVIDOR
+                    // LIMPIAR PUNTOS ANTES DE ENVIAR AL SERVIDOR Y VALIDAR LÍMITES
                     if (formPrestamo) {
-                        formPrestamo.addEventListener('submit', function () {
+                        formPrestamo.addEventListener('submit', function (e) {
+                            if (limiteMaximoCliente !== null) {
+                                const rawValue = inputMonto.value.replace(/\D/g, '');
+                                const m = parseFloat(rawValue) || 0;
+                                if (m > limiteMaximoCliente) {
+                                    e.preventDefault();
+                                    const fmtLimite = window.formatCurrency ? window.formatCurrency(limiteMaximoCliente, 0) : limiteMaximoCliente;
+                                    const fmtMonto = window.formatCurrency ? window.formatCurrency(m, 0) : m;
+                                    Swal.fire({
+                                        title: 'Límite de Crédito Excedido',
+                                        text: `El monto solicitado (${moneda} ${fmtMonto}) supera el límite de crédito permitido para este cliente (${moneda} ${fmtLimite}).`,
+                                        icon: 'warning',
+                                        confirmButtonText: 'Entendido',
+                                        confirmButtonColor: '#dc2626'
+                                    });
+                                    return false;
+                                }
+                            }
                             inputMonto.value = inputMonto.value.replace(/\D/g, ''); // Deja solo números
                         });
                     }
@@ -297,7 +335,7 @@
                     // Ejecutar cálculo inicial
                     calcular();
 
-                    // ── AUTO-LLENADO DE TASAS POR SCORE CREDITICIO ──────────────────
+                    // ── AUTO-LLENADO DE TASAS POR SCORE CREDITICIO Y LÍMITES ─────────
                     const selectCliente      = document.getElementById('selectCliente');
                     const badgeContainer     = document.getElementById('scoreBadgeContainer');
                     const scoreBadge         = document.getElementById('scoreBadge');
@@ -327,6 +365,9 @@
                         if (!clienteId) {
                             badgeContainer.style.display = 'none';
                             tasaSugeridaOriginal = null;
+                            limiteMaximoCliente = null;
+                            inputMonto.classList.remove('is-invalid');
+                            document.getElementById('montoExcedidoFeedback').style.display = 'none';
                             return;
                         }
 
@@ -341,12 +382,19 @@
                             const estilos = estilosPorCategoria[cat] || estilosPorCategoria['C'];
 
                             // Actualizar badge visual
-                            scoreBadge.className = `alert d-flex align-items-center gap-2 py-2 mb-0 ${estilos.alertClass}`;
+                            scoreBadge.className = `alert d-flex align-items-center gap-2 py-2 mb-2 ${estilos.alertClass}`;
                             scoreBadgeIcon.textContent = estilos.icono;
                             scoreBadgeTitle.textContent = `Score ${cat} — ${data.descripcion}`;
                             scoreBadgeDesc.textContent  = `Tasa sugerida: ${data.tasaSugerida}% mensual / Mora: ${data.tasaMoraSugerida}%`;
                             scoreBadgePuntos.textContent = `${data.score} pts`;
                             scoreBadgePuntos.className  = `ms-auto badge fs-6 ${estilos.badgeClass}`;
+
+                            // Actualizar límite visual
+                            limiteMaximoCliente = parseFloat(data.limiteMaximo) || 0;
+                            const fmtLimite = window.formatCurrency ? window.formatCurrency(limiteMaximoCliente, 0) : limiteMaximoCliente;
+                            document.getElementById('limiteBadgeTitle').textContent = `Límite de Crédito Permitido: ${moneda} ${fmtLimite}`;
+                            document.getElementById('limiteBadgeDesc').textContent = data.limiteMotivo;
+
                             badgeContainer.style.display = 'block';
 
                             // Pre-llenar los campos de tasa
@@ -361,6 +409,9 @@
                             // Si el cliente aún no tiene score, ocultamos el badge pero no bloqueamos
                             badgeContainer.style.display = 'none';
                             tasaSugeridaOriginal = null;
+                            limiteMaximoCliente = null;
+                            inputMonto.classList.remove('is-invalid');
+                            document.getElementById('montoExcedidoFeedback').style.display = 'none';
                         }
                     }
 
@@ -375,5 +426,9 @@
 
                     selectCliente.addEventListener('change', cargarScoreCliente);
                     // ────────────────────────────────────────────────────────────────
+                });
+            </script>�───────────────────────
+                });
+            </script>──────────────────────────────────────────────────────────
                 });
             </script>

@@ -114,7 +114,7 @@ async function ejecutarPruebasScoring() {
 
         res = await scoringService.calcularScore(idCliente);
 
-        assert.strictEqual(res.score, 715, 'El score debería ser 715 (500 base + 50 ahorro + 50 antiguedad + 100 pagado a tiempo + 15 de comportamiento de pago).');
+        assert.strictEqual(res.score, 710, 'El score debería ser 710 (500 base + 50 ahorro + 50 antiguedad + 100 pagado a tiempo + 10 de comportamiento de pago debido al tope de 10 pts por cuota).');
         assert.strictEqual(res.desglose.pagadosATiempo, 100, 'Debería registrar +100 puntos por el préstamo pagado a tiempo.');
         console.log('✅ Caso 3 aprobado exitosamente.');
 
@@ -143,7 +143,7 @@ async function ejecutarPruebasScoring() {
         
         res = await scoringService.calcularScore(idCliente);
 
-        assert.strictEqual(res.score, 665, 'El score debería bajar a 665 (715 - 50 por cuota en mora temprana).');
+        assert.strictEqual(res.score, 660, 'El score debería bajar a 660 (710 - 50 por cuota en mora temprana).');
         assert.strictEqual(res.desglose.cuotasVencidas, -50, 'Debería penalizar exactamente -50 puntos por una cuota en mora temprana.');
         console.log('✅ Caso 4 aprobado exitosamente.');
 
@@ -201,7 +201,7 @@ async function ejecutarPruebasScoring() {
 
         res = await scoringService.calcularScore(idCliente);
 
-        assert.strictEqual(res.score, 315, 'El score debería ser exactamente 315 puntos.');
+        assert.strictEqual(res.score, 310, 'El score debería ser exactamente 310 puntos.');
         assert.strictEqual(res.desglose.prestamosVencidos, -200, 'Debería restar -200 por préstamo en estado vencido.');
         assert.strictEqual(res.desglose.cuotasVencidas, -200, 'Debería restar -200 por las cuotas vencidas (-100, -50, -50).');
         assert.strictEqual(res.categoria, 'D', 'El score 315 debería ser categoría D.');
