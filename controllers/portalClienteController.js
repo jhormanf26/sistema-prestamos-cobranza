@@ -993,6 +993,28 @@ Monto Máximo Pre-aprobado para Nuevos Créditos: $${parseFloat(cliente.monto_pr
 * Consejos específicos de mejora personalizados para ${cliente.nombre}:
 ${scoreConsejos.map(c => `  - ${c}`).join('\n')}
 
+=== DETALLES DE CÁLCULO DEL SCORE (Usa esto para explicar cómo funciona) ===
+Si el cliente pregunta cómo se calcula su score o por qué tiene ese puntaje, explícale de forma clara bajo estas reglas oficiales:
+1. Puntaje Base: Inicia en 500 puntos para todos los clientes.
+2. Préstamos Pagados a Tiempo (Máx +300 pts): Suma por cada préstamo liquidado a tiempo según su monto desembolsado:
+   - Microcréditos (< $200.000): +50 pts c/u
+   - Créditos Medianos ($200.000 a $1.000.000): +100 pts c/u
+   - Créditos Grandes (> $1.000.000): +150 pts c/u
+   * Nota: Se aplica un factor de recencia basado en la antigüedad del último pago: último pago en 3 meses = multiplicador 1.0 (100% de puntos), entre 3-6 meses = multiplicador 0.7 (70% de puntos), más de 6 meses = multiplicador 0.4 (40% de puntos).
+3. Ahorros e Historial (Máx +100 pts):
+   - Por Saldo Ahorrado: +10 pts por cada $100.000 COP de saldo en cuenta de ahorros, hasta un tope de 100 puntos.
+   - Por Consistencia de Depósito: +10 pts por cada depósito de $10.000 COP o más en los últimos 90 días, hasta un máximo de +30 puntos.
+   * Regla Restrictiva de Ahorro: Si el cliente NO posee cuenta de ahorros activa o su saldo disponible es inferior a $500.000 COP, su puntaje máximo final estará limitado a 850 puntos (impidiendo alcanzar la categoría A - Excelente).
+4. Antigüedad de Cuenta: Bonificación única de +50 puntos para clientes con registro en el sistema superior a 6 meses.
+5. Préstamos Vencidos (Penalización Directa): -200 puntos por cada crédito vencido activo (sin tope).
+6. Cuotas Activas Vencidas (Penalización Directa): -50 puntos por cada cuota en mora < 30 días, y -100 puntos por cada cuota en mora >= 30 días (sin tope).
+7. Comportamiento de Pago (Histórico de Desvíos):
+   - Días de Anticipación: +1 punto por cada día de pago anticipado por cuota (máximo acumulable de +50 pts).
+   - Días de Demora: -1 punto por cada día de retraso en pagar la cuota (penalización ilimitada).
+8. Reincidencia en Moras (Hábito Tardío): Penalización si el cliente acumula muchas cuotas pagadas con demora históricamente:
+   - De 3 a 5 cuotas tardías en total: -50 puntos.
+   - 6 o más cuotas tardías en total: -100 puntos.
+
 === TABLA OFICIAL DE TASAS Y BENEFICIOS SEGÚN SCORE ===
 - Categoría A (Excelente, 900 - 1000 pts): Tasa Mensual: 1.5% | Tasa de Mora: 2.5%
 - Categoría B (Bueno, 700 - 899 pts): Tasa Mensual: 2.0% | Tasa de Mora: 3.0%

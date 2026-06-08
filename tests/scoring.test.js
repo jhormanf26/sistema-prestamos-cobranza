@@ -114,7 +114,7 @@ async function ejecutarPruebasScoring() {
 
         res = await scoringService.calcularScore(idCliente);
 
-        assert.strictEqual(res.score, 700, 'El score debería ser 700 (500 base + 50 ahorro + 50 antiguedad + 100 pagado a tiempo).');
+        assert.strictEqual(res.score, 715, 'El score debería ser 715 (500 base + 50 ahorro + 50 antiguedad + 100 pagado a tiempo + 15 de comportamiento de pago).');
         assert.strictEqual(res.desglose.pagadosATiempo, 100, 'Debería registrar +100 puntos por el préstamo pagado a tiempo.');
         console.log('✅ Caso 3 aprobado exitosamente.');
 
@@ -143,7 +143,7 @@ async function ejecutarPruebasScoring() {
         
         res = await scoringService.calcularScore(idCliente);
 
-        assert.strictEqual(res.score, 650, 'El score debería bajar a 650 (700 - 50 por cuota en mora temprana).');
+        assert.strictEqual(res.score, 665, 'El score debería bajar a 665 (715 - 50 por cuota en mora temprana).');
         assert.strictEqual(res.desglose.cuotasVencidas, -50, 'Debería penalizar exactamente -50 puntos por una cuota en mora temprana.');
         console.log('✅ Caso 4 aprobado exitosamente.');
 
@@ -201,10 +201,10 @@ async function ejecutarPruebasScoring() {
 
         res = await scoringService.calcularScore(idCliente);
 
-        assert.strictEqual(res.score, 300, 'El score debería ser exactamente 300 puntos.');
+        assert.strictEqual(res.score, 315, 'El score debería ser exactamente 315 puntos.');
         assert.strictEqual(res.desglose.prestamosVencidos, -200, 'Debería restar -200 por préstamo en estado vencido.');
         assert.strictEqual(res.desglose.cuotasVencidas, -200, 'Debería restar -200 por las cuotas vencidas (-100, -50, -50).');
-        assert.strictEqual(res.categoria, 'D', 'El score 300 debería ser categoría D.');
+        assert.strictEqual(res.categoria, 'D', 'El score 315 debería ser categoría D.');
         console.log('✅ Caso 5 aprobado exitosamente.');
 
 
@@ -230,7 +230,7 @@ async function ejecutarPruebasScoring() {
         await db.query('DELETE FROM pagos WHERE prestamo_id IN (SELECT id FROM prestamos WHERE cliente_id = ?)', [idCliente]);
         await db.query('DELETE FROM prestamos WHERE cliente_id = ?', [idCliente]);
         
-        // Insertamos 5 préstamos pagados a tiempo
+        // Insertamos 5 préstamos pagados a tiempo de montos altos (> $1M) para recibir los 150 pts c/u (máx 300 pts)
         for (let i = 0; i < 5; i++) {
             let start = new Date();
             start.setMonth(start.getMonth() - 3 - i);
@@ -239,19 +239,29 @@ async function ejecutarPruebasScoring() {
             
             const [resP] = await db.query(
                 `INSERT INTO prestamos (cliente_id, monto_prestado, tasa_interes, tasa_mora, monto_total, cuotas, frecuencia, fecha_inicio, fecha_fin, estado) 
-                 VALUES (?, 100000.00, 2.0, 5.0, 104000.00, 1, 'mensual', ?, ?, 'pagado')`,
+                 VALUES (?, 1200000.00, 2.0, 5.0, 1200000.00, 1, 'mensual', ?, ?, 'pagado')`,
                 [idCliente, start, end]
             );
             
             const [resPag] = await db.query(
-                `INSERT INTO pagos (prestamo_id, monto_pagado, observaciones) VALUES (?, 104000.00, 'Pagado a tiempo')`,
+                `INSERT INTO pagos (prestamo_id, monto_pagado, observaciones) VALUES (?, 1200000.00, 'Pagado a tiempo')`,
                 [resP.insertId]
             );
             await db.query('UPDATE pagos SET fecha_pago = ? WHERE id = ?', [start, resPag.insertId]);
         }
 
-        // Aumentar saldo a $2.500.000 (+100 max)
-        await db.query('UPDATE cuentas_ahorro SET saldo_actual = 2500000.00 WHERE cliente_id = ?', [idCliente]);
+        // Aumentar saldo a $2.500.000 y agregar 3 depósitos de ahorro recientes (+30 pts por consistencia para llegar a los 100 pts de ahorro)
+        const [rowsCA] = await db.query('SELECT id FROM cuentas_ahorro WHERE cliente_id = ?', [idCliente]);
+        const cuentaId = rowsCA[0].id;
+        await db.query('UPDATE cuentas_ahorro SET saldo_actual = 2500000.00 WHERE id = ?', [cuentaId]);
+        for (let i = 0; i < 3; i++) {
+            const fechaDep = new Date();
+            fechaDep.setDate(fechaDep.getDate() - 10 * i);
+            await db.query(
+                'INSERT INTO movimientos_ahorro (cuenta_id, tipo_movimiento, monto, fecha_movimiento) VALUES (?, ?, ?, ?)',
+                [cuentaId, 'deposito', 15000.00, fechaDep]
+            );
+        }
 
         res = await scoringService.calcularScore(idCliente);
         // Base 500 + Ahorros 100 + Antigüedad 50 + Pagados a tiempo 300 (max) = 950.
