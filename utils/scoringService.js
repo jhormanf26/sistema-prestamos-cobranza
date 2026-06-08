@@ -38,7 +38,8 @@ const scoringService = {
                 prestamosVencidos: 0,
                 cuotasVencidas: 0,
                 ahorros: 0,
-                antiguedad: 0
+                antiguedad: 0,
+                comportamientoPago: 0
             };
 
             const detalles = {
@@ -47,7 +48,10 @@ const scoringService = {
                 cuotasAtrasadasCount: 0,
                 cuotasAtrasadas30Count: 0,
                 ahorroSaldo: cuentaAhorro ? parseFloat(cuentaAhorro.saldo_actual || 0) : 0,
-                antiguedadMeses: 0
+                antiguedadMeses: 0,
+                prestamosPagadosATiempoDetalle: [],
+                cuotasVencidasDetalle: [],
+                comportamientoPagoDetalle: []
             };
 
             const consejos = [];
@@ -68,15 +72,33 @@ const scoringService = {
                 }
             }
 
-            // --- 3. SALDO EN CUENTA DE AHORROS (+10 pts por cada 100k, Máx +100 pts) ---
-            if (cuentaAhorro && cuentaAhorro.saldo_actual) {
-                const saldo = parseFloat(cuentaAhorro.saldo_actual);
-                const puntosPorSaldo = Math.floor(saldo / 100000) * 10;
-                desglose.ahorros = Math.min(100, puntosPorSaldo);
+            // --- 3. SALDO Y CONSISTENCIA EN CUENTA DE AHORROS (Máx +100 pts) ---
+            if (cuentaAhorro) {
+                const saldo = parseFloat(cuentaAhorro.saldo_actual || 0);
+                const puntosPorSaldo = Math.min(70, Math.floor(saldo / 100000) * 10);
+                
+                // Consistencia en ahorros (depósitos en últimos 90 días de al menos $10.000 COP)
+                let puntosConsistencia = 0;
+                const movimientos = await AhorroModel.obtenerMovimientos(cuentaAhorro.id);
+                let countDep = 0;
+                if (movimientos && movimientos.length > 0) {
+                    const fechaLimite90 = new Date();
+                    fechaLimite90.setDate(fechaLimite90.getDate() - 90);
+                    
+                    const depositosRecientes = movimientos.filter(mov => 
+                        mov.tipo_movimiento === 'deposito' && 
+                        new Date(mov.fecha_movimiento) >= fechaLimite90 &&
+                        parseFloat(mov.monto) >= 10000
+                    );
+                    countDep = depositosRecientes.length;
+                    puntosConsistencia = Math.min(30, countDep * 10);
+                }
+                
+                desglose.ahorros = Math.min(100, puntosPorSaldo + puntosConsistencia);
+                detalles.ahorrosDepositos90d = countDep;
                 
                 if (desglose.ahorros < 100) {
-                    const faltante = 100000 - (saldo % 100000);
-                    consejos.push(`Ahorra $${Math.ceil(faltante).toLocaleString('es-CO')} COP más en tu cuenta de ahorros para obtener +10 puntos adicionales.`);
+                    consejos.push("Realiza depósitos frecuentes de al menos $10.000 COP en tu cuenta de ahorros para subir tu puntuación de consistencia.");
                 }
             } else {
                 consejos.push("Abre una Cuenta de Ahorro y deposita fondos para sumar hasta +100 puntos en tu score crediticio.");
@@ -87,7 +109,8 @@ const scoringService = {
             const prestamosPagados = prestamos.filter(p => p.estado === 'pagado');
             const prestamosActivos = prestamos.filter(p => p.estado !== 'pagado');
 
-            // Evaluar préstamos pagados a tiempo (+100 pts por cada uno, Máx +300 pts)
+            // Evaluar préstamos pagados a tiempo (Ponderación + Recencia, Máx +300 pts)
+            let puntosPagadosATiempoTotal = 0;
             for (let p of prestamosPagados) {
                 const pagos = await PagoModel.obtenerHistorial(p.id);
                 if (pagos.length > 0) {
@@ -100,12 +123,51 @@ const scoringService = {
                     ultimoAbonoDate.setHours(0,0,0,0);
                     fechaFinDate.setHours(23,59,59,999);
 
-                    if (ultimoAbonoDate <= fechaFinDate) {
+                    const pagadoATiempo = ultimoAbonoDate <= fechaFinDate;
+                    let puntosBasePrestamo = 0;
+                    let factorRecencia = 1.0;
+                    let puntosFinalesPrestamo = 0;
+
+                    if (pagadoATiempo) {
                         detalles.prestamosPagadosATiempoCount++;
+
+                        const montoPrestado = parseFloat(p.monto_prestado);
+                        if (montoPrestado < 200000) {
+                            puntosBasePrestamo = 50;
+                        } else if (montoPrestado <= 1000000) {
+                            puntosBasePrestamo = 100;
+                        } else {
+                            puntosBasePrestamo = 150;
+                        }
+
+                        // Calcular recencia
+                        const diffTime = Math.abs(fechaActual - ultimoAbonoDate);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays <= 182) {
+                            factorRecencia = 1.0;
+                        } else if (diffDays <= 365) {
+                            factorRecencia = 0.7;
+                        } else {
+                            factorRecencia = 0.4;
+                        }
+
+                        puntosFinalesPrestamo = Math.round(puntosBasePrestamo * factorRecencia);
+                        puntosPagadosATiempoTotal += puntosFinalesPrestamo;
                     }
+
+                    detalles.prestamosPagadosATiempoDetalle.push({
+                        id: p.id,
+                        monto: parseFloat(p.monto_total),
+                        fechaFin: p.fecha_fin,
+                        fechaUltimoPago: ultimoAbonoDate,
+                        pagadoATiempo: pagadoATiempo,
+                        puntosBase: puntosBasePrestamo,
+                        factorRecencia: factorRecencia,
+                        puntosNetos: puntosFinalesPrestamo
+                    });
                 }
             }
-            desglose.pagadosATiempo = Math.min(300, detalles.prestamosPagadosATiempoCount * 100);
+            desglose.pagadosATiempo = Math.min(300, puntosPagadosATiempoTotal);
 
             // Evaluar préstamos activos vencidos (-200 pts por cada uno)
             detalles.prestamosVencidosCount = prestamosActivos.filter(p => p.estado === 'vencido').length;
@@ -143,6 +205,7 @@ const scoringService = {
                     if (pagadoDeEstaCuota < (montoCuota - 0.01) && fechaCuota < fechaActual) {
                         const diffTime = Math.abs(fechaActual - fechaCuota);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const puntosPenalizacion = diffDays > 30 ? 100 : 50;
                         
                         if (diffDays > 30) {
                             detalles.cuotasAtrasadas30Count++;
@@ -151,6 +214,15 @@ const scoringService = {
                             detalles.cuotasAtrasadasCount++;
                             penalizacionCuotas += 50;
                         }
+
+                        detalles.cuotasVencidasDetalle.push({
+                            prestamoId: p.id,
+                            numeroCuota: cuota.numero || (cronograma.indexOf(cuota) + 1),
+                            monto: montoCuota,
+                            fechaVencimiento: cuota.fecha,
+                            diasMora: diffDays,
+                            puntosPenalizacion: puntosPenalizacion
+                        });
                     }
                 }
             }
@@ -161,8 +233,116 @@ const scoringService = {
                 consejos.push(`Ponte al día con tus ${totalCuotasVencidas} cuota(s) vencida(s) para recuperar hasta ${penalizacionCuotas} puntos restados de tu score.`);
             }
 
-            // --- 5. CÁLCULO FINAL Y ACOTAMIENTO ---
-            score = 500 + desglose.pagadosATiempo + desglose.ahorros + desglose.antiguedad + desglose.prestamosVencidos + desglose.cuotasVencidas;
+            // --- 5. COMPORTAMIENTO HISTÓRICO DE PAGOS (PREMIOS Y CASTIGOS POR DÍAS) ---
+            let puntosComportamiento = 0;
+            let totalCuotasConDemoraHistoricas = 0;
+
+            for (let p of prestamos) {
+                const pagos = await PagoModel.obtenerHistorial(p.id);
+                if (pagos.length > 0) {
+                    const pagosOrdenados = [...pagos].sort((a, b) => new Date(a.fecha_pago) - new Date(b.fecha_pago));
+                    const cronograma = finance.calcularCronograma(parseFloat(p.monto_total), p.cuotas, p.frecuencia, p.fecha_inicio);
+                    
+                    // Mapear cuotas con estado de pago
+                    const cuotasEstado = cronograma.map(c => ({
+                        fechaVencimiento: new Date(c.fecha),
+                        monto: parseFloat(c.monto),
+                        pagado: 0,
+                        fechaCompletado: null
+                    }));
+
+                    // Distribuir pagos secuencialmente
+                    for (let pago of pagosOrdenados) {
+                        let montoRestantePago = parseFloat(pago.monto_pagado);
+                        const fechaPagoObj = new Date(pago.fecha_pago);
+
+                        for (let cuota of cuotasEstado) {
+                            if (montoRestantePago <= 0) break;
+                            
+                            const faltante = cuota.monto - cuota.pagado;
+                            if (faltante > 0) {
+                                if (montoRestantePago >= (faltante - 0.01)) {
+                                    cuota.pagado = cuota.monto;
+                                    montoRestantePago -= faltante;
+                                    cuota.fechaCompletado = fechaPagoObj;
+                                } else {
+                                    cuota.pagado += montoRestantePago;
+                                    montoRestantePago = 0;
+                                }
+                            }
+                        }
+                    }
+
+                    // Evaluar cuotas que se pagaron al 100%
+                    for (let cuota of cuotasEstado) {
+                        if (cuota.pagado >= (cuota.monto - 0.01) && cuota.fechaCompletado) {
+                            // Ajustar horas para comparación solo de días calendarios sin importar huso horario
+                            const fVenc = new Date(cuota.fechaVencimiento);
+                            const fComp = new Date(cuota.fechaCompletado);
+                            fVenc.setHours(12, 0, 0, 0);
+                            fComp.setHours(12, 0, 0, 0);
+
+                            const diffTime = fComp.getTime() - fVenc.getTime();
+                            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+                            let puntosImpacto = 0;
+                            let tipo = 'mismo_dia';
+
+                            if (diffDays > 0) {
+                                // Demora: restamos 1 punto por día
+                                puntosComportamiento -= diffDays;
+                                puntosImpacto = -diffDays;
+                                tipo = 'demora';
+                                totalCuotasConDemoraHistoricas++;
+                            } else if (diffDays < 0) {
+                                // Anticipación: sumamos 1 punto por día
+                                puntosComportamiento += Math.abs(diffDays);
+                                puntosImpacto = Math.abs(diffDays);
+                                tipo = 'anticipacion';
+                            }
+
+                            if (diffDays !== 0) {
+                                detalles.comportamientoPagoDetalle.push({
+                                    prestamoId: p.id,
+                                    numeroCuota: cuota.numero || (cronograma.findIndex(c => new Date(c.fecha).getTime() === cuota.fechaVencimiento.getTime()) + 1),
+                                    monto: cuota.monto,
+                                    fechaVencimiento: cuota.fechaVencimiento,
+                                    fechaPago: cuota.fechaCompletado,
+                                    diasDiferencia: Math.abs(diffDays),
+                                    tipo: tipo,
+                                    puntos: puntosImpacto
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            // Acotar las ganancias por comportamiento de pago (premios) a un máximo de +50 puntos.
+            // Las penalizaciones (valores negativos) no tienen tope hacia abajo.
+            desglose.comportamientoPago = puntosComportamiento > 0 ? Math.min(50, puntosComportamiento) : puntosComportamiento;
+
+            // Penalización por reincidencia en moras
+            let penalizacionReincidencia = 0;
+            if (totalCuotasConDemoraHistoricas >= 6) {
+                penalizacionReincidencia = -100;
+            } else if (totalCuotasConDemoraHistoricas >= 3) {
+                penalizacionReincidencia = -50;
+            }
+            desglose.reincidenciaMora = penalizacionReincidencia;
+            detalles.totalCuotasConDemoraHistoricas = totalCuotasConDemoraHistoricas;
+
+            if (totalCuotasConDemoraHistoricas >= 3) {
+                consejos.push(`Historial de mora: Has acumulado ${totalCuotasConDemoraHistoricas} cuotas pagadas con demora, restando ${Math.abs(penalizacionReincidencia)} puntos por reincidencia.`);
+            }
+
+            // --- 6. CÁLCULO FINAL Y ACOTAMIENTO ---
+            score = 500 + desglose.pagadosATiempo + desglose.ahorros + desglose.antiguedad + desglose.prestamosVencidos + desglose.cuotasVencidas + desglose.comportamientoPago + desglose.reincidenciaMora;
+            
+            // Regla de Negocio: Si el saldo en su cuenta de ahorros es inferior a $500.000 COP, el score se limita a un máximo de 850 puntos.
+            if (detalles.ahorroSaldo < 500000) {
+                score = Math.min(850, score);
+            }
+
             score = Math.max(0, Math.min(1000, score));
 
             // --- 6. DETERMINACIÓN DE CATEGORÍA, RIESGO Y COLORES ---

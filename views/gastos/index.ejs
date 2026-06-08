@@ -107,7 +107,7 @@
                                                                                     data-id="<%= g.id %>"
                                                                                     data-descripcion="<%= g.descripcion %>"
                                                                                     data-fecha="<%= fechaYMD %>"
-                                                                                    data-monto="<%= g.monto %>"
+                                                                                    data-monto="<%= Math.round(g.monto) %>"
                                                                                     data-categoria="<%= g.categoria %>"
                                                                                     data-observacion="<%= g.observacion || '' %>"
                                                                                     title="Editar Gasto">
@@ -169,7 +169,7 @@
                                                                                 data-id="<%= g.id %>"
                                                                                 data-descripcion="<%= g.descripcion %>"
                                                                                 data-fecha="<%= fechaYMD %>"
-                                                                                data-monto="<%= g.monto %>"
+                                                                                data-monto="<%= Math.round(g.monto) %>"
                                                                                 data-categoria="<%= g.categoria %>"
                                                                                 data-observacion="<%= g.observacion || '' %>"
                                                                                 title="Editar Gasto">
