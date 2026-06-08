@@ -131,6 +131,35 @@ class GastoModel {
             throw error;
         }
     }
+
+    /**
+     * Obtiene todos los gastos que coinciden con el criterio de búsqueda (sin paginación).
+     * Si no se provee búsqueda, retorna todos los gastos ordenados por fecha ascendente.
+     * @async
+     * @method obtenerTodosFiltrados
+     * @param {string} busqueda - El término de búsqueda.
+     * @returns {Promise<Array<Object>>} Lista de gastos.
+     */
+    static async obtenerTodosFiltrados(busqueda = '') {
+        try {
+            if (busqueda) {
+                const criterio = `%${busqueda}%`;
+                const query = `
+                    SELECT * FROM gastos 
+                    WHERE descripcion LIKE ? OR categoria LIKE ? 
+                    ORDER BY fecha_gasto ASC
+                `;
+                const [rows] = await db.query(query, [criterio, criterio]);
+                return rows;
+            } else {
+                const query = 'SELECT * FROM gastos ORDER BY fecha_gasto ASC';
+                const [rows] = await db.query(query);
+                return rows;
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 module.exports = GastoModel;
