@@ -209,16 +209,14 @@
                                                             </ul>
                                                         </nav>
                                                         <% } %>
-                                                </div>
-
-                                                <!-- ÁREA DE GRÁFICOS DINÁMICOS -->
+                                                                                               <!-- ÁREA DE GRÁFICOS DINÁMICOS -->
                                                 <div class="row g-3 mt-4 mb-4" id="contenedorGraficosGastos">
                                                     <!-- Gráfico Principal (Evolución o Histórico por filtro) -->
                                                     <div class="col-12 col-lg-6" id="columnaGraficoPrincipal">
                                                         <div class="card card-box p-4 border-0 shadow-sm bg-white rounded-4 h-100">
                                                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                                                <h5 class="fw-bold mb-0 text-dark" id="tituloGraficoPrincipal">📈 Evolución Histórica</h5>
-                                                                <span class="badge bg-danger text-white rounded-pill px-3 py-1.5" id="badgeFiltro" style="font-size: 0.75rem;">General</span>
+                                                                 <h5 class="fw-bold mb-0 text-dark" id="tituloGraficoPrincipal">📈 Evolución Histórica</h5>
+                                                                 <span class="badge bg-danger text-white rounded-pill px-3 py-1.5" id="badgeFiltro" style="font-size: 0.75rem;">General</span>
                                                             </div>
                                                             <div style="position: relative; height: 300px; width: 100%;">
                                                                 <canvas id="chartGastoDinamicoLine"></canvas>
@@ -237,7 +235,31 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+
+                                                    <!-- Gráfico de Gastos por Mes -->
+                                                    <div class="col-12 col-lg-6" id="columnaGraficoMes">
+                                                        <div class="card card-box p-4 border-0 shadow-sm bg-white rounded-4 h-100">
+                                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                <h5 class="fw-bold mb-0 text-dark" id="tituloGraficoMes">📅 Gastos por Mes</h5>
+                                                            </div>
+                                                            <div style="position: relative; height: 300px; width: 100%;">
+                                                                <canvas id="chartGastoDinamicoMes"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Gráfico de Gastos por Responsable -->
+                                                    <div class="col-12 col-lg-6" id="columnaGraficoResponsable">
+                                                        <div class="card card-box p-4 border-0 shadow-sm bg-white rounded-4 h-100">
+                                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                <h5 class="fw-bold mb-0 text-dark" id="tituloGraficoResponsable">👤 Gastos por Responsable</h5>
+                                                            </div>
+                                                            <div style="position: relative; height: 300px; width: 100%;">
+                                                                <canvas id="chartGastoDinamicoResponsable"></canvas>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>                       </div>
                             </div>
                     </div>
             </div>
@@ -440,18 +462,7 @@
                     const categoriasValidas = ["servicios", "alquiler", "sueldos", "mantenimiento", "carro", "tarjeta de crédito", "otros"];
                     const esFiltroCategoria = categoriasValidas.includes(busquedaActual.toLowerCase());
 
-                    // Gráfico Principal (Histórico / Evolución Temporal)
-                    // Agrupar por fecha
-                    const gastosPorFecha = {};
-                    todosLosGastos.forEach(g => {
-                        const fecha = new Date(g.fecha_gasto).toLocaleDateString('es-CO', { timeZone: 'UTC' });
-                        gastosPorFecha[fecha] = (gastosPorFecha[fecha] || 0) + parseFloat(g.monto);
-                    });
-
-                    const labelsLine = Object.keys(gastosPorFecha);
-                    const dataLine = Object.values(gastosPorFecha);
-
-                    // Configurar títulos y visibilidad
+                    // Configurar elementos del DOM para responsividad en filtros
                     const tituloPrincipalEl = document.getElementById('tituloGraficoPrincipal');
                     const badgeFiltroEl = document.getElementById('badgeFiltro');
                     const colPrincipalEl = document.getElementById('columnaGraficoPrincipal');
@@ -479,7 +490,18 @@
                         tituloSecundarioEl.innerText = "📊 Gastos por Categoría";
                     }
 
-                    // Renderizar Gráfico de Línea
+                    // ==========================================
+                    // 1. GRÁFICO PRINCIPAL: EVOLUCIÓN HISTÓRICA (LÍNEA)
+                    // ==========================================
+                    const gastosPorFecha = {};
+                    todosLosGastos.forEach(g => {
+                        const fecha = new Date(g.fecha_gasto).toLocaleDateString('es-CO', { timeZone: 'UTC' });
+                        gastosPorFecha[fecha] = (gastosPorFecha[fecha] || 0) + parseFloat(g.monto);
+                    });
+
+                    const labelsLine = Object.keys(gastosPorFecha);
+                    const dataLine = Object.values(gastosPorFecha);
+
                     const ctxLine = document.getElementById('chartGastoDinamicoLine').getContext('2d');
                     new Chart(ctxLine, {
                         type: 'line',
@@ -523,7 +545,9 @@
                         }
                     });
 
-                    // Renderizar Gráfico Secundario (Solo si no es filtro de texto libre)
+                    // ==========================================
+                    // 2. GRÁFICO SECUNDARIO: DISTRIBUCIÓN POR CATEGORÍAS (DONA)
+                    // ==========================================
                     if (!busquedaActual || esFiltroCategoria) {
                         const ctxCat = document.getElementById('chartGastoDinamicoCat').getContext('2d');
                         
@@ -580,7 +604,133 @@
                                 }
                             }
                         });
+                    } else {
+                        // Si se ocultó el gráfico de categorías por filtro libre, ocultamos también su columna contenedor
+                        if (colSecundarioEl) colSecundarioEl.style.display = 'none';
                     }
+
+                    // ==========================================
+                    // 3. NUEVO GRÁFICO: GASTOS POR MES (BARRAS VERTICALES)
+                    // ==========================================
+                    const gastosPorMes = {};
+                    todosLosGastos.forEach(g => {
+                        const fecha = new Date(g.fecha_gasto);
+                        const yyyy = fecha.getUTCFullYear();
+                        const mm = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+                        const key = `${yyyy}-${mm}`;
+                        
+                        // Obtener nombre del mes legible y año (Ej: Jun 2026)
+                        const nombreMes = fecha.toLocaleDateString('es-CO', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+                        const label = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+                        
+                        if (!gastosPorMes[key]) {
+                            gastosPorMes[key] = { label, total: 0 };
+                        }
+                        gastosPorMes[key].total += parseFloat(g.monto);
+                    });
+
+                    // Ordenar cronológicamente por la clave YYYY-MM
+                    const keysOrdenadas = Object.keys(gastosPorMes).sort();
+                    const labelsMes = keysOrdenadas.map(k => gastosPorMes[k].label);
+                    const dataMes = keysOrdenadas.map(k => gastosPorMes[k].total);
+
+                    const ctxMes = document.getElementById('chartGastoDinamicoMes').getContext('2d');
+                    new Chart(ctxMes, {
+                        type: 'bar',
+                        data: {
+                            labels: labelsMes,
+                            datasets: [{
+                                label: `Gastado por Mes (${moneda})`,
+                                data: dataMes,
+                                backgroundColor: 'rgba(99, 102, 241, 0.75)', // Índigo elegante
+                                borderColor: '#6366f1',
+                                borderWidth: 1.5,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` Total Mes: ${moneda} ${window.formatCurrency(context.raw, 2)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return moneda + ' ' + window.formatCurrency(value, 0);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // ==========================================
+                    // 4. NUEVO GRÁFICO: GASTOS POR RESPONSABLE (BARRAS HORIZONTALES)
+                    // ==========================================
+                    const gastosPorResponsable = {};
+                    todosLosGastos.forEach(g => {
+                        const resp = g.registrado_por || 'Administrador';
+                        gastosPorResponsable[resp] = (gastosPorResponsable[resp] || 0) + parseFloat(g.monto);
+                    });
+
+                    // Ordenar de mayor a menor gasto para visualizar jerarquía
+                    const sortedResponsables = Object.entries(gastosPorResponsable)
+                        .sort((a, b) => b[1] - a[1]);
+
+                    const labelsResp = sortedResponsables.map(entry => entry[0]);
+                    const dataResp = sortedResponsables.map(entry => entry[1]);
+
+                    // Paleta de colores para múltiples barras o color sólido esmeralda
+                    const ctxResp = document.getElementById('chartGastoDinamicoResponsable').getContext('2d');
+                    new Chart(ctxResp, {
+                        type: 'bar',
+                        data: {
+                            labels: labelsResp,
+                            datasets: [{
+                                label: `Total Registrado (${moneda})`,
+                                data: dataResp,
+                                backgroundColor: 'rgba(16, 185, 129, 0.75)', // Esmeralda premium
+                                borderColor: '#10b981',
+                                borderWidth: 1.5,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y', // Convertir a barras horizontales
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` Registrado: ${moneda} ${window.formatCurrency(context.raw, 2)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return moneda + ' ' + window.formatCurrency(value, 0);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
                 });
             </script>
 
