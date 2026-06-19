@@ -38,6 +38,8 @@ const scoringService = {
                 prestamosVencidos: 0,
                 cuotasVencidas: 0,
                 ahorros: 0,
+                ahorrosSaldo: 0,
+                ahorrosConsistencia: 0,
                 antiguedad: 0,
                 comportamientoPago: 0
             };
@@ -95,6 +97,8 @@ const scoringService = {
                 }
                 
                 desglose.ahorros = Math.min(100, puntosPorSaldo + puntosConsistencia);
+                desglose.ahorrosSaldo = puntosPorSaldo;
+                desglose.ahorrosConsistencia = puntosConsistencia;
                 detalles.ahorrosDepositos90d = countDep;
                 
                 if (desglose.ahorros < 100) {

@@ -271,6 +271,37 @@ async function ejecutarPruebasScoring() {
         console.log('✅ Caso 6 aprobado exitosamente.');
 
 
+        // --- CASO 7: CUENTA CON SALDO $0 Y CONSISTENCIA ACTIVA (+10 PTS) ---
+        console.log('🧪 Caso 7: Evaluando cuenta de ahorros con saldo $0 y un depósito reciente (consistencia)...');
+        
+        // Limpiar movimientos de ahorro y establecer saldo a $0
+        await db.query('DELETE FROM movimientos_ahorro WHERE cuenta_id = ?', [cuentaId]);
+        await db.query('UPDATE cuentas_ahorro SET saldo_actual = 0 WHERE id = ?', [cuentaId]);
+        
+        // Eliminar también préstamos de prueba para aislar el cálculo
+        await db.query('DELETE FROM pagos WHERE prestamo_id IN (SELECT id FROM prestamos WHERE cliente_id = ?)', [idCliente]);
+        await db.query('DELETE FROM prestamos WHERE cliente_id = ?', [idCliente]);
+
+        // Insertar un depósito reciente para consistencia (+10 pts)
+        const fechaDepReciente = new Date();
+        fechaDepReciente.setDate(fechaDepReciente.getDate() - 5);
+        await db.query(
+            'INSERT INTO movimientos_ahorro (cuenta_id, tipo_movimiento, monto, fecha_movimiento) VALUES (?, ?, ?, ?)',
+            [cuentaId, 'deposito', 15000.00, fechaDepReciente]
+        );
+
+        res = await scoringService.calcularScore(idCliente);
+
+        // Desglose esperado: Base 500 + AhorrosSaldo 0 + AhorrosConsistencia 10 = 510.
+        // Antigüedad (creado hace 7 meses): +50 pts -> total: 560
+        assert.strictEqual(res.desglose.ahorrosSaldo, 0, 'El desglose de ahorros por saldo debe ser 0.');
+        assert.strictEqual(res.desglose.ahorrosConsistencia, 10, 'El desglose de ahorros por consistencia debe ser 10.');
+        assert.strictEqual(res.desglose.ahorros, 10, 'El desglose de ahorros total debe ser 10.');
+        assert.strictEqual(res.detalles.ahorroSaldo, 0, 'El saldo detallado de ahorros debe ser 0.');
+        assert.strictEqual(res.detalles.ahorrosDepositos90d, 1, 'Debe registrar 1 depósito reciente en el detalle.');
+        console.log('✅ Caso 7 aprobado exitosamente.');
+
+
         // --- LIMPIEZA FINAL ---
         await db.query('DELETE FROM pagos WHERE prestamo_id IN (SELECT id FROM prestamos WHERE cliente_id = ?)', [idCliente]);
         await db.query('DELETE FROM prestamos WHERE cliente_id = ?', [idCliente]);

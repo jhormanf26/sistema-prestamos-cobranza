@@ -380,54 +380,60 @@
                                                             </span>
                                                         </div>
                                                         <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 align-items-center">
-                                                            <span class="text-muted">
-                                                                Ahorros Activos:
-                                                                <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('ahorros')" title="Saber más"></i>
-                                                            </span>
-                                                            <span class="fw-bold text-success" id="desgloseAhorros">+<%= scoreData.desglose.ahorros %> pts</span>
-                                                        </div>
-                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3 align-items-center">
-                                                            <span class="text-muted">
-                                                                Antigüedad Cuenta:
-                                                                <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('antiguedad')" title="Saber más"></i>
-                                                            </span>
-                                                            <span class="fw-bold text-success" id="desgloseAntiguedad">+<%= scoreData.desglose.antiguedad %> pts</span>
-                                                        </div>
-                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 align-items-center">
-                                                            <span class="text-muted">
-                                                                Préstamos Vencidos:
-                                                                <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('vencidos')" title="Saber más"></i>
-                                                            </span>
-                                                            <span class="fw-bold <%= scoreData.desglose.prestamosVencidos < 0 ? 'text-danger' : 'text-muted' %>" id="desgloseVencidos"><%= scoreData.desglose.prestamosVencidos %> pts</span>
-                                                        </div>
-                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3 align-items-center">
-                                                            <span class="text-muted">
-                                                                Cuotas Vencidas:
-                                                                <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('cuotas')" title="Saber más"></i>
-                                                            </span>
-                                                            <span class="fw-bold <%= scoreData.desglose.cuotasVencidas < 0 ? 'text-danger' : 'text-muted' %> d-inline-flex align-items-center">
-                                                                <span id="desgloseCuotas"><%= scoreData.desglose.cuotasVencidas %> pts</span>
-                                                                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-1" onclick="auditarCuotasVencidas()" title="Auditar cuotas vencidas" style="font-size: 0.85rem;"><i class="bi bi-eye-fill"></i></button>
-                                                            </span>
-                                                        </div>
-                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 align-items-center">
-                                                            <span class="text-muted">
-                                                                Comportamiento Pago:
-                                                                <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('comportamiento')" title="Saber más"></i>
-                                                            </span>
-                                                            <span class="fw-bold <%= scoreData.desglose.comportamientoPago < 0 ? 'text-danger' : (scoreData.desglose.comportamientoPago > 0 ? 'text-success' : 'text-muted') %> d-inline-flex align-items-center">
-                                                                <span id="desgloseComportamiento"><%= scoreData.desglose.comportamientoPago > 0 ? '+' : '' %><%= scoreData.desglose.comportamientoPago %> pts</span>
-                                                                <button type="button" class="btn btn-sm btn-link text-success p-0 ms-1" onclick="auditarComportamientoPago()" title="Auditar comportamiento de pago" style="font-size: 0.85rem;"><i class="bi bi-eye-fill"></i></button>
-                                                            </span>
-                                                        </div>
-                                                        <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3 align-items-center">
-                                                            <span class="text-muted">
-                                                                Reincidencia Mora:
-                                                                <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('reincidencia')" title="Saber más"></i>
-                                                            </span>
-                                                            <span class="fw-bold <%= (scoreData.desglose.reincidenciaMora || 0) < 0 ? 'text-danger' : 'text-muted' %>" id="desgloseReincidencia"><%= scoreData.desglose.reincidenciaMora || 0 %> pts</span>
-                                                        </div>
-                                                    </div>
+                                                             <span class="text-muted">
+                                                                 Saldo de Ahorro:
+                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('ahorros')" title="Saber más"></i>
+                                                             </span>
+                                                             <span class="fw-bold text-success" id="desgloseAhorrosSaldo">+<%= scoreData.desglose.ahorrosSaldo || 0 %> pts</span>
+                                                         </div>
+                                                         <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3 align-items-center">
+                                                             <span class="text-muted">
+                                                                 Consistencia de Ahorro:
+                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('ahorros')" title="Saber más"></i>
+                                                             </span>
+                                                             <span class="fw-bold text-success" id="desgloseAhorrosConsistencia">+<%= scoreData.desglose.ahorrosConsistencia || 0 %> pts</span>
+                                                         </div>
+                                                         <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 align-items-center">
+                                                             <span class="text-muted">
+                                                                 Antigüedad Cuenta:
+                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('antiguedad')" title="Saber más"></i>
+                                                             </span>
+                                                             <span class="fw-bold text-success" id="desgloseAntiguedad">+<%= scoreData.desglose.antiguedad %> pts</span>
+                                                         </div>
+                                                         <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3 align-items-center">
+                                                             <span class="text-muted">
+                                                                 Préstamos Vencidos:
+                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('vencidos')" title="Saber más"></i>
+                                                             </span>
+                                                             <span class="fw-bold <%= scoreData.desglose.prestamosVencidos < 0 ? 'text-danger' : 'text-muted' %>" id="desgloseVencidos"><%= scoreData.desglose.prestamosVencidos %> pts</span>
+                                                         </div>
+                                                         <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 align-items-center">
+                                                             <span class="text-muted">
+                                                                 Cuotas Vencidas:
+                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('cuotas')" title="Saber más"></i>
+                                                             </span>
+                                                             <span class="fw-bold <%= scoreData.desglose.cuotasVencidas < 0 ? 'text-danger' : 'text-muted' %> d-inline-flex align-items-center">
+                                                                 <span id="desgloseCuotas"><%= scoreData.desglose.cuotasVencidas %> pts</span>
+                                                                 <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-1" onclick="auditarCuotasVencidas()" title="Auditar cuotas vencidas" style="font-size: 0.85rem;"><i class="bi bi-eye-fill"></i></button>
+                                                             </span>
+                                                         </div>
+                                                         <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 ps-md-3 align-items-center">
+                                                             <span class="text-muted">
+                                                                 Comportamiento Pago:
+                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('comportamiento')" title="Saber más"></i>
+                                                             </span>
+                                                             <span class="fw-bold <%= scoreData.desglose.comportamientoPago < 0 ? 'text-danger' : (scoreData.desglose.comportamientoPago > 0 ? 'text-success' : 'text-muted') %> d-inline-flex align-items-center">
+                                                                 <span id="desgloseComportamiento"><%= scoreData.desglose.comportamientoPago > 0 ? '+' : '' %><%= scoreData.desglose.comportamientoPago %> pts</span>
+                                                                 <button type="button" class="btn btn-sm btn-link text-success p-0 ms-1" onclick="auditarComportamientoPago()" title="Auditar comportamiento de pago" style="font-size: 0.85rem;"><i class="bi bi-eye-fill"></i></button>
+                                                             </span>
+                                                         </div>
+                                                         <div class="col-6 d-flex justify-content-between border-bottom pb-1 mb-1 align-items-center">
+                                                             <span class="text-muted">
+                                                                 Reincidencia Mora:
+                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('reincidencia')" title="Saber más"></i>
+                                                             </span>
+                                                             <span class="fw-bold <%= (scoreData.desglose.reincidenciaMora || 0) < 0 ? 'text-danger' : 'text-muted' %>" id="desgloseReincidencia"><%= scoreData.desglose.reincidenciaMora || 0 %> pts</span>
+                                                         </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -2721,7 +2727,8 @@
 
                     // Actualizar desglose de puntos
                     document.getElementById('desglosePagos').textContent = `+${sd.desglose.pagadosATiempo} pts`;
-                    document.getElementById('desgloseAhorros').textContent = `+${sd.desglose.ahorros} pts`;
+                    document.getElementById('desgloseAhorrosSaldo').textContent = `+${sd.desglose.ahorrosSaldo || 0} pts`;
+                    document.getElementById('desgloseAhorrosConsistencia').textContent = `+${sd.desglose.ahorrosConsistencia || 0} pts`;
                     document.getElementById('desgloseAntiguedad').textContent = `+${sd.desglose.antiguedad} pts`;
                     
                     const dVencidos = document.getElementById('desgloseVencidos');
@@ -2848,7 +2855,7 @@
                         <div class="text-start small text-muted">
                             <p>Evalúa tanto el respaldo de capital como la consistencia en el hábito de ahorro:</p>
                             <ol class="ps-3">
-                                <li class="mb-2"><strong>Por Saldo Ahorrado:</strong> Se otorgan <strong>+10 pts por cada $100.000 COP</strong> de saldo disponible, con un límite máximo de 100 puntos (es decir, saldo de $1.000.000 COP o superior).</li>
+                                <li class="mb-2"><strong>Por Saldo Ahorrado:</strong> Se otorgan <strong>+10 pts por cada $100.000 COP</strong> de saldo disponible, con un límite máximo de 70 puntos (es decir, saldo de $700.000 COP o superior).</li>
                                 <li><strong>Por Consistencia de Depósito:</strong> Se premia con <strong>+10 pts por cada depósito de $10.000 COP o más</strong> realizado en los últimos 90 días, con un límite de hasta +30 puntos adicionales.</li>
                             </ol>
                             <p>El tope total acumulable combinando saldo y consistencia es de <strong>100 puntos</strong>.</p>

@@ -569,11 +569,19 @@
                                                             </tr>
                                                             <tr>
                                                                 <td class="text-dark">
-                                                                    Saldo en Cuenta de Ahorro (+10 pts por cada $100.000, máx 100)
+                                                                    Saldo en Cuenta de Ahorro (+10 pts por cada $100.000, máx 70)
                                                                     <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.85rem;" onclick="explicarRegla('ahorros')" title="Saber más"></i>
                                                                 </td>
-                                                                <td class="text-center fw-bold text-success" id="desgloseAhorrosAdmin">+<%= scoreData.desglose.ahorros %> pts</td>
-                                                                <td class="text-center text-muted" id="detalleAhorrosAdmin"><%= empresa.moneda %> <%= formatCurrency(scoreData.detalles.ahorroSaldo, 0) %></td>
+                                                                <td class="text-center fw-bold text-success" id="desgloseAhorrosSaldoAdmin">+<%= scoreData.desglose.ahorrosSaldo || 0 %> pts</td>
+                                                                <td class="text-center text-muted" id="detalleAhorrosSaldoAdmin"><%= empresa.moneda %> <%= formatCurrency(scoreData.detalles.ahorroSaldo, 0) %></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="text-dark">
+                                                                    Consistencia de Ahorro (+10 pts por depósito reciente >= $10.000, máx 30)
+                                                                    <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.85rem;" onclick="explicarRegla('ahorros')" title="Saber más"></i>
+                                                                </td>
+                                                                <td class="text-center fw-bold text-success" id="desgloseAhorrosConsistenciaAdmin">+<%= scoreData.desglose.ahorrosConsistencia || 0 %> pts</td>
+                                                                <td class="text-center text-muted" id="detalleAhorrosConsistenciaAdmin"><%= scoreData.detalles.ahorrosDepositos90d || 0 %> depósitos</td>
                                                             </tr>
                                                             <tr>
                                                                 <td class="text-dark">
@@ -665,12 +673,28 @@
                                                                 Saldo en Cuenta de Ahorro
                                                                 <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('ahorros')"></i>
                                                             </span>
-                                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" id="desgloseAhorrosAdminMob">+<%= scoreData.desglose.ahorros %> pts</span>
+                                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" id="desgloseAhorrosSaldoAdminMob">+<%= scoreData.desglose.ahorrosSaldo || 0 %> pts</span>
                                                         </div>
                                                         <div class="d-flex justify-content-between align-items-center mt-2 small">
-                                                            <span class="text-muted">Impacto: +10 pts por cada $100.000, máx 100</span>
-                                                            <span class="text-dark fw-bold" id="detalleAhorrosAdminMob"><%= empresa.moneda %> <%= formatCurrency(scoreData.detalles.ahorroSaldo, 0) %></span>
+                                                            <span class="text-muted">Impacto: +10 pts por cada $100.000, máx 70</span>
+                                                            <span class="text-dark fw-bold" id="detalleAhorrosSaldoAdminMob"><%= empresa.moneda %> <%= formatCurrency(scoreData.detalles.ahorroSaldo, 0) %></span>
                                                         </div>
+                                                    </div>
+
+                                                    <!-- Consistencia ahorro -->
+                                                    <div class="card border border-light shadow-sm rounded-4 mb-2 p-3 bg-white">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="fw-bold text-dark">
+                                                                Consistencia de Ahorro
+                                                                <i class="bi bi-info-circle text-muted ms-1" style="cursor: pointer; font-size: 0.8rem;" onclick="explicarRegla('ahorros')"></i>
+                                                            </span>
+                                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold" id="desgloseAhorrosConsistenciaAdminMob">+<%= scoreData.desglose.ahorrosConsistencia || 0 %> pts</span>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between align-items-center mt-2 small">
+                                                            <span class="text-muted">Impacto: +10 pts por depósito reciente >= $10k, máx 30</span>
+                                                            <span class="text-dark fw-bold" id="detalleAhorrosConsistenciaAdminMob"><%= scoreData.detalles.ahorrosDepositos90d || 0 %> depósitos</span>
+                                                        </div>
+                                                    </div>
                                                     </div>
 
                                                     <!-- Antigüedad -->
@@ -1232,7 +1256,8 @@
 
                         // Actualizar Desglose (Desktop)
                         document.getElementById('desglosePagosAdmin').textContent = `+${sd.desglose.pagadosATiempo} pts`;
-                        document.getElementById('desgloseAhorrosAdmin').textContent = `+${sd.desglose.ahorros} pts`;
+                        document.getElementById('desgloseAhorrosSaldoAdmin').textContent = `+${sd.desglose.ahorrosSaldo || 0} pts`;
+                        document.getElementById('desgloseAhorrosConsistenciaAdmin').textContent = `+${sd.desglose.ahorrosConsistencia || 0} pts`;
                         document.getElementById('desgloseAntiguedadAdmin').textContent = `+${sd.desglose.antiguedad} pts`;
 
                         const dVencidos = document.getElementById('desgloseVencidosAdmin');
@@ -1253,7 +1278,8 @@
 
                         // Actualizar Detalle (Desktop)
                         document.getElementById('detallePagosAdmin').textContent = `${sd.detalles.prestamosPagadosATiempoCount} préstamos`;
-                        document.getElementById('detalleAhorrosAdmin').textContent = `$${sd.detalles.ahorroSaldo.toLocaleString('es-CO')}`;
+                        document.getElementById('detalleAhorrosSaldoAdmin').textContent = `${sd.detalles.ahorroSaldo.toLocaleString('es-CO')}`;
+                        document.getElementById('detalleAhorrosConsistenciaAdmin').textContent = `${sd.detalles.ahorrosDepositos90d || 0} depósitos`;
                         document.getElementById('detalleAntiguedadAdmin').textContent = `${sd.detalles.antiguedadMeses} meses`;
                         document.getElementById('detalleVencidosAdmin').textContent = `${sd.detalles.prestamosVencidosCount} préstamos`;
                         document.getElementById('detalleCuotasAdmin').textContent = `${sd.detalles.cuotasAtrasadasCount} (< 30d) / ${sd.detalles.cuotasAtrasadas30Count} (> 30d)`;
@@ -1262,7 +1288,8 @@
 
                         // Actualizar Desglose (Móvil)
                         document.getElementById('desglosePagosAdminMob').textContent = `+${sd.desglose.pagadosATiempo} pts`;
-                        document.getElementById('desgloseAhorrosAdminMob').textContent = `+${sd.desglose.ahorros} pts`;
+                        document.getElementById('desgloseAhorrosSaldoAdminMob').textContent = `+${sd.desglose.ahorrosSaldo || 0} pts`;
+                        document.getElementById('desgloseAhorrosConsistenciaAdminMob').textContent = `+${sd.desglose.ahorrosConsistencia || 0} pts`;
                         document.getElementById('desgloseAntiguedadAdminMob').textContent = `+${sd.desglose.antiguedad} pts`;
 
                         const dVencidosMob = document.getElementById('desgloseVencidosAdminMob');
@@ -1283,7 +1310,8 @@
 
                         // Actualizar Detalle (Móvil)
                         document.getElementById('detallePagosAdminMob').textContent = `${sd.detalles.prestamosPagadosATiempoCount} préstamos`;
-                        document.getElementById('detalleAhorrosAdminMob').textContent = `$${sd.detalles.ahorroSaldo.toLocaleString('es-CO')}`;
+                        document.getElementById('detalleAhorrosSaldoAdminMob').textContent = `${sd.detalles.ahorroSaldo.toLocaleString('es-CO')}`;
+                        document.getElementById('detalleAhorrosConsistenciaAdminMob').textContent = `${sd.detalles.ahorrosDepositos90d || 0} depósitos`;
                         document.getElementById('detalleAntiguedadAdminMob').textContent = `${sd.detalles.antiguedadMeses} meses`;
                         document.getElementById('detalleVencidosAdminMob').textContent = `${sd.detalles.prestamosVencidosCount} préstamos`;
                         document.getElementById('detalleCuotasAdminMob').textContent = `${sd.detalles.cuotasAtrasadasCount} (< 30d) / ${sd.detalles.cuotasAtrasadas30Count} (> 30d)`;
