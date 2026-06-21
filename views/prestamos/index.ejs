@@ -168,9 +168,14 @@
                                                                     <a href="/reportes/contrato/<%= p.id %>" target="_blank" class="btn btn-light py-2 flex-fill border-end" title="PDF Contrato">
                                                                         <i class="bi bi-file-text text-secondary"></i>
                                                                     </a>
-                                                                    <a href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank" class="btn btn-light py-2 flex-fill" title="PDF Desembolso">
+                                                                    <a href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank" class="btn btn-light py-2 flex-fill <%= p.estado == 'pagado' ? 'border-end' : '' %>" title="PDF Desembolso">
                                                                         <i class="bi bi-receipt text-success"></i>
                                                                     </a>
+                                                                    <% if (p.estado == 'pagado') { %>
+                                                                        <a href="/reportes/paz-y-salvo/<%= p.id %>" target="_blank" class="btn btn-light py-2 flex-fill text-success fw-bold" title="PDF Paz y Salvo">
+                                                                            <i class="bi bi-patch-check-fill"></i>
+                                                                        </a>
+                                                                    <% } %>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -222,6 +227,9 @@
                                                             <li><a class="dropdown-item py-2 text-danger" href="/reportes/cronograma-pdf/<%= p.id %>" target="_blank"><i class="bi bi-file-earmark-pdf me-2"></i> PDF Cronograma</a></li>
                                                             <li><a class="dropdown-item py-2" href="/reportes/contrato/<%= p.id %>" target="_blank"><i class="bi bi-file-text text-secondary me-2"></i> PDF Contrato</a></li>
                                                             <li><a class="dropdown-item py-2 text-success" href="/reportes/ticket-desembolso/<%= p.id %>" target="_blank"><i class="bi bi-receipt me-2"></i> PDF Desembolso</a></li>
+                                                            <% if (p.estado == 'pagado') { %>
+                                                                <li><a class="dropdown-item py-2 text-success fw-bold animate-pulse" href="/reportes/paz-y-salvo/<%= p.id %>" target="_blank"><i class="bi bi-patch-check-fill me-2"></i> PDF Paz y Salvo</a></li>
+                                                            <% } %>
                                                         </ul>
                                                     </div>
                                                 </div>

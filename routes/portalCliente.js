@@ -46,6 +46,7 @@ router.post('/ai-assistant/chat', portalClienteController.chatAsistenteIA);
 router.get('/contrato/:id', portalClienteController.verContrato);
 router.post('/firmar-contrato/:id', portalClienteController.firmarContrato);
 router.post('/contrato/otp/solicitar/:id', portalClienteController.solicitarOtpFirma);
+router.get('/prestamo/:id/paz-y-salvo', portalClienteController.descargarPazYSalvo);
 
 // Rutas de Gestión de Documentos del Cliente
 router.get('/documentos', clienteDocumentosController.mostrarDocumentos);

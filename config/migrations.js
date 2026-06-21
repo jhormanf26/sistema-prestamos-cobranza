@@ -472,6 +472,27 @@ async function runMigrations() {
         if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [notas_desembolso]:', e.message);
     }
 
+    // 20. Inserción de plantilla de PDF para Paz y Salvo si no existe
+    try {
+        const [rows] = await db.query("SELECT id FROM plantillas_pdf WHERE slug = ?", ['paz_y_salvo']);
+        if (rows.length === 0) {
+            await db.query(`
+                INSERT INTO plantillas_pdf (nombre, slug, contenido, descripcion)
+                VALUES (
+                    'Certificado de Paz y Salvo',
+                    'paz_y_salvo',
+                    'CERTIFICADO DE PAZ Y SALVO\\r\\n\\r\\nPor medio del presente documento, {{empresa}} con RUC/NIT {{ruc}}, certifica que el deudor {{cliente}} identificado con documento de identidad Nro. {{dni}}, a la fecha se encuentra a PAZ Y SALVO con nuestra organización por concepto del crédito de libre inversión Nro. {{prestamo_id}}, el cual fue desembolsado por un valor de {{moneda}} {{monto}} el día {{fecha_inicio}} y liquidado totalmente.\\r\\n\\r\\nPor consiguiente, se declara que no existe obligación pendiente, saldo en mora ni reclamación alguna que formular por concepto de dicho préstamo.\\r\\n\\r\\nDado en la ciudad de oficina principal a los {{fecha_pazysalvo}}.',
+                    'Cuerpo principal del certificado de Paz y Salvo para créditos liquidados'
+                )
+            `);
+            console.log('✅ Plantilla de PDF [paz_y_salvo] inyectada automáticamente');
+        } else {
+            console.log('ℹ️ La plantilla de PDF [paz_y_salvo] ya existe en la base de datos.');
+        }
+    } catch (e) {
+        console.error('❌ Error al inyectar plantilla de PDF de Paz y Salvo:', e.message);
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 

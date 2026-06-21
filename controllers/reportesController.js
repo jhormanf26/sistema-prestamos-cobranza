@@ -290,6 +290,20 @@ const reportesController = {
         }
     },
 
+    generarPazYSalvo: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const buffer = await pdfService.generarPazYSalvoBuffer(id);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `inline; filename=Paz_y_Salvo_${id}.pdf`);
+            res.send(buffer);
+        } catch (error) {
+            console.error("Error al generar Paz y Salvo PDF:", error);
+            req.flash('mensajeError', typeof error === 'string' ? error : 'No se pudo generar el Paz y Salvo. Asegúrese de que el préstamo esté pagado.');
+            res.redirect('/prestamos');
+        }
+    },
+
     // 10. MOSTRAR FLUJO DE CAJA PROYECTADO
     mostrarFlujoProyectado: async (req, res) => {
         try {

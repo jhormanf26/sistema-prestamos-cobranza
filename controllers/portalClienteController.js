@@ -14,6 +14,7 @@ const bcrypt = require('bcryptjs');
 const groqService = require('../services/groqService');
 const OtpService = require('../utils/otpService');
 const scoringService = require('../utils/scoringService');
+const pdfService = require('../utils/pdfService');
 
 const portalClienteController = {
     // Mostrar formulario de login
@@ -1082,6 +1083,33 @@ Indícale que puede reportar su pago desde el botón "Reportar Pago" de su panel
         } catch (error) {
             console.error("Error en recalcularScore del cliente:", error);
             res.status(500).json({ success: false, mensaje: 'Error al recalcular el score.' });
+        }
+    },
+
+    // Descargar Paz y Salvo PDF
+    descargarPazYSalvo: async (req, res) => {
+        const { id } = req.params;
+        try {
+            const prestamo = await PrestamoModel.obtenerPorId(id);
+
+            if (!prestamo || prestamo.cliente_id !== req.session.cliente.id) {
+                req.flash('mensajeError', 'Préstamo no encontrado o no tienes permiso.');
+                return res.redirect('/portal-cliente');
+            }
+
+            if (prestamo.estado !== 'pagado') {
+                req.flash('mensajeError', 'El préstamo debe estar pagado para generar el Paz y Salvo.');
+                return res.redirect('/portal-cliente');
+            }
+
+            const buffer = await pdfService.generarPazYSalvoBuffer(id);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `inline; filename=Paz_y_Salvo_${id}.pdf`);
+            res.send(buffer);
+        } catch (error) {
+            console.error("Error al descargar Paz y Salvo en Portal Cliente:", error);
+            req.flash('mensajeError', 'No se pudo generar el Paz y Salvo.');
+            res.redirect('/portal-cliente');
         }
     }
 };

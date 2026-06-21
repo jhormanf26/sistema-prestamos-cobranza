@@ -685,14 +685,15 @@ CREATE TABLE IF NOT EXISTS `plantillas_pdf` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Volcando datos para la tabla sistema_prestamos.plantillas_pdf: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla sistema_prestamos.plantillas_pdf: ~4 rows (aproximadamente)
 DELETE FROM `plantillas_pdf`;
 INSERT INTO `plantillas_pdf` (`id`, `nombre`, `slug`, `contenido`, `descripcion`, `updated_at`) VALUES
 	(1, 'Cláusulas del Contrato', 'contrato_clausulas', 'PRIMERO (OBJETO): El ACREEDOR entrega al DEUDOR la suma de {{moneda}} {{monto}} por concepto de préstamo de libre inversión.\r\n\r\nSEGUNDO (INTERESES Y TOTAL): El DEUDOR se obliga a devolver la suma total de {{moneda}} {{total}}, la cual incluye una tasa de interés del {{tasa}}%.\r\n\r\nTERCERO (FORMA DE PAGO): La obligación será cancelada en {{cuotas}} cuotas con una frecuencia de pago {{frecuencia}}. La primera cuota vence el {{fecha_primer_pago}}.\r\n\r\nCUARTO (MORA): El incumplimiento en las fechas pactadas generará el reporte en las centrales de riesgo y las acciones legales pertinentes para el cobro del saldo total.', 'Cuerpo principal de las cláusulas legales del préstamo', '2026-04-23 18:46:42'),
 	(2, 'Pie de Página - Ticket', 'ticket_pie', 'Este comprobante certifica la recepción del dinero en efectivo o transferencia. Al firmar, el cliente acepta los términos del contrato vinculado a la operación Nro {{op}}.', 'Texto legal que aparece al final del comprobante de desembolso', '2026-04-23 18:23:44'),
-	(3, 'Pie de Página - Cronograma', 'cronograma_pie', 'Este cronograma de pagos es un documento informativo sujeto a términos y condiciones establecidos en el contrato de préstamo. Generado automáticamente por el Sistema de Préstamos el {{fecha_hoy}}.', 'Texto informativo al final del calendario de pagos', '2026-04-23 18:23:44');
+	(3, 'Pie de Página - Cronograma', 'cronograma_pie', 'Este cronograma de pagos es un documento informativo sujeto a términos y condiciones establecidos en el contrato de préstamo. Generado automáticamente por el Sistema de Préstamos el {{fecha_hoy}}.', 'Texto informativo al final del calendario de pagos', '2026-04-23 18:23:44'),
+	(4, 'Certificado de Paz y Salvo', 'paz_y_salvo', 'CERTIFICADO DE PAZ Y SALVO\r\n\r\nPor medio del presente documento, {{empresa}} con RUC/NIT {{ruc}}, certifica que el deudor {{cliente}} identificado con documento de identidad Nro. {{dni}}, a la fecha se encuentra a PAZ Y SALVO con nuestra organización por concepto del crédito de libre inversión Nro. {{prestamo_id}}, el cual fue desembolsado por un valor de {{moneda}} {{monto}} el día {{fecha_inicio}} y liquidado totalmente.\r\n\r\nPor consiguiente, se declara que no existe obligación pendiente, saldo en mora ni reclamación alguna que formular por concepto de dicho préstamo.\r\n\r\nDado en la ciudad de oficina principal a los {{fecha_pazysalvo}}.', 'Cuerpo principal del certificado de Paz y Salvo para créditos liquidados', '2026-06-21 12:00:00');
 
 
 -- Estructura para Cadenas de Ahorro

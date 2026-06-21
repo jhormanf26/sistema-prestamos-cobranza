@@ -473,6 +473,124 @@ const pdfService = {
             } catch (error) { reject(error); }
         });
     },
+    generarPazYSalvoBuffer: async (id, prestamoData = null) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const prestamo = prestamoData || await PrestamoModel.obtenerPorId(id);
+                if (!prestamo) return reject('Préstamo no encontrado');
+
+                // Si no es un ejemplo y el estado no es pagado, rechazamos
+                if (prestamo.id !== 0 && prestamo.estado !== 'pagado') {
+                    return reject('El préstamo seleccionado no está pagado o liquidado.');
+                }
+
+                let config = await ConfigModel.obtener();
+                if (!config) config = { nombre_empresa: 'EMPRESA', moneda: '$', ruc: '000000000', direccion: 'Oficina Principal' };
+                const moneda = config.moneda;
+
+                const doc = new PDFDocument({ margin: 50 });
+                let buffers = [];
+                doc.on('data', buffers.push.bind(buffers));
+                doc.on('end', () => {
+                    let pdfData = Buffer.concat(buffers);
+                    resolve(pdfData);
+                });
+
+                // Marca de Agua sutil de "PAZ Y SALVO"
+                doc.save();
+                doc.fontSize(60).fillColor('#198754').opacity(0.08);
+                doc.translate(300, 400).rotate(-45);
+                doc.text('PAZ Y SALVO', -200, 0, { align: 'center', width: 400 });
+                doc.restore();
+
+                // Encabezado
+                if (config.logo) {
+                    try { doc.image(`public/uploads/${config.logo}`, 50, 45, { width: 70 }); } catch (e) { }
+                }
+
+                doc.fontSize(20).font('Helvetica-Bold').fillColor('#198754').text('CERTIFICADO DE PAZ Y SALVO', 140, 50, { align: 'center' });
+                doc.fontSize(10).font('Helvetica').fillColor('#7f8c8d').text(`REFERENCIA N°: PS-${prestamo.id.toString().padStart(6, '0')}`, { align: 'center' });
+                doc.moveDown(2);
+
+                const boxY = 120;
+                // Cuadro con bordes redondeados con la información del deudor
+                doc.rect(50, boxY, 500, 95).fill('#f8f9fa').stroke('#198754');
+                doc.fillColor('#198754').font('Helvetica-Bold').fontSize(11).text('DETALLES DEL DEUDOR Y OBLIGACIÓN', 65, boxY + 15);
+
+                doc.font('Helvetica-Bold').fontSize(10).fillColor('#2c3e50').text('CLIENTE:', 65, boxY + 35);
+                doc.font('Helvetica').fillColor('#333').text(`${prestamo.nombre} ${prestamo.apellido}`, 150, boxY + 35);
+
+                doc.font('Helvetica-Bold').fillColor('#2c3e50').text('DOCUMENTO (CC/DNI):', 65, boxY + 50);
+                doc.font('Helvetica').fillColor('#333').text(`${prestamo.dni}`, 180, boxY + 50);
+
+                doc.font('Helvetica-Bold').fillColor('#2c3e50').text('CRÉDITO VINCULADO:', 65, boxY + 65);
+                doc.font('Helvetica').fillColor('#333').text(`Operación Nro. #${prestamo.id}`, 180, boxY + 65);
+
+                doc.font('Helvetica-Bold').fillColor('#2c3e50').text('MONTO DESEMBOLSADO:', 65, boxY + 80);
+                doc.font('Helvetica').fillColor('#333').text(`${moneda} ${formatCurrency(prestamo.monto_prestado, 2)}`, 200, boxY + 80);
+
+                doc.moveDown(4.5);
+
+                // Cargar Plantilla de Paz y Salvo desde BD
+                const pPaz = await PlantillaPdfModel.obtenerPorSlug('paz_y_salvo');
+                
+                const fechaInicioStr = (prestamo.fecha_inicio instanceof Date) ? prestamo.fecha_inicio.toISOString().split('T')[0] : prestamo.fecha_inicio;
+                const fechaInicioObj = new Date(fechaInicioStr + 'T00:00:00');
+                const fechaPazYSalvo = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                const pazTexto = _reemplazarVariables(pPaz ? pPaz.contenido : '', {
+                    empresa: config.nombre_empresa,
+                    ruc: config.ruc || 'N/A',
+                    cliente: `${prestamo.nombre} ${prestamo.apellido}`,
+                    dni: prestamo.dni,
+                    prestamo_id: prestamo.id,
+                    moneda,
+                    monto: formatCurrency(prestamo.monto_prestado, 2),
+                    total: formatCurrency(prestamo.monto_total, 2),
+                    fecha_inicio: fechaInicioObj.toLocaleDateString('es-CO'),
+                    fecha_pazysalvo: fechaPazYSalvo
+                });
+
+                doc.x = 50;
+                doc.fontSize(11).font('Helvetica').fillColor('#333').text(pazTexto || 'Certificamos que el deudor se encuentra a paz y salvo.', { align: 'justify', lineGap: 5 });
+
+                doc.moveDown(3);
+
+                // Sección de Firmas y Validación OTP
+                const firmaY = 560;
+                doc.strokeColor('#ccc').moveTo(50, firmaY).lineTo(230, firmaY).stroke();
+                doc.moveTo(330, firmaY).lineTo(510, firmaY).stroke();
+
+                if (prestamo.firma_digital) {
+                    try {
+                        const firmaImg = prestamo.firma_digital.replace(/^data:image\/\w+;base64,/, '');
+                        const firmaBuffer = Buffer.from(firmaImg, 'base64');
+                        doc.image(firmaBuffer, 340, firmaY - 50, { width: 160, height: 50 });
+                        
+                        const fechaStr = prestamo.fecha_firma ? new Date(prestamo.fecha_firma).toLocaleString('es-CO', {timeZone: 'America/Bogota'}) : '';
+                        const otpStr = prestamo.firma_otp ? ` (OTP: ${prestamo.firma_otp})` : '';
+                        doc.fontSize(6).fillColor('#7f8c8d').text(`Suscrito digitalmente${otpStr}: IP ${prestamo.ip_firma || 'N/A'} - ${fechaStr}`, 330, firmaY + 40, { width: 180, align: 'center' });
+                    } catch (e) { console.error('Error insertando firma en Paz y Salvo:', e); }
+                }
+
+                doc.fontSize(10).font('Helvetica-Bold').fillColor('#2c3e50');
+                doc.text('REPRESENTANTE LEGAL', 50, firmaY + 10, { width: 180, align: 'center' });
+                doc.text('CLIENTE (DEUDOR)', 330, firmaY + 10, { width: 180, align: 'center' });
+
+                doc.fontSize(9).font('Helvetica').fillColor('#7f8c8d');
+                doc.text(config.nombre_empresa, 50, firmaY + 25, { width: 180, align: 'center' });
+                doc.text(`${prestamo.nombre} ${prestamo.apellido}`, 330, firmaY + 25, { width: 180, align: 'center' });
+
+                // Dibujar el pie de página de forma absoluta para evitar salto de página
+                doc.fontSize(8).fillColor('#aaa').text('Este certificado cuenta con validez digital. Emitido de forma automatizada tras la validación de fondos en el sistema financiero.', 50, 725, { align: 'center', width: 500 });
+
+                doc.end();
+
+            } catch (error) {
+                reject(error);
+            }
+        });
+    },
     generarEjemploBuffer: async (tipo) => {
         const dummyPrestamo = {
             id: 0,
@@ -491,6 +609,7 @@ const pdfService = {
         if (tipo === 'contrato') return await pdfService.generarContratoBuffer(0, dummyPrestamo);
         if (tipo === 'ticket') return await pdfService.generarTicketDesembolsoBuffer(0, dummyPrestamo);
         if (tipo === 'cronograma') return await pdfService.generarCronogramaBuffer(0, dummyPrestamo);
+        if (tipo === 'pazysalvo' || tipo === 'paz_y_salvo') return await pdfService.generarPazYSalvoBuffer(0, dummyPrestamo);
         return null;
     }
 };
