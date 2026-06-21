@@ -169,8 +169,12 @@
                                                                 <% } %>
                                                             </td>
                                                             <td class="text-end pe-3">
-                                                                <a href="/pagos/registrar/<%= p.id %>" class="btn btn-outline-success btn-sm"><i class="bi bi-cash"></i></a>
-                                                                <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar3"></i></a>
+                                                                <% if(p.estado == 'pagado') { %>
+                                                                    <a href="/reportes/paz-y-salvo/<%= p.id %>" target="_blank" class="btn btn-outline-success btn-sm" title="Descargar Paz y Salvo"><i class="bi bi-patch-check-fill"></i> Paz y Salvo</a>
+                                                                <% } else { %>
+                                                                    <a href="/pagos/registrar/<%= p.id %>" class="btn btn-outline-success btn-sm" title="Registrar Cobro"><i class="bi bi-cash"></i></a>
+                                                                <% } %>
+                                                                <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-outline-primary btn-sm" title="Ver Cronograma/Cuotas"><i class="bi bi-calendar3"></i></a>
                                                             </td>
                                                         </tr>
                                                         <% }) %>
@@ -215,7 +219,11 @@
                                                             </div>
                                                         </div>
                                                         <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
-                                                            <a href="/pagos/registrar/<%= p.id %>" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"><i class="bi bi-cash me-1"></i> Cobrar</a>
+                                                            <% if(p.estado == 'pagado') { %>
+                                                                <a href="/reportes/paz-y-salvo/<%= p.id %>" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"><i class="bi bi-patch-check-fill me-1"></i> Paz y Salvo</a>
+                                                            <% } else { %>
+                                                                <a href="/pagos/registrar/<%= p.id %>" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold"><i class="bi bi-cash me-1"></i> Cobrar</a>
+                                                            <% } %>
                                                             <a href="/prestamos/cronograma/<%= p.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold"><i class="bi bi-calendar3 me-1"></i> Cuotas</a>
                                                         </div>
                                                     </div>

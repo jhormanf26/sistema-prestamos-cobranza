@@ -33,4 +33,7 @@ router.get('/estado-cuenta/:id', reportesController.generarEstadoCuenta);
 // PDF: Ticket Ahorro
 router.get('/ticket-ahorro/:id', reportesController.generarTicketAhorro);
 
+// PDF: Paz y Salvo
+router.get('/paz-y-salvo/:id', reportesController.generarPazYSalvo);
+
 module.exports = router;

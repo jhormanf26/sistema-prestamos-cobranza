@@ -1301,9 +1301,14 @@
                                                     <td><%= p.fecha_fin ? new Date(p.fecha_fin).toLocaleDateString() : 'N/A' %></td>
                                                     <td class="fw-bold text-success">$<%= parseFloat(p.monto_total).toLocaleString('en-US', {minimumFractionDigits: 2}) %></td>
                                                     <td class="text-end pe-4">
-                                                        <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Historial de Pagos">
-                                                            <i class="bi bi-file-earmark-pdf"></i>
-                                                        </a>
+                                                         <div class="d-flex justify-content-end gap-2">
+                                                             <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver Historial de Pagos">
+                                                                 <i class="bi bi-file-earmark-pdf me-1"></i> Historial
+                                                             </a>
+                                                             <a href="/portal-cliente/prestamo/<%= p.id %>/paz-y-salvo" target="_blank" class="btn btn-sm btn-outline-success rounded-pill" title="Descargar Certificado de Paz y Salvo">
+                                                                 <i class="bi bi-patch-check-fill me-1"></i> Paz y Salvo
+                                                             </a>
+                                                         </div>
                                                     </td>
                                                 </tr>
                                             <% }) %>
@@ -1332,9 +1337,14 @@
                                                 </span>
                                             </div>
                                             <div>
-                                                <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" style="font-size: 0.75rem;" title="Ver Historial de Pagos">
-                                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i> PDF
-                                                </a>
+                                                 <div class="d-flex gap-2">
+                                                 <a href="/prestamos/pdf-cronograma/<%= p.id %>" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" style="font-size: 0.75rem;" title="Ver Historial de Pagos">
+                                                     <i class="bi bi-file-earmark-pdf text-danger me-1"></i> PDF
+                                                 </a>
+                                                 <a href="/portal-cliente/prestamo/<%= p.id %>/paz-y-salvo" target="_blank" class="btn btn-sm btn-outline-success rounded-pill fw-bold" style="font-size: 0.75rem;" title="Descargar Certificado de Paz y Salvo">
+                                                     <i class="bi bi-patch-check-fill me-1"></i> Paz y Salvo
+                                                 </a>
+                                             </div>
                                             </div>
                                         </div>
                                         <div class="row g-2 pt-2 border-top">

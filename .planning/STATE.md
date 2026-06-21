@@ -137,7 +137,7 @@ Se ha implementado con éxito el formateo de moneda estilo Colombia (separadores
     - Rebalancear el padding lateral de la grilla responsiva para una presentación simétrica de los 9 elementos de desglose del score.
     - Validado al 100% por suite TDD (`tests/portalScoreDetallado.test.js`, `tests/portalResponsivoTablas.test.js` y `tests/scoring.test.js`).
 101. **[HECHO]** Rediseñar responsivamente la tabla de Últimos Movimientos en la vista detallada de Cuenta de Ahorro (`views/ahorros/ver.ejs`), ocultándola en móviles (`d-none d-md-block`) y mostrando en su lugar tarjetas premium responsivas (`d-block d-md-none`) con toda la información clave, eliminando el scroll horizontal, 100% verificado por TDD (`tests/ahorrosResponsiveVer.test.js`).
-
+102. **[HECHO]** Implementar el Generador de Certificados Legales PDF de "Paz y Salvo" para préstamos liquidados/pagados en su totalidad, integrando la firma digital del deudor si el contrato fue firmado por OTP, marca de agua e inyección dinámica de variables de configuración, expuesto mediante rutas seguras tanto en el Portal del Cliente como en el Panel de Administración (listado principal de préstamos y expediente del cliente), y verificado al 100% por pruebas unitarias TDD (`tests/pazYSalvo.test.js`).
 
 ## Fase actual: Fase 2 - Potenciación de Ventas y Analítica Avanzada 🚀
 
