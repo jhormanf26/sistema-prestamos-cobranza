@@ -139,22 +139,40 @@
                     <% } %>
                     <% if (mod.comprobantes !== false) { %>
                     <li class="nav-item w-100">
-                        <a href="/admin/comprobantes" class="nav-link px-0 align-middle">
-                            <i class="bi bi-wallet2 text-success animate-pulse"></i> <span class="ms-1 d-inline text-success fw-bold">Comprobantes</span>
+                        <a href="/admin/comprobantes" class="nav-link px-0 align-middle d-flex align-items-center">
+                            <i class="bi bi-wallet2 text-success animate-pulse"></i> 
+                            <span class="ms-1 d-inline text-success fw-bold">Comprobantes</span>
+                            <% if (typeof comprobantesSinLeer !== 'undefined' && comprobantesSinLeer > 0) { %>
+                                <span class="badge rounded-pill bg-danger ms-auto me-2 text-white animate-pulse" style="font-size: 0.7rem; padding: 0.3em 0.55em;">
+                                    <%= comprobantesSinLeer %>
+                                </span>
+                            <% } %>
                         </a>
                     </li>
                     <% } %>
                     <% if (mod.solicitudes !== false) { %>
                     <li class="nav-item w-100">
-                        <a href="/admin/solicitudes" class="nav-link px-0 align-middle">
-                            <i class="bi bi-rocket-takeoff-fill text-primary"></i> <span class="ms-1 d-inline text-primary fw-bold">Solicitudes Cupo</span>
+                        <a href="/admin/solicitudes" class="nav-link px-0 align-middle d-flex align-items-center">
+                            <i class="bi bi-rocket-takeoff-fill text-primary"></i> 
+                            <span class="ms-1 d-inline text-primary fw-bold">Solicitudes Cupo</span>
+                            <% if (typeof solicitudesSinLeer !== 'undefined' && solicitudesSinLeer > 0) { %>
+                                <span class="badge rounded-pill bg-danger ms-auto me-2 text-white animate-pulse" style="font-size: 0.7rem; padding: 0.3em 0.55em;">
+                                    <%= solicitudesSinLeer %>
+                                </span>
+                            <% } %>
                         </a>
                     </li>
                     <% } %>
                     <% if (mod.ahorros !== false) { %>
                     <li class="nav-item w-100">
-                        <a href="/ahorros/solicitudes" class="nav-link px-0 align-middle">
-                            <i class="bi bi-piggy-bank-fill text-warning"></i> <span class="ms-1 d-inline text-warning fw-bold">Solicitudes Ahorro</span>
+                        <a href="/ahorros/solicitudes" class="nav-link px-0 align-middle d-flex align-items-center">
+                            <i class="bi bi-piggy-bank-fill text-warning"></i> 
+                            <span class="ms-1 d-inline text-warning fw-bold">Solicitudes Ahorro</span>
+                            <% if (typeof ahorrosSinLeer !== 'undefined' && ahorrosSinLeer > 0) { %>
+                                <span class="badge rounded-pill bg-danger ms-auto me-2 text-white animate-pulse" style="font-size: 0.7rem; padding: 0.3em 0.55em;">
+                                    <%= ahorrosSinLeer %>
+                                </span>
+                            <% } %>
                         </a>
                     </li>
                     <% } %>
