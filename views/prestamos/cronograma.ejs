@@ -36,7 +36,7 @@
                                     </div>
                                 </div>
 
-                                <div class="table-responsive">
+                                <div class="table-responsive d-none d-md-block">
                                     <table class="table table-striped text-center align-middle">
                                         <thead class="table-dark">
                                             <tr>
@@ -50,7 +50,7 @@
                                             <% cronograma.forEach(cuota => {
                                                 const hoy = new Date();
                                                 const fechaCuota = new Date(cuota.fecha);
-
+ 
                                                 // Detectar si está vencida: Fecha pasada Y no está pagada (estado Pendiente/Programado o vacío)
                                                 // Si cuota.estado viene vacío, asumimos que es 'Pendiente'
                                                 const estaPagada = (cuota.estado === 'Pagado');
@@ -59,7 +59,7 @@
                                                         <td class="fw-bold">
                                                             <%= cuota.numero %>
                                                         </td>
-
+ 
                                                         <td class="<%= vencida ? 'text-danger fw-bold' : '' %>">
                                                             <%= cuota.fecha.toLocaleDateString() %>
                                                                 <% if(vencida) { %>
@@ -67,12 +67,12 @@
                                                                         title="Cuota Vencida"></i>
                                                                     <% } %>
                                                         </td>
-
+ 
                                                         <td>
                                                             <%= empresa.moneda %>
                                                                 <%= formatCurrency(cuota.monto, 2) %>
                                                         </td>
-
+ 
                                                         <td>
                                                             <% if(cuota.estado==='Pagado' ) { %>
                                                                 <span
@@ -93,6 +93,59 @@
                                                     <% }) %>
                                         </tbody>
                                     </table>
+                                </div>
+
+                                <!-- Vista Móvil: Tarjeticas Premium del Cronograma -->
+                                <div class="d-block d-md-none mt-3">
+                                    <div class="d-flex flex-column gap-3">
+                                        <% cronograma.forEach(cuota => {
+                                            const hoy = new Date();
+                                            const fechaCuota = new Date(cuota.fecha);
+                                            const estaPagada = (cuota.estado === 'Pagado');
+                                            const vencida = (fechaCuota < hoy) && !estaPagada;
+                                        %>
+                                            <div class="card border border-light-subtle shadow-sm rounded-4 p-3 bg-white">
+                                                <!-- Fila superior: Número de Cuota y Estado -->
+                                                <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                                                    <span class="badge bg-dark px-2.5 py-1.5 rounded-3 fw-bold" style="font-size: 0.8rem;">Cuota #<%= cuota.numero %></span>
+                                                    <div>
+                                                        <% if(cuota.estado === 'Pagado') { %>
+                                                            <span class="badge bg-success bg-opacity-75 text-white shadow-sm px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i> Pagado
+                                                            </span>
+                                                        <% } else if (cuota.clase === 'warning') { %>
+                                                            <span class="badge bg-warning text-dark border px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                                <%= cuota.estado %>
+                                                            </span>
+                                                        <% } else { %>
+                                                            <span class="badge bg-light text-dark border px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
+                                                                <%= cuota.estado || 'Programado' %>
+                                                            </span>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Detalles de la cuota: Fecha y Monto -->
+                                                <div class="row align-items-center">
+                                                    <div class="col-6">
+                                                        <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase; font-weight: 600;">Vencimiento</small>
+                                                        <span class="fw-bold <%= vencida ? 'text-danger' : 'text-dark' %>" style="font-size: 0.9rem;">
+                                                            <%= cuota.fecha.toLocaleDateString() %>
+                                                            <% if(vencida) { %>
+                                                                <i class="bi bi-exclamation-circle-fill ms-1 text-danger" title="Cuota Vencida"></i>
+                                                            <% } %>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-6 text-end">
+                                                        <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase; font-weight: 600;">Monto</small>
+                                                        <span class="fw-bold text-dark" style="font-size: 0.95rem;">
+                                                            <%= empresa.moneda %> <%= formatCurrency(cuota.monto, 2) %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <% }) %>
+                                    </div>
                                 </div>
 
                                 <% if(prestamo.observaciones) { %>

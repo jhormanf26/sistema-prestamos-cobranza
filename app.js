@@ -72,6 +72,9 @@ app.use(async (req, res, next) => {
     // Contadores de mensajes sin leer disponibles en cualquier vista
     res.locals.soporteSinLeer = 0;
     res.locals.clienteChatSinLeer = 0;
+    res.locals.comprobantesSinLeer = 0;
+    res.locals.solicitudesSinLeer = 0;
+    res.locals.ahorrosSinLeer = 0;
 
     try {
         if (req.session && req.session.usuario) {
@@ -82,6 +85,27 @@ app.use(async (req, res, next) => {
                 WHERE remitente = 'cliente' AND leido = 0
             `);
             res.locals.soporteSinLeer = rows[0]?.total || 0;
+
+            // Comprobantes pendientes
+            const [comprobantesRows] = await db.query(`
+                SELECT COUNT(*) as total FROM reportes_pago WHERE estado = 'pendiente'
+            `);
+            res.locals.comprobantesSinLeer = comprobantesRows[0]?.total || 0;
+
+            // Solicitudes de cupo pendientes
+            const [solicitudesRows] = await db.query(`
+                SELECT COUNT(*) as total FROM solicitudes_credito WHERE estado = 'pendiente'
+            `);
+            res.locals.solicitudesSinLeer = solicitudesRows[0]?.total || 0;
+
+            // Solicitudes de Ahorro pendientes (aportes + retiros)
+            const [aportesRows] = await db.query(`
+                SELECT COUNT(*) as total FROM reportes_aporte_ahorro WHERE estado = 'pendiente'
+            `);
+            const [retirosRows] = await db.query(`
+                SELECT COUNT(*) as total FROM solicitudes_retiro_ahorro WHERE estado = 'pendiente'
+            `);
+            res.locals.ahorrosSinLeer = (aportesRows[0]?.total || 0) + (retirosRows[0]?.total || 0);
         }
 
         if (req.session && req.session.cliente) {
