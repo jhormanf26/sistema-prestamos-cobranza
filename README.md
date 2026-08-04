@@ -34,7 +34,7 @@
       <img width="1918" height="945" alt="image" src="https://github.com/user-attachments/assets/a767628b-803f-4c80-857e-2ac2f6265873" />
     </div>
   </div>
-  <p><i>Seguimiento del embudo de conversión y experiencia de usuario optimizada para ventas. url: https://prestamos.desarollo.site/promocion/ </i></p>
+  <p><i>Seguimiento del embudo de conversión y experiencia de usuario optimizada para ventas. url: https://prestamos.desaroollo.site/promocion/ </i></p>
 </div>
 
 ---
