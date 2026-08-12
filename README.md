@@ -37,6 +37,27 @@ Plataforma central de administración financiera y control operativo del negocio
 * **Caja y Tesorería**: Apertura/cierre de caja, control de egresos, flujo de caja y bitácora de auditoría.
 * **Reportería**: Emisión de contratos legales, paz y salvos y reportes descargables en PDF y Excel (`PDFKit`, `ExcelJS`).
 
+📸 Interfaz Visual
+
+<div align="center">
+  <div style="flex: 1;">
+      <h3>Login</h3>
+      <img width="1917" height="956" alt="image" src="https://github.com/user-attachments/assets/eeecba52-72b2-40ee-b40e-1aa5557ba396" />
+    </div>
+  <h3>Panel de Control Principal</h3>
+  <img width="1919" height="958" alt="image" src="https://github.com/user-attachments/assets/8141d8c4-f73c-49b5-87f1-6d82b0625b83" />
+  <p><i>Dashboard interactivo con métricas financieras y estados de cartera en tiempo real.</i></p>
+
+  <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Analítica de Marketing</h3>
+      <img width="1527" height="885" alt="image" src="https://github.com/user-attachments/assets/92cbd4d6-c051-4d4d-9e12-ca1394e76486" />
+    </div>
+  </div>
+</div>
+
 ### 📱 1.2 App Móvil de Cobranza en Campo (PWA Cobradores)
 Aplicación optimizada para trabajo en ruta y recaudo diario por parte de cobradores.
 * **Modo PWA & Offline**: Instalable en Android e iOS mediante Service Workers con estrategia *Network First*.
@@ -59,6 +80,27 @@ Página web pública orientada a la conversión y captación de prospectos.
 * **Engine de Analítica de Marketing**: Tracking propio de métricas en tiempo real:
   * Registro de visitantes, clics y conversión a leads.
   * *Scroll Depth Tracking* (medición de profundidad de desplazamiento de los usuarios).
+ 
+---
+
+📸 Interfaz Visual
+<div align="center">
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Landing Page Optimizada</h3>
+      <img width="1918" height="945" alt="image" src="https://github.com/user-attachments/assets/a767628b-803f-4c80-857e-2ac2f6265873" />
+    </div>
+  </div>
+       <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Simulador de crédito</h3>
+      <img width="1896" height="952" alt="image" src="https://github.com/user-attachments/assets/56cafa6a-bf22-4cc6-94fa-7f7feeb68f62" />
+    </div>
+  </div>
+  <p><i>Seguimiento del embudo de conversión y experiencia de usuario optimizada para ventas. url: https://prestamos.desaroollo.site/promocion/ </i></p>
+</div>
+
+---
 
 ---
 
