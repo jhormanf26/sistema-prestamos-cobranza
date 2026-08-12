@@ -143,6 +143,45 @@ Portal privado de cara al cliente final para el seguimiento de sus créditos y a
 * **Reporte de Pagos y Aportes**: Carga de comprobantes de pago/transferencia y solicitud de aumentos de cupo.
 * **Chat Multimodal**: Soporte directo en tiempo real con envío de mensajes de texto, imágenes y notas de voz.
 * **Paz y Salvo**: Descarga instantánea de certificado de paz y salvo al finalizar un préstamo.
+📸 Interfaz Visual
+<div align="center">
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Login</h3>
+           <img width="1916" height="948" alt="image" src="https://github.com/user-attachments/assets/479f99bd-5a55-4e3e-a381-f0432eb8ff3e" />
+    </div>
+  </div>
+       <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Inicio</h3>
+           <img width="1897" height="947" alt="image" src="https://github.com/user-attachments/assets/d499366a-5765-44d6-ba7b-d2f4f61a56ba" />
+    </div>
+  </div>
+       <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Reportes Pagos</h3>
+           <img width="1897" height="945" alt="image" src="https://github.com/user-attachments/assets/42c7a347-dfc1-4301-af81-a5ce2a51fdf0" />
+    </div>
+  </div>
+   <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Chat soporte</h3>
+           <img width="1907" height="934" alt="image" src="https://github.com/user-attachments/assets/b4e8dc3a-7190-4339-bb59-8ef03171a657" />
+    </div>
+  </div>
+   <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Asistente IA</h3>
+           <img width="1898" height="939" alt="image" src="https://github.com/user-attachments/assets/33ce698f-5568-4524-959e-c80e95a8fc85" />
+    </div>
+  </div>
+</div>
 
 ### 📣 1.4 Landing Page Promocional & Analítica de Marketing
 Página web pública orientada a la conversión y captación de prospectos.
@@ -152,8 +191,6 @@ Página web pública orientada a la conversión y captación de prospectos.
   * Registro de visitantes, clics y conversión a leads.
   * *Scroll Depth Tracking* (medición de profundidad de desplazamiento de los usuarios).
  
----
-
 📸 Interfaz Visual
 <div align="center">
   <div style="display: flex; gap: 10px; justify-content: center;">
