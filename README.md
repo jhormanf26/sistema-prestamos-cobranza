@@ -48,6 +48,54 @@ Plataforma central de administración financiera y control operativo del negocio
   <img width="1919" height="958" alt="image" src="https://github.com/user-attachments/assets/8141d8c4-f73c-49b5-87f1-6d82b0625b83" />
   <p><i>Dashboard interactivo con métricas financieras y estados de cartera en tiempo real.</i></p>
 
+<br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Clientes</h3>
+           <img width="1899" height="954" alt="image" src="https://github.com/user-attachments/assets/4820e7e1-2e55-40e3-97ae-9ff36afdca3b" />
+    </div>
+  </div>
+  <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Prestamos</h3>
+           <img width="1890" height="952" alt="image" src="https://github.com/user-attachments/assets/ca978587-f9b9-47e0-94c6-8963cd91e25a" />
+    </div>
+  </div>
+  <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Calculadora de présatmos</h3>
+           <img width="1893" height="950" alt="image" src="https://github.com/user-attachments/assets/c262a17e-4e1b-4419-bad0-9235b3ca6568" />
+    </div>
+  </div>
+   <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Gastos</h3>
+           <img width="1892" height="952" alt="image" src="https://github.com/user-attachments/assets/8e1dfe97-86bb-4359-bed9-a7d648e6bf17" />
+    </div>
+  </div>
+  <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Cadenas</h3>
+           <img width="1911" height="927" alt="image" src="https://github.com/user-attachments/assets/f4ee896a-dea7-4ca5-b36c-1bd57d5f8bdf" />
+    </div>
+  </div>
+  <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Proyección de Flujo de Caja</h3>
+           <img width="1900" height="945" alt="image" src="https://github.com/user-attachments/assets/007017fe-a664-47f7-b65e-6052d9c0cc7c" />
+    </div>
+  </div>
   <br>
 
   <div style="display: flex; gap: 10px; justify-content: center;">
@@ -64,6 +112,29 @@ Aplicación optimizada para trabajo en ruta y recaudo diario por parte de cobrad
 * **Impresión Térmica POS**: Generación y emisión de recibos de pago instantáneos compatibles con impresoras térmicas Bluetooth (58mm/80mm).
 * **Notificaciones Push**: Alertas de cobro y recordatorios mediante `web-push`.
 * **Registro de Pagos en Ruta**: Interfaz táctil ultrarrápida para registro de cuotas y abonos en tiempo real.
+📸 Interfaz Visual
+<div align="center">
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Prestamos</h3>
+           <img width="398" height="742" alt="image" src="https://github.com/user-attachments/assets/f8713cee-f1c2-4a74-8e1c-234142f52a92" />
+    </div>
+  </div>
+       <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Registrar pago</h3>
+           <img width="416" height="763" alt="image" src="https://github.com/user-attachments/assets/847a8c7f-9a1e-4e9b-873e-b77cf5d677b2" />
+    </div>
+  </div>
+       <br>
+
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <div style="flex: 1;">
+      <h3>Deudores</h3>
+           <img width="450" height="791" alt="image" src="https://github.com/user-attachments/assets/1661c0f3-ccb5-4b02-83ab-08bfd18fe737" />
+    </div>
+  </div>
+</div>
 
 ### 🤖 1.3 Portal de Autogestión & Asistente IA para Clientes
 Portal privado de cara al cliente final para el seguimiento de sus créditos y ahorros.
