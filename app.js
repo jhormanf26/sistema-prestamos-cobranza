@@ -176,6 +176,7 @@ cargarRuta('/simulador', './routes/simulador');
 cargarRuta('/empenos', './routes/empenos');
 cargarRuta('/ahorros', './routes/ahorros');
 cargarRuta('/cadenas', './routes/cadenas');
+cargarRuta('/inversiones', './routes/inversiones');
 
 // 4. Administración
 cargarRuta('/usuarios', './routes/usuarios');

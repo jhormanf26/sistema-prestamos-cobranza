@@ -2,11 +2,17 @@ const webpush = require('web-push');
 const db = require('../config/db');
 
 // Se asume que las variables de entorno ya están cargadas por app.js
-webpush.setVapidDetails(
-    'mailto:contacto@sistema.com',
-    process.env.VAPID_PUBLIC_KEY || '',
-    process.env.VAPID_PRIVATE_KEY || ''
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    try {
+        webpush.setVapidDetails(
+            'mailto:contacto@sistema.com',
+            process.env.VAPID_PUBLIC_KEY,
+            process.env.VAPID_PRIVATE_KEY
+        );
+    } catch (err) {
+        console.warn("Advertencia: No se pudieron configurar las llaves VAPID:", err.message);
+    }
+}
 
 async function sendPushToAdmins(payload) {
     if (!process.env.VAPID_PUBLIC_KEY) return;

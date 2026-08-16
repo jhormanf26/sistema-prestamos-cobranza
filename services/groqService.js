@@ -1,10 +1,17 @@
 const Groq = require('groq-sdk');
 
-// Inicializar el cliente de Groq.
-// El SDK busca automáticamente la variable de entorno GROQ_API_KEY.
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY === 'tu_api_key_de_groq_aqui' ? '' : process.env.GROQ_API_KEY
-});
+let groqClient = null;
+
+function getGroqClient() {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey || apiKey === 'tu_api_key_de_groq_aqui' || apiKey.trim() === '') {
+        return null;
+    }
+    if (!groqClient) {
+        groqClient = new Groq({ apiKey });
+    }
+    return groqClient;
+}
 
 /**
  * Servicio para interactuar con la API de Groq.
@@ -21,12 +28,13 @@ const groqService = {
         const apiKey = process.env.GROQ_API_KEY;
         const model = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
 
-        if (!apiKey || apiKey === 'tu_api_key_de_groq_aqui' || apiKey.trim() === '') {
+        const client = getGroqClient();
+        if (!client) {
             throw new Error('La API Key de Groq no está configurada en las variables de entorno (.env)');
         }
 
         try {
-            const chatCompletion = await groq.chat.completions.create({
+            const chatCompletion = await client.chat.completions.create({
                 messages: mensajes,
                 model: model,
                 temperature: 0.5,
