@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('../partials/head') %>
+
+<style>
+    .kpi-card {
+        border: none;
+        border-radius: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden;
+    }
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .kpi-icon-bg {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .chart-container-card {
+        border-radius: 1.25rem;
+        border: 1px solid rgba(0,0,0,0.06);
+        background: #ffffff;
+    }
+    .dropzone-area {
+        border: 2px dashed #0d6efd;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        background-color: #f8fafc;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    .dropzone-area:hover {
+        background-color: #eff6ff;
+    }
+    .badge-mov-rendimiento {
+        background-color: #dcfce7;
+        color: #15803d;
+    }
+    .badge-mov-retiro {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    .badge-mov-inversion {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+    }
+</style>
+
+<body>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <%- include('../partials/sidebar') %>
+
+            <div class="col py-0 py-md-3 main-content-wrapper">
+                <%- include('../partials/mobile-header') %>
+                
+                <div class="container-fluid px-3 px-md-4 py-4">
+                    <!-- ENCABEZADO Y FILTROS -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                        <div>
+                            <h2 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow text-success"></i> Gestión de Inversiones</h2>
+                            <p class="text-muted small mb-0">Monitorea tus inversiones, importa extractos CSV, analiza rentabilidad y realiza proyecciones financieras.</p>
+                        </div>
+                        
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- Filtro de Cuenta -->
+                            <form action="/inversiones" method="GET" class="d-flex gap-2">
+                                <select name="inversion_id" class="form-select rounded-pill shadow-sm" onchange="this.form.submit()">
+                                    <option value="">-- Todas las Cuentas --</option>
+                                    <% cuentas.forEach(c => { %>
+                                        <option value="<%= c.id %>" <%= inversionSeleccionada == c.id ? 'selected' : '' %>>
+                                            <%= c.tipo_cuenta %> (<%= c.numero_cuenta %>)
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </form>
+
+                            <!-- Botón Subir CSV -->
+                            <button type="button" class="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalSubirCsv">
+                                <i class="bi bi-file-earmark-spreadsheet-fill fs-5"></i>
+                                <span>Subir CSV</span>
+                            </button>
+
+                            <!-- Botón Nueva Cuenta -->
+                            <button type="button" class="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalNuevaCuenta">
+                                <i class="bi bi-bank2"></i>
+                                <span>Nueva Cuenta</span>
+                            </button>
+
+                            <!-- Botón Gestionar Cuentas -->
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalGestionCuentas">
+                                <i class="bi bi-gear-fill"></i>
+                                <span>Gestionar Cuentas</span>
+                            </button>
+
+                            <!-- Botón Nuevo Movimiento -->
+                            <button type="button" class="btn btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalMovimientoManual">
+                                <i class="bi bi-plus-circle-fill"></i>
+                                <span>Movimiento</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- NOTIFICACIONES FLASH -->
+                    <% if (mensajeExito && mensajeExito.length > 0) { %>
+                        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i> <%= mensajeExito %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+
+                    <% if (mensajeError && mensajeError.length > 0) { %>
+                        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= mensajeError %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    <% } %>
+
+                    <!-- TARJETAS DE KPIS -->
+                    <div class="row g-3 mb-4">
+                        <!-- Capital Invertido -->
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="card kpi-card shadow-sm p-3 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-muted small fw-semibold text-uppercase">Capital Invertido</span>
+                                        <h3 class="fw-bold text-dark mb-0 mt-1">
+                                            <%= empresa.moneda %> <%= formatCurrency(kpis.capital_invertido, 2) %>
+                                        </h3>
+                                    </div>
+                                    <div class="kpi-icon-bg bg-primary bg-opacity-10 text-primary">
+                                        <i class="bi bi-wallet2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rendimientos Totales -->
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="card kpi-card shadow-sm p-3 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-muted small fw-semibold text-uppercase">Rendimientos Acumulados</span>
+                                        <h3 class="fw-bold text-success mb-0 mt-1">
+                                            + <%= empresa.moneda %> <%= formatCurrency(kpis.rendimientos_totales, 2) %>
+                                        </h3>
+                                    </div>
+                                    <div class="kpi-icon-bg bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-arrow-up-right-circle-fill"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Retiros Totales -->
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="card kpi-card shadow-sm p-3 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="text-muted small fw-semibold text-uppercase">Retiros Realizados</span>
+                                        <h3 class="fw-bold text-danger mb-0 mt-1">
+                                            - <%= empresa.moneda %> <%= formatCurrency(kpis.retiros_totales, 2) %>
+                                        </h3>
+                                    </div>
+                                    <div class="kpi-icon-bg bg-danger bg-opacity-10 text-danger">
+                                        <i class="bi bi-arrow-down-left-circle-fill"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Saldo Actual Estimado & ROI -->
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="card kpi-card shadow-sm p-3 bg-dark text-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="text-white-50 small fw-semibold text-uppercase">Saldo Estimado</span>
+                                            <span class="badge bg-success rounded-pill small">+<%= kpis.porcentaje_roi %>% ROI</span>
+                                        </div>
+                                        <h3 class="fw-bold text-white mb-0 mt-1">
+                                            <%= empresa.moneda %> <%= formatCurrency(kpis.saldo_actual, 2) %>
+                                        </h3>
+                                    </div>
+                                    <div class="kpi-icon-bg bg-success text-white shadow-sm">
+                                        <i class="bi bi-piggy-bank-fill"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN DE GRÁFICOS INTERACTIVOS (CHART.JS) -->
+                    <div class="row g-4 mb-4">
+                        <!-- Gráfico 1: Rendimientos Mensuales -->
+                        <div class="col-12 col-lg-8">
+                            <div class="card chart-container-card shadow-sm p-3 p-md-4 h-100">
+                                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+                                    <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Flujo Mensual & Rendimientos</h5>
+                                    
+                                    <!-- Selector Filtro de métrica visual -->
+                                    <div class="btn-group btn-group-sm shadow-sm rounded-pill overflow-hidden" role="group" id="filtroGraficoFlujo">
+                                        <button type="button" class="btn btn-dark active" data-dataset="todos">Todos</button>
+                                        <button type="button" class="btn btn-outline-primary" data-dataset="0">Inversiones</button>
+                                        <button type="button" class="btn btn-outline-success" data-dataset="1">Rendimientos</button>
+                                        <button type="button" class="btn btn-outline-danger" data-dataset="2">Retiros</button>
+                                    </div>
+                                </div>
+                                <div style="position: relative; height: 280px; width: 100%;">
+                                    <canvas id="chartRendimientosMensuales"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico 2: Distribución Financiera -->
+                        <div class="col-12 col-lg-4">
+                            <div class="card chart-container-card shadow-sm p-3 p-md-4 h-100">
+                                <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart-fill text-info me-2"></i> Distribución Financiera</h5>
+                                <div style="position: relative; height: 260px; width: 100%;">
+                                    <canvas id="chartDistribucion"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HERRAMIENTA DE PROYECCIÓN FINANCIERA INTERACTIVA CON SIMULADOR -->
+                    <div class="card chart-container-card shadow-sm p-4 mb-4 bg-gradient" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3 border-bottom pb-3">
+                            <div>
+                                <h4 class="fw-bold text-success mb-1">
+                                    <i class="bi bi-magic text-success me-2"></i> Simulador Interactivo de Proyección
+                                </h4>
+                                <p class="text-muted small mb-0">Simula aportes adicionales o retiros para proyectar tu saldo futuro (Tasa promedio histórica: <strong class="text-dark" id="lblTasaProyeccion"><%= proyeccion.tasaEstimadaPorcentaje %>% mensual</strong>).</p>
+                            </div>
+                            
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="selectMesesProyeccion" class="form-label mb-0 fw-semibold small text-nowrap"><i class="bi bi-calendar3 me-1"></i> Proyectar a:</label>
+                                <select id="selectMesesProyeccion" class="form-select form-select-sm rounded-pill px-3 shadow-sm border-success">
+                                    <option value="3">3 Meses</option>
+                                    <option value="6" selected>6 Meses</option>
+                                    <option value="12">12 Meses (1 año)</option>
+                                    <option value="24">24 Meses (2 años)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- PANEL DE SIMULACIÓN DE APORTES / RETIROS -->
+                        <div class="row g-3 mb-3 p-3 bg-white rounded-3 shadow-sm border align-items-center">
+                            <!-- APORTE -->
+                            <div class="col-12 col-md-5">
+                                <label for="inputSimulacionAporte" class="form-label fw-bold text-primary small mb-1">
+                                    <i class="bi bi-plus-circle-fill me-1"></i> Aporte Simulado (<%= empresa.moneda %>)
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="inputSimulacionAporte" class="form-control border-primary fw-bold text-primary" placeholder="0" value="0">
+                                    <select id="selectTipoAporte" class="form-select border-primary fw-semibold text-primary" style="max-width: 175px;">
+                                        <option value="mensual" selected>Recurrente (Cada mes)</option>
+                                        <option value="unico">Aporte Único (Solo 1 mes)</option>
+                                    </select>
+                                </div>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">¿Cuánto piensas ingresar a la inversión?</small>
+                            </div>
+
+                            <!-- RETIRO -->
+                            <div class="col-12 col-md-5">
+                                <label for="inputSimulacionRetiro" class="form-label fw-bold text-danger small mb-1">
+                                    <i class="bi bi-dash-circle-fill me-1"></i> Retiro Simulado (<%= empresa.moneda %>)
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="inputSimulacionRetiro" class="form-control border-danger fw-bold text-danger" placeholder="0" value="0">
+                                    <select id="selectTipoRetiro" class="form-select border-danger fw-semibold text-danger" style="max-width: 175px;">
+                                        <option value="mensual" selected>Recurrente (Cada mes)</option>
+                                        <option value="unico">Retiro Único (Solo 1 mes)</option>
+                                    </select>
+                                </div>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">¿Cuánto piensas retirar de la inversión?</small>
+                            </div>
+
+                            <div class="col-12 col-md-2 text-center text-md-end">
+                                <button type="button" id="btnLimpiarSimulacion" class="btn btn-sm btn-outline-secondary rounded-pill px-3 mt-md-3">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Resetear
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle mb-0 bg-white rounded-3 shadow-sm overflow-hidden" id="tablaProyeccion">
+                                <thead class="table-success text-success">
+                                    <tr>
+                                        <th>Mes / Año</th>
+                                        <th class="text-center">Flujo Simulado</th>
+                                        <th class="text-end">Rendimiento Estimado</th>
+                                        <th class="text-end">Saldo Proyectado Acumulado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% proyeccion.proyeccion.forEach(p => { %>
+                                        <tr>
+                                            <td class="fw-bold text-capitalize"><i class="bi bi-calendar-event me-2 text-muted"></i><%= p.mes %></td>
+                                            <td class="text-center"><span class="badge bg-light text-muted border">-</span></td>
+                                            <td class="text-end text-success fw-bold">+ <%= empresa.moneda %> <%= formatCurrency(p.rendimientoEstimado, 2) %></td>
+                                            <td class="text-end text-dark fw-extrabold fs-6"><%= empresa.moneda %> <%= formatCurrency(p.saldoProyectado, 2) %></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TABLA Y LISTADO DE MOVIMIENTOS -->
+                    <div class="card card-box p-3 p-md-4 shadow-sm border-0 rounded-4">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                            <h4 class="fw-bold mb-0"><i class="bi bi-list-columns-reverse text-primary me-2"></i> Historial de Movimientos</h4>
+
+                            <!-- Buscador -->
+                            <form action="/inversiones" method="GET" class="d-flex gap-2">
+                                <% if (inversionSeleccionada) { %>
+                                    <input type="hidden" name="inversion_id" value="<%= inversionSeleccionada %>">
+                                <% } %>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 rounded-start-pill"><i class="bi bi-search text-muted"></i></span>
+                                    <input type="text" name="busqueda" class="form-control border-start-0 rounded-end-pill shadow-none" placeholder="Buscar por descripción..." value="<%= busqueda %>">
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- VISTA ESCRITORIO (TABLA) -->
+                        <div class="table-responsive d-none d-md-block">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Cuenta</th>
+                                        <th>Descripción</th>
+                                        <th class="text-center">Tipo</th>
+                                        <th class="text-end">Monto</th>
+                                        <th class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (movimientos && movimientos.length > 0) { %>
+                                        <% movimientos.forEach(m => { %>
+                                            <tr>
+                                                <td class="fw-semibold text-muted">
+                                                    <%= new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark border">
+                                                        <%= m.tipo_cuenta %> (<%= m.numero_cuenta %>)
+                                                    </span>
+                                                </td>
+                                                <td class="fw-bold text-dark"><%= m.descripcion %></td>
+                                                <td class="text-center">
+                                                    <% if (m.tipo_movimiento === 'rendimiento') { %>
+                                                        <span class="badge badge-mov-rendimiento rounded-pill px-3 py-2">Rendimiento</span>
+                                                    <% } else if (m.tipo_movimiento === 'retiro') { %>
+                                                        <span class="badge badge-mov-retiro rounded-pill px-3 py-2">Retiro</span>
+                                                    <% } else { %>
+                                                        <span class="badge badge-mov-inversion rounded-pill px-3 py-2">Inversión</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-end fw-bold fs-6 <%= m.tipo_movimiento === 'retiro' ? 'text-danger' : 'text-success' %>">
+                                                    <%= m.tipo_movimiento === 'retiro' ? '-' : '+' %> <%= empresa.moneda %> <%= formatCurrency(Math.abs(m.valor), 2) %>
+                                                </td>
+                                                <td class="text-center">
+                                                    <form action="/inversiones/movimiento/eliminar/<%= m.id %>" method="POST" class="d-inline form-eliminar-mov">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-circle" title="Eliminar Movimiento">
+                                                            <i class="bi bi-trash-fill"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center py-5 text-muted">
+                                                <i class="bi bi-inbox fs-1 d-block mb-2 text-muted"></i>
+                                                No se encontraron movimientos registrados en esta vista.
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- VISTA MÓVIL (TARJETAS) -->
+                        <div class="d-block d-md-none">
+                            <% if (movimientos && movimientos.length > 0) { %>
+                                <% movimientos.forEach(m => { %>
+                                    <div class="card border-0 shadow-sm rounded-4 mb-3 p-3 bg-white border-start border-4 <%= m.tipo_movimiento === 'retiro' ? 'border-danger' : 'border-success' %>">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted"><%= new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) %></small>
+                                            <% if (m.tipo_movimiento === 'rendimiento') { %>
+                                                <span class="badge badge-mov-rendimiento rounded-pill px-2 py-1">Rendimiento</span>
+                                            <% } else if (m.tipo_movimiento === 'retiro') { %>
+                                                <span class="badge badge-mov-retiro rounded-pill px-2 py-1">Retiro</span>
+                                            <% } else { %>
+                                                <span class="badge badge-mov-inversion rounded-pill px-2 py-1">Inversión</span>
+                                            <% } %>
+                                        </div>
+                                        
+                                        <div class="fw-bold text-dark mb-1"><%= m.descripcion %></div>
+                                        <small class="text-muted d-block mb-2"><%= m.tipo_cuenta %> (<%= m.numero_cuenta %>)</small>
+
+                                        <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+                                            <span class="fw-extrabold fs-5 <%= m.tipo_movimiento === 'retiro' ? 'text-danger' : 'text-success' %>">
+                                                <%= m.tipo_movimiento === 'retiro' ? '-' : '+' %> <%= empresa.moneda %> <%= formatCurrency(Math.abs(m.valor), 2) %>
+                                            </span>
+
+                                            <form action="/inversiones/movimiento/eliminar/<%= m.id %>" method="POST" class="d-inline form-eliminar-mov">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                                    <i class="bi bi-trash-fill"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="text-center py-4 text-muted">No se encontraron movimientos registrados.</div>
+                            <% } %>
+                        </div>
+
+                        <!-- PAGINACIÓN -->
+                        <% if (paginacion && paginacion.totalPaginas > 1) { %>
+                            <div class="d-flex justify-content-center mt-3">
+                                <nav aria-label="Navegación de movimientos">
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item <%= paginacion.pagina <= 1 ? 'disabled' : '' %>">
+                                            <a class="page-link" href="/inversiones?pagina=<%= paginacion.pagina - 1 %>&inversion_id=<%= inversionSeleccionada || '' %>&busqueda=<%= busqueda %>">Anterior</a>
+                                        </li>
+                                        <% for (let i = 1; i <= paginacion.totalPaginas; i++) { %>
+                                            <li class="page-item <%= paginacion.pagina === i ? 'active' : '' %>">
+                                                <a class="page-link" href="/inversiones?pagina=<%= i %>&inversion_id=<%= inversionSeleccionada || '' %>&busqueda=<%= busqueda %>"><%= i %></a>
+                                            </li>
+                                        <% } %>
+                                        <li class="page-item <%= paginacion.pagina >= paginacion.totalPaginas ? 'disabled' : '' %>">
+                                            <a class="page-link" href="/inversiones?pagina=<%= paginacion.pagina + 1 %>&inversion_id=<%= inversionSeleccionada || '' %>&busqueda=<%= busqueda %>">Siguiente</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CREACIÓN MANUAL DE CUENTA DE INVERSIÓN -->
+    <div class="modal fade" id="modalNuevaCuenta" tabindex="-1" aria-labelledby="modalNuevaCuentaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-success text-white rounded-top-4 py-3">
+                    <h5 class="modal-title fw-bold text-white mb-0" style="color: #ffffff !important;" id="modalNuevaCuentaLabel"><i class="bi bi-bank2 me-2"></i> Crear Nueva Cuenta de Inversión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/inversiones/cuenta" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="tipo_cuenta" class="form-label fw-semibold">Nombre / Tipo de Inversión</label>
+                            <input type="text" name="tipo_cuenta" class="form-control" placeholder="Ej. FIC Sumar, CDT Renta Fija, Crypto, Acciones" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="numero_cuenta" class="form-label fw-semibold">Número de Cuenta / Referencia</label>
+                            <input type="text" name="numero_cuenta" class="form-control" placeholder="Ej. 001001130304" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="saldo_inicial" class="form-label fw-semibold">Saldo Inicial (<%= empresa.moneda %>)</label>
+                            <input type="number" step="0.01" name="saldo_inicial" class="form-control" placeholder="0.00" value="0.00">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label fw-semibold">Descripción u Observación (Opcional)</label>
+                            <input type="text" name="descripcion" class="form-control" placeholder="Ej. Fondo de inversión a mediano plazo">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 p-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">Crear Cuenta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIÓN Y EDICIÓN DE CUENTAS DE INVERSIÓN -->
+    <div class="modal fade" id="modalGestionCuentas" tabindex="-1" aria-labelledby="modalGestionCuentasLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 py-3">
+                    <h5 class="modal-title fw-bold text-white mb-0" style="color: #ffffff !important;" id="modalGestionCuentasLabel"><i class="bi bi-gear-fill me-2"></i> Mis Cuentas de Inversión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small">Aquí puedes editar el nombre, número de cuenta y descripción de tus cuentas registradas, o eliminarlas si lo deseas.</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Cuenta / Inversión</th>
+                                    <th>Número</th>
+                                    <th>Capital Previo</th>
+                                    <th>Saldo Actual</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (cuentas && cuentas.length > 0) { %>
+                                    <% cuentas.forEach(c => { %>
+                                        <tr>
+                                            <td>
+                                                <strong class="d-block text-dark"><%= c.tipo_cuenta %></strong>
+                                                <small class="text-muted"><%= c.descripcion || 'Sin descripción' %></small>
+                                            </td>
+                                            <td><span class="badge bg-light text-dark border"><%= c.numero_cuenta %></span></td>
+                                            <td class="fw-semibold text-primary"><%= empresa.moneda %> <%= formatCurrency(c.saldo_inicial || 0, 2) %></td>
+                                            <td class="fw-bold text-success"><%= empresa.moneda %> <%= formatCurrency(c.saldo, 2) %></td>
+                                            <td class="text-end">
+                                                <div class="d-flex gap-1 justify-content-end">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary btn-abrir-editar-cuenta"
+                                                            data-id="<%= c.id %>"
+                                                            data-tipo="<%= c.tipo_cuenta %>"
+                                                            data-numero="<%= c.numero_cuenta %>"
+                                                            data-saldoinicial="<%= c.saldo_inicial || 0 %>"
+                                                            data-netomovimientos="<%= c.neto_movimientos || 0 %>"
+                                                            data-saldoactual="<%= c.saldo || 0 %>"
+                                                            data-descripcion="<%= c.descripcion || '' %>">
+                                                        <i class="bi bi-pencil-square"></i> Editar
+                                                    </button>
+                                                    
+                                                    <form action="/inversiones/eliminar/<%= c.id %>" method="POST" class="d-inline form-eliminar-cuenta">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                            <i class="bi bi-trash-fill"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">No existen cuentas registradas.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 p-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR CUENTA ESPECÍFICA -->
+    <div class="modal fade" id="modalEditarCuenta" tabindex="-1" aria-labelledby="modalEditarCuentaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 py-3">
+                    <h5 class="modal-title fw-bold text-white mb-0" style="color: #ffffff !important;" id="modalEditarCuentaLabel"><i class="bi bi-pencil-square me-2"></i> Editar Cuenta de Inversión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formEditarCuenta" action="" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="edit_tipo_cuenta" class="form-label fw-semibold">Nombre / Tipo de Inversión</label>
+                            <input type="text" id="edit_tipo_cuenta" name="tipo_cuenta" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit_numero_cuenta" class="form-label fw-semibold">Número de Cuenta / Referencia</label>
+                            <input type="text" id="edit_numero_cuenta" name="numero_cuenta" class="form-control" required>
+                        </div>
+
+                        <!-- Opción 1: Saldo Actual Real en Banco (Auto-calculador) -->
+                        <div class="mb-3 p-3 bg-light rounded-3 border">
+                            <label for="edit_saldo_actual_deseado" class="form-label fw-bold text-success">
+                                <i class="bi bi-wallet2 me-1"></i> Saldo Actual Real en tu App Bancaria (<%= empresa.moneda %>)
+                            </label>
+                            <input type="text" id="edit_saldo_actual_deseado" class="form-control form-control-lg border-success fw-bold text-success" placeholder="Ej. 8.500.000,00">
+                            <small class="text-muted d-block mt-1">
+                                💡 <strong>¿Solo conoces tu saldo actual?</strong> Escribe aquí el saldo exacto que tienes hoy en tu banco y el sistema ajustará automáticamente el saldo previo para coincidir.
+                            </small>
+                        </div>
+
+                        <!-- Opción 2: Saldo Inicial / Capital Previo -->
+                        <div class="mb-3">
+                            <label for="edit_saldo_inicial_display" class="form-label fw-semibold">Saldo Inicial / Capital Previo (<%= empresa.moneda %>)</label>
+                            <input type="text" id="edit_saldo_inicial_display" class="form-control" placeholder="0.00">
+                            <input type="hidden" id="edit_saldo_inicial" name="saldo_inicial" value="0">
+                            <small class="text-muted">Monto acumulado existente en tu fondo antes del período de los extractos subidos.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="edit_descripcion" class="form-label fw-semibold">Descripción u Observación</label>
+                            <input type="text" id="edit_descripcion" name="descripcion" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 p-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE SUBIDA DE ARCHIVO CSV -->
+    <div class="modal fade" id="modalSubirCsv" tabindex="-1" aria-labelledby="modalSubirCsvLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-success text-white rounded-top-4 py-3">
+                    <h5 class="modal-title fw-bold text-white mb-0" style="color: #ffffff !important;" id="modalSubirCsvLabel"><i class="bi bi-file-earmark-spreadsheet-fill me-2"></i> Subir Archivo CSV de Inversión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formSubirCsv" action="/inversiones/subir-csv" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body p-4">
+                        <p class="text-muted small mb-3">
+                            Selecciona o arrastra tu extracto de movimientos en formato <strong>CSV</strong>. El sistema identificará automáticamente la cuenta de inversión e ignorará movimientos duplicados.
+                        </p>
+
+                        <div class="dropzone-area" id="dropzoneCsv">
+                            <i class="bi bi-cloud-arrow-up-fill text-success display-4 mb-2 d-block"></i>
+                            <h6 class="fw-bold text-dark mb-1">Haz clic para buscar o arrastra tu CSV aquí</h6>
+                            <span class="text-muted small d-block mb-3">Soporta archivos .csv exportados (ej. mov1682624421.csv)</span>
+                            <input type="file" name="archivo_csv" id="archivo_csv" accept=".csv,text/csv" class="d-none" required>
+                            <span id="nombreArchivoSeleccionado" class="badge bg-primary rounded-pill d-none fs-6 px-3 py-2"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 p-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm" id="btnSubmitCsv">
+                            <i class="bi bi-upload me-1"></i> Procesar e Importar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO MANUAL DE MOVIMIENTO -->
+    <div class="modal fade" id="modalMovimientoManual" tabindex="-1" aria-labelledby="modalMovimientoManualLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 py-3">
+                    <h5 class="modal-title fw-bold text-white mb-0" style="color: #ffffff !important;" id="modalMovimientoManualLabel"><i class="bi bi-plus-circle me-2"></i> Nuevo Movimiento de Inversión</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/inversiones/movimiento" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label for="inversion_id" class="form-label fw-semibold">Cuenta de Inversión</label>
+                            <select name="inversion_id" class="form-select" required>
+                                <% cuentas.forEach(c => { %>
+                                    <option value="<%= c.id %>" <%= inversionSeleccionada == c.id ? 'selected' : '' %>>
+                                        <%= c.tipo_cuenta %> (<%= c.numero_cuenta %>)
+                                    </option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label fw-semibold">Fecha</label>
+                            <input type="date" name="fecha" class="form-control" value="<%= new Date().toISOString().split('T')[0] %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipo_movimiento" class="form-label fw-semibold">Tipo de Movimiento</label>
+                            <select name="tipo_movimiento" class="form-select" required>
+                                <option value="rendimiento">Rendimientos (Ganancia +)</option>
+                                <option value="inversion">Inversión (Aporte +)</option>
+                                <option value="retiro">Retiro (Salida -)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label fw-semibold">Descripción</label>
+                            <input type="text" name="descripcion" class="form-control" placeholder="Ej. Rendimientos semanales" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="valor" class="form-label fw-semibold">Monto (<%= empresa.moneda %>)</label>
+                            <input type="number" step="0.01" name="valor" class="form-control" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 p-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Guardar Movimiento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT CHART.JS & LÓGICA INTERACTIVA -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Datos inyectados desde el servidor
+            const serieLabels = <%- JSON.stringify(serieMensual.labels || []) %>;
+            const serieRendimientos = <%- JSON.stringify(serieMensual.rendimientos || []) %>;
+            const serieRetiros = <%- JSON.stringify(serieMensual.retiros || []) %>;
+            const serieInversiones = <%- JSON.stringify(serieMensual.inversiones || []) %>;
+
+            // 1. Chart de Flujo Mensual (Inversiones, Rendimientos, Retiros)
+            let chartFlujoInstance = null;
+            const ctxRendimientos = document.getElementById('chartRendimientosMensuales');
+            if (ctxRendimientos && serieLabels.length > 0) {
+                chartFlujoInstance = new Chart(ctxRendimientos, {
+                    type: 'bar',
+                    data: {
+                        labels: serieLabels,
+                        datasets: [
+                            {
+                                label: 'Inversiones / Aportes (<%= empresa.moneda %>)',
+                                data: serieInversiones,
+                                backgroundColor: '#3b82f6',
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Rendimientos (<%= empresa.moneda %>)',
+                                data: serieRendimientos,
+                                backgroundColor: '#10b981',
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Retiros (<%= empresa.moneda %>)',
+                                data: serieRetiros,
+                                backgroundColor: '#ef4444',
+                                borderRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+
+                // Listener para el filtro interactivo de botones (Todos, Inversiones, Rendimientos, Retiros)
+                const contenedorFiltro = document.getElementById('filtroGraficoFlujo');
+                if (contenedorFiltro) {
+                    const botonesFiltro = contenedorFiltro.querySelectorAll('button');
+                    botonesFiltro.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            botonesFiltro.forEach(b => b.classList.remove('active', 'btn-dark'));
+                            this.classList.add('active', 'btn-dark');
+
+                            const dsVal = this.getAttribute('data-dataset');
+                            if (dsVal === 'todos') {
+                                chartFlujoInstance.setDatasetVisibility(0, true);
+                                chartFlujoInstance.setDatasetVisibility(1, true);
+                                chartFlujoInstance.setDatasetVisibility(2, true);
+                            } else {
+                                const targetIdx = parseInt(dsVal);
+                                [0, 1, 2].forEach(idx => {
+                                    chartFlujoInstance.setDatasetVisibility(idx, idx === targetIdx);
+                                });
+                            }
+                            chartFlujoInstance.update();
+                        });
+                    });
+                }
+            }
+
+            // 2. Chart de Distribución Financiera
+            const ctxDistribucion = document.getElementById('chartDistribucion');
+            if (ctxDistribucion) {
+                const totalCapital = <%= kpis.capital_invertido || 0 %>;
+                const totalRendimientos = <%= kpis.rendimientos_totales || 0 %>;
+                const totalRetiros = <%= kpis.retiros_totales || 0 %>;
+
+                new Chart(ctxDistribucion, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Capital Invertido', 'Rendimientos', 'Retiros'],
+                        datasets: [{
+                            data: [totalCapital, totalRendimientos, totalRetiros],
+                            backgroundColor: ['#3b82f6', '#10b981', '#ef4444'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+
+            // 3. Selección y Drag-and-Drop de CSV
+            const dropzone = document.getElementById('dropzoneCsv');
+            const fileInput = document.getElementById('archivo_csv');
+            const badgeNombre = document.getElementById('nombreArchivoSeleccionado');
+
+            if (dropzone && fileInput) {
+                dropzone.addEventListener('click', () => fileInput.click());
+
+                fileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        badgeNombre.textContent = this.files[0].name;
+                        badgeNombre.classList.remove('d-none');
+                    }
+                });
+
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.style.backgroundColor = '#dbeafe';
+                });
+
+                dropzone.addEventListener('dragleave', () => {
+                    dropzone.style.backgroundColor = '#f8fafc';
+                });
+
+                dropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropzone.style.backgroundColor = '#f8fafc';
+                    if (e.dataTransfer.files.length > 0) {
+                        fileInput.files = e.dataTransfer.files;
+                        badgeNombre.textContent = e.dataTransfer.files[0].name;
+                        badgeNombre.classList.remove('d-none');
+                    }
+                });
+            }
+
+            function formatearMilesEnVivo(str) {
+                if (!str) return '';
+                let limpio = String(str).replace(/\./g, '').replace(/[^0-9,]/g, '');
+                let partes = limpio.split(',');
+                let entero = partes[0];
+                let decimal = partes.length > 1 ? ',' + partes[1].slice(0, 2) : '';
+                let enteroFmt = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                return enteroFmt + decimal;
+            }
+
+            // 4. Calculadora AJAX y Simulador Interactivo de Proyección Financiera
+            const selectMeses = document.getElementById('selectMesesProyeccion');
+            const tablaProyeccionBody = document.querySelector('#tablaProyeccion tbody');
+            const inputSimAporte = document.getElementById('inputSimulacionAporte');
+            const selectTipoAporte = document.getElementById('selectTipoAporte');
+            const inputSimRetiro = document.getElementById('inputSimulacionRetiro');
+            const selectTipoRetiro = document.getElementById('selectTipoRetiro');
+            const btnResetSimulacion = document.getElementById('btnLimpiarSimulacion');
+            const lblTasaProyeccion = document.getElementById('lblTasaProyeccion');
+
+            const inversionIdActual = '<%= inversionSeleccionada || "" %>';
+            const monedaEmpresa = '<%= empresa.moneda %>';
+
+            let proyeccionBaseOriginal = <%- JSON.stringify(proyeccion.proyeccion) %>;
+            let tasaMensualEstimada = <%= (proyeccion.tasaEstimadaPorcentaje || 0.62) / 100 %>;
+            let saldoBaseCalculo = <%= proyeccion.saldoBase || 0 %>;
+
+            function recalcularSimulacionEnCliente() {
+                if (!tablaProyeccionBody || !proyeccionBaseOriginal) return;
+
+                const valAporte = parsearLimpio(inputSimAporte ? inputSimAporte.value : '0');
+                const valRetiro = parsearLimpio(inputSimRetiro ? inputSimRetiro.value : '0');
+                const tipoAporte = selectTipoAporte ? selectTipoAporte.value : 'mensual';
+                const tipoRetiro = selectTipoRetiro ? selectTipoRetiro.value : 'mensual';
+
+                let saldoCorrido = saldoBaseCalculo;
+                let html = '';
+
+                proyeccionBaseOriginal.forEach((p, index) => {
+                    // Si el aporte es 'unico', solo aplica en el primer mes (index === 0)
+                    const montoAporteMes = (tipoAporte === 'unico' && index > 0) ? 0 : valAporte;
+                    // Si el retiro es 'unico', solo aplica en el primer mes (index === 0)
+                    const montoRetiroMes = (tipoRetiro === 'unico' && index > 0) ? 0 : valRetiro;
+
+                    // Rendimiento estimado = (saldo previo + aporte del mes) * tasa
+                    const saldoConAporte = saldoCorrido + montoAporteMes;
+                    const rendMes = saldoConAporte * (tasaMensualEstimada > 0 ? tasaMensualEstimada : 0.005);
+                    saldoCorrido = saldoConAporte - montoRetiroMes + rendMes;
+
+                    const rendFmt = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(rendMes);
+                    const saldoFmt = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(saldoCorrido);
+
+                    let flujoBadge = `<span class="badge bg-light text-muted border">-</span>`;
+                    const apFmt = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(montoAporteMes);
+                    const retFmt = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(montoRetiroMes);
+
+                    if (montoAporteMes > 0 && montoRetiroMes === 0) {
+                        const tagUnico = (tipoAporte === 'unico') ? ' (Aporte único)' : ' /mes';
+                        flujoBadge = `<span class="badge bg-success-subtle text-success border border-success">+ ${monedaEmpresa} ${apFmt}${tagUnico}</span>`;
+                    } else if (montoRetiroMes > 0 && montoAporteMes === 0) {
+                        const tagUnico = (tipoRetiro === 'unico') ? ' (Retiro único)' : ' /mes';
+                        flujoBadge = `<span class="badge bg-danger-subtle text-danger border border-danger">- ${monedaEmpresa} ${retFmt}${tagUnico}</span>`;
+                    } else if (montoAporteMes > 0 && montoRetiroMes > 0) {
+                        const neto = montoAporteMes - montoRetiroMes;
+                        const netoFmt = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 0 }).format(Math.abs(neto));
+                        if (neto >= 0) {
+                            flujoBadge = `<span class="badge bg-success-subtle text-success border border-success">+ ${monedaEmpresa} ${netoFmt}</span>`;
+                        } else {
+                            flujoBadge = `<span class="badge bg-danger-subtle text-danger border border-danger">- ${monedaEmpresa} ${netoFmt}</span>`;
+                        }
+                    }
+
+                    html += `
+                        <tr>
+                            <td class="fw-bold text-capitalize"><i class="bi bi-calendar-event me-2 text-muted"></i>${p.mes}</td>
+                            <td class="text-center">${flujoBadge}</td>
+                            <td class="text-end text-success fw-bold">+ ${monedaEmpresa} ${rendFmt}</td>
+                            <td class="text-end text-dark fw-extrabold fs-6">${monedaEmpresa} ${saldoFmt}</td>
+                        </tr>
+                    `;
+                });
+
+                tablaProyeccionBody.innerHTML = html;
+            }
+
+            if (inputSimAporte) {
+                inputSimAporte.addEventListener('input', function() {
+                    this.value = formatearMilesEnVivo(this.value);
+                    recalcularSimulacionEnCliente();
+                });
+            }
+
+            if (inputSimRetiro) {
+                inputSimRetiro.addEventListener('input', function() {
+                    this.value = formatearMilesEnVivo(this.value);
+                    recalcularSimulacionEnCliente();
+                });
+            }
+
+            if (selectTipoAporte) selectTipoAporte.addEventListener('change', recalcularSimulacionEnCliente);
+            if (selectTipoRetiro) selectTipoRetiro.addEventListener('change', recalcularSimulacionEnCliente);
+
+            if (btnResetSimulacion) {
+                btnResetSimulacion.addEventListener('click', function() {
+                    if (inputSimAporte) inputSimAporte.value = '0';
+                    if (inputSimRetiro) inputSimRetiro.value = '0';
+                    if (selectTipoAporte) selectTipoAporte.value = 'mensual';
+                    if (selectTipoRetiro) selectTipoRetiro.value = 'mensual';
+                    recalcularSimulacionEnCliente();
+                });
+            }
+
+            if (selectMeses && tablaProyeccionBody) {
+                selectMeses.addEventListener('change', async function() {
+                    const meses = this.value;
+                    try {
+                        const resp = await fetch(`/inversiones/proyeccion-ajax?meses=${meses}&inversion_id=${inversionIdActual}`);
+                        const json = await resp.json();
+
+                        if (json.exito && json.proyeccion) {
+                            proyeccionBaseOriginal = json.proyeccion.proyeccion;
+                            tasaMensualEstimada = (json.proyeccion.tasaEstimadaPorcentaje || 0.62) / 100;
+                            saldoBaseCalculo = json.proyeccion.saldoBase || 0;
+
+                            if (lblTasaProyeccion) {
+                                lblTasaProyeccion.textContent = `${json.proyeccion.tasaEstimadaPorcentaje}% mensual`;
+                            }
+
+                            recalcularSimulacionEnCliente();
+                        }
+                    } catch (e) {
+                        console.error("Error al actualizar proyección:", e);
+                    }
+                });
+            }
+
+            // 5. Confirmación para eliminar movimiento
+            const formElimina = document.querySelectorAll('.form-eliminar-mov');
+            formElimina.forEach(f => {
+                f.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Eliminar movimiento?',
+                        text: 'Esta acción actualizará el saldo de la cuenta de inversión.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            f.submit();
+                        }
+                    });
+                });
+            });
+
+            // Funciones para formato de miles con puntos y decimales con coma
+            function formatearPuntos(num) {
+                if (num === null || num === undefined || num === '') return '';
+                let valStr = String(num).replace(/,/g, '.');
+                let n = parseFloat(valStr);
+                if (isNaN(n)) return '';
+                return new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+            }
+
+            function parsearLimpio(str) {
+                if (!str) return 0;
+                let s = String(str).replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.-]/g, '');
+                let n = parseFloat(s);
+                return isNaN(n) ? 0 : n;
+            }
+
+            // 6. Edición y Eliminación de Cuentas de Inversión
+            const modalGestion = document.getElementById('modalGestionCuentas');
+            const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCuenta'));
+            const formEditarCuenta = document.getElementById('formEditarCuenta');
+            const inputEditTipo = document.getElementById('edit_tipo_cuenta');
+            const inputEditNumero = document.getElementById('edit_numero_cuenta');
+            const inputEditSaldoInicial = document.getElementById('edit_saldo_inicial');
+            const inputEditSaldoInicialDisplay = document.getElementById('edit_saldo_inicial_display');
+            const inputEditSaldoActualDeseado = document.getElementById('edit_saldo_actual_deseado');
+            const inputEditDesc = document.getElementById('edit_descripcion');
+
+            let netoMovimientosCuentaActual = 0;
+
+            document.querySelectorAll('.btn-abrir-editar-cuenta').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const tipo = this.getAttribute('data-tipo');
+                    const numero = this.getAttribute('data-numero');
+                    const saldoinicial = parseFloat(this.getAttribute('data-saldoinicial') || 0);
+                    const saldoactual = parseFloat(this.getAttribute('data-saldoactual') || 0);
+                    netoMovimientosCuentaActual = parseFloat(this.getAttribute('data-netomovimientos') || 0);
+                    const descripcion = this.getAttribute('data-descripcion');
+
+                    formEditarCuenta.action = `/inversiones/cuenta/editar/${id}`;
+                    inputEditTipo.value = tipo;
+                    inputEditNumero.value = numero;
+                    if (inputEditSaldoInicial) inputEditSaldoInicial.value = saldoinicial;
+                    if (inputEditSaldoInicialDisplay) inputEditSaldoInicialDisplay.value = formatearPuntos(saldoinicial);
+                    if (inputEditSaldoActualDeseado) inputEditSaldoActualDeseado.value = formatearPuntos(saldoactual);
+                    inputEditDesc.value = descripcion;
+
+                    // Ocultar modal de gestión si estuviera abierto
+                    const bsGestion = bootstrap.Modal.getInstance(modalGestion);
+                    if (bsGestion) bsGestion.hide();
+
+                    modalEditar.show();
+                });
+            });
+
+            if (inputEditSaldoActualDeseado && inputEditSaldoInicialDisplay) {
+                // Al escribir Saldo Actual Real -> recalcular Saldo Inicial Previo
+                inputEditSaldoActualDeseado.addEventListener('input', function() {
+                    const valActual = parsearLimpio(this.value);
+                    const initCalculado = valActual - netoMovimientosCuentaActual;
+                    const finalInit = initCalculado > 0 ? initCalculado : 0;
+                    inputEditSaldoInicial.value = finalInit.toFixed(2);
+                    inputEditSaldoInicialDisplay.value = formatearPuntos(finalInit);
+                });
+
+                inputEditSaldoActualDeseado.addEventListener('blur', function() {
+                    const valActual = parsearLimpio(this.value);
+                    this.value = formatearPuntos(valActual);
+                });
+
+                // Al escribir Saldo Inicial Previo -> recalcular Saldo Actual Real
+                inputEditSaldoInicialDisplay.addEventListener('input', function() {
+                    const valInit = parsearLimpio(this.value);
+                    inputEditSaldoInicial.value = valInit.toFixed(2);
+                    const actualCalculado = valInit + netoMovimientosCuentaActual;
+                    inputEditSaldoActualDeseado.value = formatearPuntos(actualCalculado);
+                });
+
+                inputEditSaldoInicialDisplay.addEventListener('blur', function() {
+                    const valInit = parsearLimpio(this.value);
+                    this.value = formatearPuntos(valInit);
+                });
+            }
+
+            if (formEditarCuenta) {
+                formEditarCuenta.addEventListener('submit', function() {
+                    if (inputEditSaldoInicialDisplay) {
+                        inputEditSaldoInicial.value = parsearLimpio(inputEditSaldoInicialDisplay.value);
+                    }
+                });
+            }
+
+            document.querySelectorAll('.form-eliminar-cuenta').forEach(f => {
+                f.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: '¿Eliminar cuenta de inversión?',
+                        text: 'Esta acción eliminará la cuenta y TODOS los movimientos asociados a ella.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Sí, eliminar todo',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            f.submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
+    <%- include('../partials/footer') %>

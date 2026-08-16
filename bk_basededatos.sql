@@ -840,6 +840,31 @@ CREATE TABLE IF NOT EXISTS `codigos_otp` (
   FOREIGN KEY (`cliente_id`) REFERENCES `clientes`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Volcando estructura para tabla sistema_prestamos.inversiones
+CREATE TABLE IF NOT EXISTS `inversiones` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `tipo_cuenta` VARCHAR(100) NOT NULL,
+  `numero_cuenta` VARCHAR(100) NOT NULL,
+  `saldo` DECIMAL(15,2) DEFAULT 0.00,
+  `descripcion` VARCHAR(255) NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uk_tipo_numero` (`tipo_cuenta`, `numero_cuenta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Volcando estructura para tabla sistema_prestamos.movimientos_inversion
+CREATE TABLE IF NOT EXISTS `movimientos_inversion` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `inversion_id` INT NOT NULL,
+  `fecha` DATE NOT NULL,
+  `descripcion` VARCHAR(255) NOT NULL,
+  `tipo_movimiento` ENUM('rendimiento', 'retiro', 'inversion') NOT NULL,
+  `valor` DECIMAL(15,2) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`inversion_id`) REFERENCES `inversiones`(`id`) ON DELETE CASCADE,
+  UNIQUE KEY `uk_movimiento_unicidad` (`inversion_id`, `fecha`, `descripcion`, `valor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;

@@ -493,6 +493,51 @@ async function runMigrations() {
         console.error('❌ Error al inyectar plantilla de PDF de Paz y Salvo:', e.message);
     }
 
+    // 21. Tablas para el Módulo de Inversiones
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS inversiones (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                tipo_cuenta VARCHAR(100) NOT NULL,
+                numero_cuenta VARCHAR(100) NOT NULL,
+                saldo DECIMAL(15,2) DEFAULT 0.00,
+                descripcion VARCHAR(255) NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_tipo_numero (tipo_cuenta, numero_cuenta)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [inversiones] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [inversiones]:', e.message);
+    }
+
+    try {
+        await db.query("ALTER TABLE inversiones ADD COLUMN saldo_inicial DECIMAL(15,2) DEFAULT 0.00 AFTER numero_cuenta;");
+        console.log('✅ Columna [saldo_inicial] agregada a la tabla [inversiones]');
+    } catch (e) {
+        if (e.code !== 'ER_DUP_FIELDNAME') console.error('❌ Error al agregar [saldo_inicial]:', e.message);
+    }
+
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS movimientos_inversion (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                inversion_id INT NOT NULL,
+                fecha DATE NOT NULL,
+                descripcion VARCHAR(255) NOT NULL,
+                tipo_movimiento ENUM('rendimiento', 'retiro', 'inversion') NOT NULL,
+                valor DECIMAL(15,2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (inversion_id) REFERENCES inversiones(id) ON DELETE CASCADE,
+                UNIQUE KEY uk_movimiento_unicidad (inversion_id, fecha, descripcion, valor)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        `);
+        console.log('✅ Tabla [movimientos_inversion] verificada/creada');
+    } catch (e) {
+        console.error('❌ Error al crear tabla [movimientos_inversion]:', e.message);
+    }
+
     console.log('✅ Migraciones automáticas finalizadas.');
 }
 
